@@ -10,7 +10,7 @@ from xgboost import XGBRegressor
 from scipy.optimize import minimize
 
 # Load dataset
-df = pd.read_csv("c2db_C_materials.csv")
+df = pd.read_csv("Project/c2db_data/Materials from c2db - rectangular_materials_sortedby_bandgap_HSE06.csv")
 
 # Drop columns with >90% missing data + identifiers
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
