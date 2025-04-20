@@ -1,3 +1,4 @@
+# %%
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,7 +11,7 @@ from xgboost import XGBRegressor
 from scipy.optimize import minimize
 
 # Load dataset
-df = pd.read_csv("Project/c2db_data/Materials from c2db - rectangular_materials_sortedby_bandgap_HSE06.csv")
+df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Materials from c2db - rectangular_materials_sortedby_bandgap_HSE06.csv")
 
 # Drop columns with >90% missing data + identifiers
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
@@ -89,3 +90,5 @@ plt.grid(True)
 plt.legend()
 plt.tight_layout()
 plt.show()
+
+# %%
