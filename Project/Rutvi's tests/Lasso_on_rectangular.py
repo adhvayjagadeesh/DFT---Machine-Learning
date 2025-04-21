@@ -8,6 +8,7 @@ from sklearn.metrics import mean_absolute_error, r2_score
 
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Materials from c2db - rectangular_materials_sortedby_bandgap_HSE06.csv")
+df = df.drop(columns=['Band gap (G₀W₀) [eV]', 'Direct band gap (PBE) [eV]', 'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]'])
 
 # Set the target column name
 target_col = 'Band gap (PBE) [eV]'
