@@ -11,7 +11,8 @@ from xgboost import XGBRegressor
 from scipy.optimize import minimize
 
 # Load dataset
-df = pd.read_csv("c2db_C_materials.csv")
+df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/c2db_C_materials.csv")
+
 
 # Drop columns with >90% missing data + identifiers
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
@@ -138,7 +139,7 @@ importance_df["Avg Importance"] = importance_df[
 ].mean(axis=1)
 
 # Save to CSV
-importance_df.to_csv("feature_importances.csv", index=False)
+importance_df.to_csv("/workspaces/DFT---Machine-Learning/Project/Darby's Code/feature_importances.csv", index=False)
 print("Feature importances saved to 'feature_importances.csv'.")
 
 # ===== Plot Top 20 Features =====
