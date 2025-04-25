@@ -128,7 +128,7 @@ adj_r2 = 1 - (1 - r2) * (n - 1) / (n - p - 1)
 print("Optimal Weights (SVR, RF, MLP):", optimal_weights)
 print(f"Hybrid Model MAE (Test Set): {mae:.4f}")
 print(f"Hybrid Model R² (Test Set): {r2:.4f}")
-print(f"Hybrid Model Adjusted R² (Holdout Set): {adj_r2:.4f}")
+print(f"Hybrid Model Adjusted R² (Test Set): {adj_r2:.4f}")
 
 # Plot
 plt.figure(figsize=(6, 5))
