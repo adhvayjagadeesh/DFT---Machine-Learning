@@ -59,6 +59,7 @@ rng = np.random.default_rng(42)
 
 mae_bootstrap = []
 r2_bootstrap = []
+bootstrap_errors = []
 
 for i in range(n_iterations):
     # Sample with replacement
@@ -74,6 +75,9 @@ for i in range(n_iterations):
     y_pred_boot = model.predict(X_test_scaled)
     mae_bootstrap.append(mean_absolute_error(y_test, y_pred_boot))
     r2_bootstrap.append(r2_score(y_test, y_pred_boot))
+
+    # Collect errors for bootstrapping distribution
+    bootstrap_errors.append(y_test - y_pred_boot)
 
 # ----------------------------
 # Final model on full train set
@@ -131,6 +135,19 @@ plt.tight_layout()
 plt.show()
 
 # ----------------------------
+# Error Distribution of Final Model (Test Set)
+# ----------------------------
+test_errors = y_test - y_pred
+plt.figure(figsize=(8, 5))
+plt.hist(test_errors, bins=30, edgecolor='k', alpha=0.7)
+plt.title('Prediction Error Distribution (Test Set)')
+plt.xlabel('Error (Actual - Predicted Bandgap)')
+plt.ylabel('Frequency')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# ----------------------------
 # Feature Importance
 # ----------------------------
 coef_df = pd.DataFrame({
@@ -140,3 +157,17 @@ coef_df = pd.DataFrame({
 
 print("\nTop 10 most influential features:")
 print(coef_df.head(10))
+
+# ----------------------------
+# Error Distribution for Bootstrapped Iterations
+# ----------------------------
+all_bootstrap_errors = np.concatenate(bootstrap_errors)
+
+plt.figure(figsize=(8, 5))
+plt.hist(all_bootstrap_errors, bins=30, edgecolor='k', alpha=0.7)
+plt.title('Bootstrap Prediction Error Distribution')
+plt.xlabel('Error (Actual - Predicted Bandgap)')
+plt.ylabel('Frequency')
+plt.grid(True)
+plt.tight_layout()
+plt.show()

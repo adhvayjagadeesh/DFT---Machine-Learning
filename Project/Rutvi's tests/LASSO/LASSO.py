@@ -7,8 +7,11 @@ from sklearn.impute import SimpleImputer
 from sklearn.metrics import mean_absolute_error, r2_score
 
 # Load dataset
-df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Materials from c2db - rectangular_materials_sortedby_bandgap_HSE06.csv")
-df = df.drop(columns=['Band gap (G₀W₀) [eV]', 'Direct band gap (PBE) [eV]', 'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]'])
+df = pd.read_csv('/workspaces/DFT---Machine-Learning/Project/c2db_data/Final - rectangular_materials_sortedby_bandgap_HSE06.csv')
+df = df.drop(columns=[
+    'Band gap (G₀W₀) [eV]', 'Direct band gap (PBE) [eV]', 
+    'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]'
+])
 
 # Set the target column name
 target_col = 'Band gap (PBE) [eV]'
@@ -26,7 +29,7 @@ X = pd.get_dummies(X)
 imputer = SimpleImputer(strategy='mean')
 X_imputed = imputer.fit_transform(X)
 
-# Get updated column names from the imputer (handles dropped all-NaN columns)
+# Get updated column names from the imputer
 feature_names = imputer.get_feature_names_out(X.columns)
 
 # Convert back to DataFrame with correct column names
@@ -62,6 +65,17 @@ plt.plot([y.min(), y.max()], [y.min(), y.max()], 'r--', lw=2)
 plt.xlabel('Actual Bandgap [eV]')
 plt.ylabel('Predicted Bandgap [eV]')
 plt.title('LASSO: Actual vs Predicted Bandgap')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# Plot error distribution
+errors = y_test - y_pred
+plt.figure(figsize=(8, 5))
+plt.hist(errors, bins=30, edgecolor='k', alpha=0.7)
+plt.title('Prediction Error Distribution (LASSO)')
+plt.xlabel('Error (Actual - Predicted Bandgap)')
+plt.ylabel('Frequency')
 plt.grid(True)
 plt.tight_layout()
 plt.show()

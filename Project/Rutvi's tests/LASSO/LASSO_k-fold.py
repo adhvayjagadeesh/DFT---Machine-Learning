@@ -86,6 +86,17 @@ for fold, (train_idx, val_idx) in enumerate(kf.split(X_train_scaled)):
         ax.set_ylabel('Predicted')
     ax.grid(True)
 
+    # Plot error distribution for this fold
+    fold_errors = y_kf_val - y_kf_pred
+    plt.figure(figsize=(5, 3))
+    plt.hist(fold_errors, bins=20, edgecolor='k', alpha=0.7)
+    plt.title(f'Fold {fold+1} Error Distribution')
+    plt.xlabel('Prediction Error')
+    plt.ylabel('Frequency')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 plt.show()
 
@@ -127,3 +138,16 @@ coef_df = pd.DataFrame({
 
 print("\nTop 10 most influential features:")
 print(coef_df.head(10))
+
+# -------------------------------
+# Plot error distribution on test set
+# -------------------------------
+test_errors = y_test - y_pred
+plt.figure(figsize=(8, 5))
+plt.hist(test_errors, bins=30, edgecolor='k', alpha=0.7)
+plt.title('Prediction Error Distribution (Test Set)')
+plt.xlabel('Error (Actual - Predicted Bandgap)')
+plt.ylabel('Frequency')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
