@@ -1,16 +1,18 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score
 
 # Load your dataset
-# Replace 'your_dataset.csv' and 'target_column' with actual file and column names
 df = pd.read_csv('/workspaces/DFT---Machine-Learning/Project/c2db_data/Final - rectangular_materials_sortedby_bandgap_HSE06.csv')
-df = df.drop(columns=['Formula', 'Layer group', 'Stoichiometry', 'Band gap (G₀W₀) [eV]', 'Direct band gap (PBE) [eV]', 'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]'])
+df = df.drop(columns=['Formula', 'Layer group', 'Stoichiometry', 
+                      'Band gap (G₀W₀) [eV]', 'Direct band gap (PBE) [eV]', 
+                      'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]'])
 
-# Example: assume 'band_gap' is the target column
+# Define target and features
 target = 'Band gap (PBE) [eV]'
 X = df.drop(columns=[target])
 y = df[target]
@@ -18,7 +20,7 @@ y = df[target]
 # Split into train and test
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Create and train the Random Forest model
+# Train the Random Forest model
 rf = RandomForestRegressor(n_estimators=100, random_state=42)
 rf.fit(X_train, y_train)
 
@@ -37,5 +39,14 @@ plt.hist(errors, bins=30, edgecolor='k', alpha=0.7)
 plt.title('Prediction Error Distribution')
 plt.xlabel('Error (Actual - Predicted Band Gap)')
 plt.ylabel('Frequency')
+plt.grid(True)
+plt.show()
+
+# Plot regression (Predicted vs Actual)
+plt.figure(figsize=(8, 6))
+sns.regplot(x=y_test, y=y_pred, line_kws={"color": "red"})
+plt.xlabel('Actual Band Gap (PBE) [eV]')
+plt.ylabel('Predicted Band Gap [eV]')
+plt.title('Regression Plot: Predicted vs Actual Band Gap')
 plt.grid(True)
 plt.show()
