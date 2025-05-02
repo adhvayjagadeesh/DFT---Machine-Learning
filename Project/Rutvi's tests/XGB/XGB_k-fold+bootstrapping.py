@@ -7,12 +7,9 @@ from xgboost import XGBRegressor
 from sklearn.metrics import mean_absolute_error, r2_score
 
 # Load the dataset
-df = pd.read_csv("c2db_C_materials.csv")
+df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final - rectangular_materials_sortedby_bandgap_HSE06.csv")
+df = df.drop(columns=['Band gap (G₀W₀) [eV]', 'Direct band gap (PBE) [eV]', 'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]'])
 
-# Drop columns with >90% missing data + identifiers
-drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
-df.drop(columns=["Formula"], inplace=True)
-df.drop(columns=drop_cols, inplace=True, errors='ignore')
 
 # Encode categorical features if any
 cat_cols = df.select_dtypes(include='object').columns
@@ -80,3 +77,15 @@ plt.title("Actual vs Predicted Band Gap (PBE) [Final Fold - Last Bootstrap]")
 plt.plot([min(final_y_test), max(final_y_test)], [min(final_y_test), max(final_y_test)], color='red', linestyle='dashed')
 plt.grid(True)
 plt.show()
+
+# --- Plot Error Distribution (Bar Chart / Histogram) ---
+errors = final_y_test - final_y_pred
+
+plt.figure(figsize=(8, 5))
+plt.hist(errors, bins=30, edgecolor='black', alpha=0.7)
+plt.title("Prediction Error Distribution (Final Fold - Last Bootstrap)")
+plt.xlabel("Error (Actual - Predicted Band Gap)")
+plt.ylabel("Frequency")
+plt.grid(True)
+plt.show()
+
