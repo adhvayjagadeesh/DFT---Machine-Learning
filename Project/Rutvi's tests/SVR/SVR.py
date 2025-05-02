@@ -12,7 +12,7 @@ df = df.drop(columns=['Band gap (G₀W₀) [eV]', 'Direct band gap (PBE) [eV]', 
 
 
 # Separate features and target
-X = df.drop(columns=['Band gap (PBE) [eV]'])  # Replace with your actual target column name
+X = df.drop(columns=['Band gap (PBE) [eV]']) 
 y = df['Band gap (PBE) [eV]']
 
 # Ensure features are numeric (if any non-numeric, convert or drop them)
