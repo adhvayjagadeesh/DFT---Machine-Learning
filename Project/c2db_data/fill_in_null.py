@@ -1,59 +1,50 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.impute import KNNImputer
 
 # Load the CSV
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final - rectangular_materials_sortedby_bandgap_HSE06.csv")
 
-# Plot 'CBM'
-cbm_col = 'CBM wrt. vacuum (PBE) [eV]'
-plt.figure(figsize=(10, 5))
-plt.plot(df[cbm_col], marker='o')
-plt.title('CBM Column Plot')
-plt.xlabel('Index')
-plt.ylabel(cbm_col)
-plt.grid(True)
-plt.show()
+# Strip column names of extra whitespace
+df.columns = df.columns.str.strip()
 
-# Calculate standard deviation
-cbm_std = df[cbm_col].std()
-print(f"Standard Deviation of '{cbm_col}': {cbm_std}")
-
-# Initialize filled DataFrame
+# Create a copy for imputation
 df_filled = df.copy()
 
-# If std < 3, use KNN imputation on all numeric columns
-if cbm_std < 3:
-    print("Standard deviation < 3. Performing KNN imputation...")
+# Select only numeric columns
+numeric_cols = df.select_dtypes(include=[np.number]).columns
 
-    # Extract numeric columns and drop all-NaN columns
-    numeric_df = df.select_dtypes(include=[np.number])
-    numeric_df_cleaned = numeric_df.dropna(axis=1, how='all')
+# Prepare an imputation report
+imputation_report = []
 
-    # Apply KNN imputation
-    knn_imputer = KNNImputer(n_neighbors=3)
-    imputed_array = knn_imputer.fit_transform(numeric_df_cleaned)
+# Loop through each numeric column
+for col in numeric_cols:
+    null_ratio = df[col].isna().mean()
+    std_dev = df[col].std()
 
-    # Create DataFrame from imputed result
-    imputed_df = pd.DataFrame(imputed_array, columns=numeric_df_cleaned.columns, index=df.index)
+    if null_ratio > 0.5:
+        # Skip if more than 50% of values are missing
+        imputation_report.append((col, "Skipped", f"Null ratio = {null_ratio:.2%}"))
+        continue
 
-    # Replace nulls in the CBM column only
-    df_filled[cbm_col] = df[cbm_col].combine_first(imputed_df[cbm_col])
-    print("Filled null CBM values with KNN-imputed values.")
+    if std_dev < 3:
+        # Apply KNN imputation
+        print(f"Applying KNN to: {col} (std={std_dev:.3f})")
+        numeric_df = df[numeric_cols].dropna(axis=1, how='all')
+        imputer = KNNImputer(n_neighbors=3)
+        imputed_data = imputer.fit_transform(numeric_df)
+        imputed_df = pd.DataFrame(imputed_data, columns=numeric_df.columns, index=df.index)
+        df_filled[col] = df[col].combine_first(imputed_df[col])
+        imputation_report.append((col, "KNN", f"std = {std_dev:.3f}, nulls = {df[col].isna().sum()}"))
+    else:
+        # Fill with mean
+        mean_value = df[col].mean()
+        df_filled[col] = df[col].fillna(mean_value)
+        imputation_report.append((col, "Mean", f"std = {std_dev:.3f}, nulls = {df[col].isna().sum()}"))
 
-else:
-    print("Standard deviation >= 3. Using mean imputation instead.")
+# Optional: Save the cleaned DataFrame
+df_filled.to_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_filled_conditional.csv", index=False)
 
-    # Fill CBM using mean
-    mean_value = df[cbm_col].mean()
-    df_filled[cbm_col] = df[cbm_col].fillna(mean_value)
-    print("Filled null CBM values with mean value.")
-
-# Log how many were imputed
-null_count = df[cbm_col].isna().sum()
-print(f"Total null values originally in CBM column: {null_count}")
-remaining_nulls = df_filled[cbm_col].isna().sum()
-print(f"Remaining null values after imputation: {remaining_nulls}")
-
-
+# Print a summary
+for col, method, notes in imputation_report:
+    print(f"{col}: {method} ({notes})")
