@@ -11,7 +11,7 @@ from xgboost import XGBRegressor
 from scipy.optimize import minimize
 
 # Load dataset
-df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_filled_conditional.csv")
+df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
 
 # Drop columns with >90% missing data + identifiers
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()

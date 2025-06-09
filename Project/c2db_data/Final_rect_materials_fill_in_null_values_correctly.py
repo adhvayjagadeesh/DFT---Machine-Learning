@@ -9,6 +9,10 @@ from sklearn.metrics import mean_squared_error
 df = pd.read_csv("Project/c2db_data/rectangular_materials_sortedby_bandgap_HSE06.csv")
 df.columns = df.columns.str.strip()
 
+# Separate non-numeric columns to preserve metadata like 'Formula'
+non_numeric_cols = df.select_dtypes(exclude=[np.number]).columns
+df_meta = df[non_numeric_cols].copy()
+
 # Work only on numeric columns
 numeric_cols = df.select_dtypes(include=[np.number]).columns
 df_numeric = df[numeric_cols].copy()
@@ -19,7 +23,7 @@ df_numeric = df_numeric.drop(columns=null_ratio[null_ratio > 0.5].index)
 
 # Normalize numeric data (zero mean, unit variance)
 scaler = StandardScaler()
-df_scaled = pd.DataFrame(scaler.fit_transform(df_numeric), columns=df_numeric.columns, index=df.index)
+df_scaled = pd.DataFrame(scaler.fit_transform(df_numeric), columns=df_numeric.columns, index=df_numeric.index)
 
 # Prepare output dataframe
 df_filled = df_scaled.copy()
@@ -48,7 +52,6 @@ for col in df_scaled.columns:
 
         X_train = not_null.drop(columns=[col])
         y_train = not_null[col]
-
         X_pred = null_rows.drop(columns=[col])
 
         try:
@@ -65,10 +68,17 @@ for col in df_scaled.columns:
     imputation_report.append((col, method, f"Missing: {missing}"))
 
 # Inverse transform to return data to original scale
-df_filled_original_scale = pd.DataFrame(scaler.inverse_transform(df_filled), columns=df_filled.columns, index=df.index)
+df_filled_original_scale = pd.DataFrame(
+    scaler.inverse_transform(df_filled), 
+    columns=df_filled.columns, 
+    index=df_filled.index
+)
+
+# Recombine with non-numeric (metadata) columns
+df_final = pd.concat([df_meta, df_filled_original_scale], axis=1)
 
 # Save the cleaned dataset
-df_filled_original_scale.to_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_filled_conditional_v2.csv", index=False)
+df_final.to_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv", index=False)
 
 # Print report
 print("\n=== Imputation Report ===")

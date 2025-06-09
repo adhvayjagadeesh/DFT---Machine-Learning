@@ -13,16 +13,15 @@ from sklearn.metrics import mean_absolute_error, r2_score
 from scipy.optimize import minimize
 
 # Load dataset
-df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_filled_conditional.csv")
+df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
 
 # Drop columns with >90% missing data + identifiers
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
 df.drop(columns=[
     'Formula', 
-    'Band gap (G₀W₀) [eV]', 
-    'Band gap (HSE06) [eV] ▲',
+    'Band gap (PBE) [eV]',
+    'Band gap (HSE06) [eV]',
     'Direct band gap (PBE) [eV]', 
-    'Direct band gap (G₀W₀) [eV]', 
     'Direct band gap (HSE06) [eV]'
 ], inplace=True)
 df.drop(columns=drop_cols, inplace=True, errors='ignore')
