@@ -3,44 +3,33 @@ import numpy as np
 from sklearn.impute import KNNImputer
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_squared_error
 
 # Load the CSV
 df = pd.read_csv("Project/c2db_data/rectangular_materials_sortedby_bandgap_HSE06.csv")
 df.columns = df.columns.str.strip()
 
-# Step 1: Preserve metadata columns (if they exist)
-possible_meta_cols = [
-    'Formula', 
-    'Band gap (G₀W₀) [eV]', 
-    'Direct band gap (G₀W₀) [eV]',
-    'Band gap (HSE06) [eV] ▲',
-    'Direct band gap (PBE) [eV]', 
-    'Direct band gap (HSE06) [eV]'
-]
-meta_cols = [col for col in possible_meta_cols if col in df.columns]
-df_meta = df[meta_cols].copy()
+# Separate non-numeric columns to preserve metadata like 'Formula'
+non_numeric_cols = df.select_dtypes(exclude=[np.number]).columns
+df_meta = df[non_numeric_cols].copy()
 
-# Step 2: Select numeric features
+# Work only on numeric columns
 numeric_cols = df.select_dtypes(include=[np.number]).columns
 df_numeric = df[numeric_cols].copy()
 
-# Step 3: Drop columns with more than 50% null values
+# Drop columns with more than 50% null values
 null_ratio = df_numeric.isnull().mean()
 df_numeric = df_numeric.drop(columns=null_ratio[null_ratio > 0.5].index)
 
-# Step 4: Normalize the numeric data
+# Normalize numeric data (zero mean, unit variance)
 scaler = StandardScaler()
-df_scaled = pd.DataFrame(
-    scaler.fit_transform(df_numeric), 
-    columns=df_numeric.columns, 
-    index=df.index
-)
+df_scaled = pd.DataFrame(scaler.fit_transform(df_numeric), columns=df_numeric.columns, index=df_numeric.index)
 
-# Prepare for imputation
+# Prepare output dataframe
 df_filled = df_scaled.copy()
 imputation_report = []
 
-# Step 5: Impute column by column
+# Impute missing values
 for col in df_scaled.columns:
     missing = df_scaled[col].isna().sum()
     if missing == 0:
@@ -51,18 +40,13 @@ for col in df_scaled.columns:
     skew = df_scaled[col].skew()
     method = ""
 
-    if abs(skew) > 1:
-        # Highly skewed → use median
-        median_value = df_scaled[col].median()
-        df_filled[col] = df_scaled[col].fillna(median_value)
-        method = f"Median (skew = {skew:.2f})"
-    elif std_dev < 3:
-        # Low variance → use KNN
+    if std_dev < 3:
+        # KNN Imputation
         imputer = KNNImputer(n_neighbors=3)
         df_filled[col] = imputer.fit_transform(df_scaled)[..., df_scaled.columns.get_loc(col)]
-        method = f"KNN (std < 3, skew = {skew:.2f})"
+        method = "KNN (std < 3)"
     else:
-        # High variance → use regression
+        # Regression Imputation
         not_null = df_scaled[df_scaled[col].notna()]
         null_rows = df_scaled[df_scaled[col].isna()]
 
@@ -77,25 +61,26 @@ for col in df_scaled.columns:
             df_filled.loc[df_scaled[col].isna(), col] = predictions
             method = f"Linear Regression (std ≥ 3, skew = {skew:.2f})"
         except Exception as e:
+            # Fallback if regression fails
             df_filled[col] = df_scaled[col].fillna(df_scaled[col].mean())
-            method = f"Fallback to Mean (regression failed: {e})"
+            method = f"Fallback to Mean (std ≥ 3, regression failed: {e})"
 
     imputation_report.append((col, method, f"Missing: {missing}"))
 
-# Step 6: Reverse normalization
+# Inverse transform to return data to original scale
 df_filled_original_scale = pd.DataFrame(
     scaler.inverse_transform(df_filled), 
     columns=df_filled.columns, 
     index=df_filled.index
 )
 
-# Step 7: Recombine metadata + imputed numeric data
+# Recombine with non-numeric (metadata) columns
 df_final = pd.concat([df_meta, df_filled_original_scale], axis=1)
 
-# Step 8: Save final cleaned dataset
+# Save the cleaned dataset
 df_final.to_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv", index=False)
 
-# Step 9: Print imputation summary
+# Print report
 print("\n=== Imputation Report ===")
 for col, method, details in imputation_report:
     print(f"{col}: {method} ({details})")
