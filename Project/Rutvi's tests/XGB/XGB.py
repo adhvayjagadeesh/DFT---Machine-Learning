@@ -7,7 +7,8 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_absolute_error, r2_score
 
 # Load the dataset
-df = pd.read_csv("c2db_C_materials.csv")
+df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
+df = df.drop(columns=['Direct band gap (PBE) [eV]','Band gap (HSE06) [eV]', 'Direct band gap (HSE06) [eV]'])
 
 # Drop columns with >90% missing data + identifiers
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()

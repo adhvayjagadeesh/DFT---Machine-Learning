@@ -7,10 +7,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score
 
 # Load and clean the dataset
-df = pd.read_csv('/workspaces/DFT---Machine-Learning/Project/c2db_data/Final - rectangular_materials_sortedby_bandgap_HSE06.csv')
-df = df.drop(columns=['Formula', 'Layer group', 'Stoichiometry', 
-                      'Band gap (G₀W₀) [eV]', 'Direct band gap (PBE) [eV]', 
-                      'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]'])
+df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
+df = df.drop(columns=['Direct band gap (PBE) [eV]','Band gap (HSE06) [eV]', 'Direct band gap (HSE06) [eV]'])
 
 # Define features and target
 target = 'Band gap (PBE) [eV]'
