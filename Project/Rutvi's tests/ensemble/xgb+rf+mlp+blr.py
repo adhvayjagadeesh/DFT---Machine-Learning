@@ -17,10 +17,8 @@ df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rec
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
 df.drop(columns=[
     'Formula',
-    'Band gap (G₀W₀) [eV]',
-    'Band gap (HSE06) [eV] ▲',
-    'Direct band gap (PBE) [eV]',
-    'Direct band gap (G₀W₀) [eV]',
+    'Band gap (HSE06) [eV]',
+    'Direct band gap (PBE) [eV]', 
     'Direct band gap (HSE06) [eV]'
 ], inplace=True)
 df.drop(columns=drop_cols, inplace=True, errors='ignore')

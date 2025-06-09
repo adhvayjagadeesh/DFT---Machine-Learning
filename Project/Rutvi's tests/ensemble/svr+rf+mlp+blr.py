@@ -18,8 +18,7 @@ df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rec
 # Drop columns with >90% missing data + identifiers
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
 df.drop(columns=[
-    'Formula', 
-    'Band gap (PBE) [eV]',
+    'Formula',
     'Band gap (HSE06) [eV]',
     'Direct band gap (PBE) [eV]', 
     'Direct band gap (HSE06) [eV]'
