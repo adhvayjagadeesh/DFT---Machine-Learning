@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error
 
 # Load the CSV
-df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final - rectangular_materials_sortedby_bandgap_HSE06.csv")
+df = pd.read_csv("Project/c2db_data/rectangular_materials_sortedby_bandgap_HSE06.csv")
 df.columns = df.columns.str.strip()
 
 # Work only on numeric columns
