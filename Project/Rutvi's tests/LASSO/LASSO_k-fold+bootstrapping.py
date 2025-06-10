@@ -6,14 +6,22 @@ from sklearn.linear_model import Lasso, LassoCV
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
 
 # Load and prepare data
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
-df = df.drop(columns=['Direct band gap (PBE) [eV]','Band gap (HSE06) [eV]', 'Direct band gap (HSE06) [eV]'])
+df = df.drop(columns=['Direct band gap (PBE) [eV]',
+    'Direct band gap (PBE) [eV].1',
+    'Band gap (PBE) [eV]',
+    'Band gap (G₀W₀) [eV]',
+    'Direct band gap (G₀W₀) [eV]',
+    'Direct band gap (HSE06) [eV]',
+    'Direct band gap (HSE06) [eV].1',
+    'CBM wrt. vacuum (PBE) [eV]',
+    'VBM wrt. vacuum (PBE) [eV]',])
 
 # Define target
-target = 'Band gap (PBE) [eV]'
+target = 'Band gap (HSE06) [eV]'
 X = df.drop(columns=[target])
 y = df[target]
 
@@ -79,6 +87,8 @@ for fold, (train_idx, test_idx) in enumerate(kf.split(X_scaled), 1):
 # ------------------------------------------
 print(f"\nOverall MAE: {np.mean(mae_list):.4f} ± {np.std(mae_list):.4f}")
 print(f"Overall R²: {np.mean(r2_list):.4f} ± {np.std(r2_list):.4f}")
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+print(f"RMSE : {rmse:.4f}")
 
 # Error analysis
 errors = np.array(all_y_true) - np.array(all_y_pred)
@@ -97,7 +107,7 @@ plt.show()
 # Regression plot
 plt.figure(figsize=(8, 6))
 sns.regplot(x=all_y_true, y=all_y_pred, line_kws={"color": "red"}, scatter_kws={"alpha": 0.5})
-plt.xlabel('Actual Band Gap (PBE) [eV]')
+plt.xlabel('Actual Band Gap (HSE06) [eV]')
 plt.ylabel('Predicted Band Gap [eV]')
 plt.title('Regression Plot: Predicted vs Actual Band Gap')
 plt.grid(True)

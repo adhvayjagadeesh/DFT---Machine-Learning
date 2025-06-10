@@ -16,10 +16,12 @@ df.drop(columns=[
     'Direct band gap (PBE) [eV]',
     'Direct band gap (PBE) [eV].1',
     'Band gap (PBE) [eV]',
+    'Band gap (G₀W₀) [eV]',
+    'Direct band gap (G₀W₀) [eV]',
     'Direct band gap (HSE06) [eV]',
     'Direct band gap (HSE06) [eV].1',
     'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]',
+    'VBM wrt. vacuum (PBE) [eV]'
 ], inplace=True)
 df.drop(columns=drop_cols, inplace=True, errors='ignore')
 

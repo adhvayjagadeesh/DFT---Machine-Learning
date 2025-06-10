@@ -1,17 +1,28 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.linear_model import LassoCV, Lasso
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
 
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
-df = df.drop(columns=['Direct band gap (PBE) [eV]','Band gap (HSE06) [eV]', 'Direct band gap (HSE06) [eV]'])
+df = df.drop(columns=[
+    'Direct band gap (PBE) [eV]',
+    'Direct band gap (PBE) [eV].1',
+    'Band gap (PBE) [eV]',
+    'Band gap (G₀W₀) [eV]',
+    'Direct band gap (G₀W₀) [eV]',
+    'Direct band gap (HSE06) [eV]',
+    'Direct band gap (HSE06) [eV].1',
+    'CBM wrt. vacuum (PBE) [eV]',
+    'VBM wrt. vacuum (PBE) [eV]',
+])
 
 # Target column
-target_col = 'Band gap (PBE) [eV]'
+target_col = 'Band gap (HSE06) [eV]'
 if target_col not in df.columns:
     raise ValueError(f"Target column '{target_col}' not found in dataset.")
 
@@ -52,6 +63,7 @@ kf = KFold(n_splits=k, shuffle=True, random_state=42)
 
 mae_scores = []
 r2_scores = []
+rmse_scores = []
 
 # Plot setup
 fig, axs = plt.subplots(1, k, figsize=(18, 4), sharey=True)
@@ -67,9 +79,11 @@ for fold, (train_idx, val_idx) in enumerate(kf.split(X_train_scaled)):
     y_kf_pred = model.predict(X_kf_val)
     fold_mae = mean_absolute_error(y_kf_val, y_kf_pred)
     fold_r2 = r2_score(y_kf_val, y_kf_pred)
+    fold_rmse = np.sqrt(mean_squared_error(y_kf_val, y_kf_pred))
 
     mae_scores.append(fold_mae)
     r2_scores.append(fold_r2)
+    rmse_scores.append(fold_rmse)
 
     # Plot each fold
     ax = axs[fold]
@@ -95,8 +109,10 @@ for fold, (train_idx, val_idx) in enumerate(kf.split(X_train_scaled)):
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 plt.show()
 
-print(f"\nAverage MAE across {k} folds: {sum(mae_scores)/k:.4f}")
-print(f"Average R² across {k} folds: {sum(r2_scores)/k:.4f}")
+print(f"\nCross-Validation Summary (k={k}):")
+print(f"Average MAE:  {np.mean(mae_scores):.4f}")
+print(f"Average RMSE: {np.mean(rmse_scores):.4f}")
+print(f"Average R²:   {np.mean(r2_scores):.4f}")
 
 # -------------------------------
 # Final Evaluation on Test Set
@@ -106,10 +122,12 @@ final_model.fit(X_train_scaled, y_train)
 y_pred = final_model.predict(X_test_scaled)
 
 mae = mean_absolute_error(y_test, y_pred)
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 r2 = r2_score(y_test, y_pred)
 
 print(f"\nFinal Test Set Evaluation:")
 print(f"Mean Absolute Error (MAE): {mae:.4f}")
+print(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
 print(f"R² Score: {r2:.4f}")
 
 # Plot: Actual vs Predicted on Test Set

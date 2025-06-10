@@ -5,14 +5,22 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LassoCV, Lasso
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
 
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
-df = df.drop(columns=['Direct band gap (PBE) [eV]','Band gap (HSE06) [eV]', 'Direct band gap (HSE06) [eV]'])
+df = df.drop(columns=['Direct band gap (PBE) [eV]',
+    'Direct band gap (PBE) [eV].1',
+    'Band gap (PBE) [eV]',
+    'Band gap (G₀W₀) [eV]',
+    'Direct band gap (G₀W₀) [eV]',
+    'Direct band gap (HSE06) [eV]',
+    'Direct band gap (HSE06) [eV].1',
+    'CBM wrt. vacuum (PBE) [eV]',
+    'VBM wrt. vacuum (PBE) [eV]'])
 
 # Set the target column
-target_col = 'Band gap (PBE) [eV]'
+target_col = 'Band gap (HSE06) [eV]'
 if target_col not in df.columns:
     raise ValueError(f"Target column '{target_col}' not found in dataset.")
 
@@ -83,10 +91,12 @@ y_pred = final_model.predict(X_test_scaled)
 
 mae_final = mean_absolute_error(y_test, y_pred)
 r2_final = r2_score(y_test, y_pred)
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 
 print(f"\nFinal Model Performance on Test Set:")
 print(f"MAE: {mae_final:.4f}")
 print(f"R² : {r2_final:.4f}")
+print(f"RMSE : {rmse:.4f}")
 
 print(f"\nBootstrapping Summary ({n_iterations} iterations):")
 print(f"MAE: Mean = {np.mean(mae_bootstrap):.4f}, Std = {np.std(mae_bootstrap):.4f}")
