@@ -1,17 +1,27 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LassoCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
-df = df.drop(columns=['Direct band gap (PBE) [eV]','Band gap (HSE06) [eV]', 'Direct band gap (HSE06) [eV]'])
+df = df.drop(columns=[
+    'Direct band gap (PBE) [eV]',
+    'Direct band gap (PBE) [eV].1',
+    'Band gap (PBE) [eV]',
+    'Band gap (G₀W₀) [eV]',
+    'Direct band gap (HSE06) [eV]',
+    'Direct band gap (HSE06) [eV].1',
+    'CBM wrt. vacuum (PBE) [eV]',
+    'VBM wrt. vacuum (PBE) [eV]',
+])
 
 # Set the target column name
-target_col = 'Band gap (PBE) [eV]'
+target_col = 'Band gap (HSE06) [eV]'
 if target_col not in df.columns:
     raise ValueError(f"Target column '{target_col}' not found in dataset.")
 
@@ -25,11 +35,9 @@ X = pd.get_dummies(X)
 # Impute missing values using column means
 imputer = SimpleImputer(strategy='mean')
 X_imputed = imputer.fit_transform(X)
-
-# Get updated column names from the imputer
 feature_names = imputer.get_feature_names_out(X.columns)
 
-# Convert back to DataFrame with correct column names
+# Convert back to DataFrame with proper column names
 X = pd.DataFrame(X_imputed, columns=feature_names)
 
 # Split into training and test sets
@@ -49,11 +57,14 @@ lasso.fit(X_train_scaled, y_train)
 # Predict and evaluate
 y_pred = lasso.predict(X_test_scaled)
 mae = mean_absolute_error(y_test, y_pred)
+rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 r2 = r2_score(y_test, y_pred)
 
-print(f"\nOptimal alpha selected by LASSO CV: {lasso.alpha_}")
-print(f"Mean Absolute Error (MAE): {mae:.4f}")
-print(f"R² Score: {r2:.4f}")
+# Output metrics
+print(f"\nOptimal alpha selected by LASSO CV: {lasso.alpha_:.6f}")
+print(f"R² Score : {r2:.4f}")
+print(f"MAE      : {mae:.4f}")
+print(f"RMSE     : {rmse:.4f}")
 
 # Plot actual vs predicted
 plt.figure(figsize=(6, 6))

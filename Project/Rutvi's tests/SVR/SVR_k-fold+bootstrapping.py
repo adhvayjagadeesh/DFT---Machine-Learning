@@ -3,72 +3,88 @@ from sklearn.model_selection import KFold, train_test_split
 from sklearn.svm import SVR
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import numpy as np
 import matplotlib.pyplot as plt
 
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
-df = df.drop(columns=['Direct band gap (PBE) [eV]','Band gap (HSE06) [eV]', 'Direct band gap (HSE06) [eV]'])
+df = df.drop(columns=['Direct band gap (PBE) [eV]',
+    'Direct band gap (PBE) [eV].1',
+    'Band gap (PBE) [eV]',
+    'Direct band gap (HSE06) [eV]',
+    'Direct band gap (HSE06) [eV].1',
+    'CBM wrt. vacuum (PBE) [eV]',
+    'VBM wrt. vacuum (PBE) [eV]'])
 
 # Separate features and target
-X = df.drop(columns=['Band gap (PBE) [eV]'])  # Replace with your actual target column name
-y = df['Band gap (PBE) [eV]']
+X = df.drop(columns=['Band gap (HSE06) [eV]'])  
+y = df['Band gap (HSE06) [eV]']
 
-# Ensure features are numeric (if any non-numeric, convert or drop them)
-X = X.select_dtypes(include=[float, int])  # Select only numeric columns
+# Keep only numeric features
+X = X.select_dtypes(include=[float, int])
 
-# Step 1: Impute missing values (mean imputation)
-imputer = SimpleImputer(strategy='mean')  # You can also use 'median' or other strategies
+# Impute missing values
+imputer = SimpleImputer(strategy='mean')
 X_imputed = imputer.fit_transform(X)
 
-# Step 2: Scale features
+# Scale features
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X_imputed)
 
-# Step 3: K-Fold cross-validation setup
+# K-Fold + Bootstrapping
 kf = KFold(n_splits=5, shuffle=True, random_state=42)
-n_bootstrap = 50  # Number of bootstrap iterations
-mae_scores = []
-r2_scores = []
+n_bootstrap = 50
+mae_scores, rmse_scores, r2_scores = [], [], []
 
-# Step 4: K-Fold + Bootstrapping
 fold_idx = 1
 for train_idx, test_idx in kf.split(X_scaled):
     print(f"\nFold {fold_idx}...")
     X_train, X_test = X_scaled[train_idx], X_scaled[test_idx]
     y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
-    
-    for i in range(n_bootstrap):
-        # Bootstrapping: Sample with replacement
-        bootstrap_idx = np.random.choice(len(X_train), size=len(X_train), replace=True)
-        X_boot = X_train[bootstrap_idx]
-        y_boot = y_train.iloc[bootstrap_idx]
 
-        # Train SVR model
-        model = SVR(kernel='rbf')  # You can try different kernels like 'linear' or 'poly'
+    for i in range(n_bootstrap):
+        # Bootstrap sampling
+        bootstrap_idx = np.random.choice(len(X_train), size=len(X_train), replace=True)
+        X_boot, y_boot = X_train[bootstrap_idx], y_train.iloc[bootstrap_idx]
+
+        # Train SVR
+        model = SVR(kernel='rbf')
         model.fit(X_boot, y_boot)
 
-        # Predict and evaluate
+        # Predict
         y_pred = model.predict(X_test)
 
-        # Calculate metrics for this bootstrap
+        # Metrics
         mae = mean_absolute_error(y_test, y_pred)
+        rmse = np.sqrt(mean_squared_error(y_test, y_pred))
         r2 = r2_score(y_test, y_pred)
 
         mae_scores.append(mae)
+        rmse_scores.append(rmse)
         r2_scores.append(r2)
 
-        # Save predictions from last bootstrap for plotting
+        # Save final fold + final bootstrap predictions
         if fold_idx == 5 and i == n_bootstrap - 1:
             final_y_test = y_test
             final_y_pred = y_pred
+            final_mae = mae
+            final_rmse = rmse
+            final_r2 = r2
 
     fold_idx += 1
 
-# Results summary
-print(f"\nBootstrapped K-Fold MAE: {np.mean(mae_scores):.4f} ± {np.std(mae_scores):.4f}")
-print(f"Bootstrapped K-Fold R²: {np.mean(r2_scores):.4f} ± {np.std(r2_scores):.4f}")
+# Summary of metrics across all bootstrapped folds
+print("\nBootstrapped K-Fold Results (All Folds)")
+print(f"Average MAE:  {np.mean(mae_scores):.4f} ± {np.std(mae_scores):.4f}")
+print(f"Average RMSE: {np.mean(rmse_scores):.4f} ± {np.std(rmse_scores):.4f}")
+print(f"Average R²:   {np.mean(r2_scores):.4f} ± {np.std(r2_scores):.4f}")
+
+# Final fold's last bootstrap metrics
+print("\nFinal Fold - Last Bootstrap Metrics")
+print(f"MAE:  {final_mae:.4f}")
+print(f"RMSE: {final_rmse:.4f}")
+print(f"R²:   {final_r2:.4f}")
 
 # --- Regression Plot (Final Fold - Last Bootstrap) ---
 plt.figure(figsize=(10, 6))

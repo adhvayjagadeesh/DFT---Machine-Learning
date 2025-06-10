@@ -16,10 +16,13 @@ df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rec
 # Drop columns with >90% missing data + identifiers
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
 df.drop(columns=[
-    'Formula',
-    'Band gap (HSE06) [eV]',
-    'Direct band gap (PBE) [eV]', 
-    'Direct band gap (HSE06) [eV]'
+    'Direct band gap (PBE) [eV]',
+    'Direct band gap (PBE) [eV].1',
+    'Band gap (PBE) [eV]',
+    'Direct band gap (HSE06) [eV]',
+    'Direct band gap (HSE06) [eV].1',
+    'CBM wrt. vacuum (PBE) [eV]',
+    'VBM wrt. vacuum (PBE) [eV]',
 ], inplace=True)
 df.drop(columns=drop_cols, inplace=True, errors='ignore')
 
@@ -35,8 +38,8 @@ for col in cat_cols:
 df.fillna(df.mean(numeric_only=True), inplace=True)
 
 # Features and target
-X = df.drop(columns=["Band gap (PBE) [eV]"])
-y = df["Band gap (PBE) [eV]"]
+X = df.drop(columns=["Band gap (HSE06) [eV]"])
+y = df["Band gap (HSE06) [eV]"]
 
 # Standardize features
 scaler = StandardScaler()
@@ -139,8 +142,8 @@ print(f"Hybrid Model Adjusted R² (Test Set): {adj_r2:.4f}")
 plt.figure(figsize=(6, 5))
 plt.scatter(y_holdout, hybrid_pred, color='purple', alpha=0.7, label="Hybrid Prediction")
 plt.plot([min(y_holdout), max(y_holdout)], [min(y_holdout), max(y_holdout)], 'r--')
-plt.xlabel("Actual Band gap (PBE) [eV]")
-plt.ylabel("Predicted Band gap (PBE) [eV]")
+plt.xlabel("Actual Band gap (HSE06) [eV]")
+plt.ylabel("Predicted Band gap (HSE06) [eV]")
 plt.title("Hybrid Model (Holdout Set): Actual vs Predicted Band gap")
 plt.grid(True)
 plt.legend()

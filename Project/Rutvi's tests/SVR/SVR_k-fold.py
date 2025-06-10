@@ -9,11 +9,17 @@ import matplotlib.pyplot as plt
 
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
-df = df.drop(columns=['Direct band gap (PBE) [eV]','Band gap (HSE06) [eV]', 'Direct band gap (HSE06) [eV]'])
+df = df.drop(columns=['Direct band gap (PBE) [eV]',
+    'Direct band gap (PBE) [eV].1',
+    'Band gap (PBE) [eV]',
+    'Direct band gap (HSE06) [eV]',
+    'Direct band gap (HSE06) [eV].1',
+    'CBM wrt. vacuum (PBE) [eV]',
+    'VBM wrt. vacuum (PBE) [eV]'])
 
 # Separate features and target
-X = df.drop(columns=['Band gap (PBE) [eV]'])
-y = df['Band gap (PBE) [eV]']
+X = df.drop(columns=['Band gap (HSE06) [eV]'])
+y = df['Band gap (HSE06) [eV]']
 X = X.select_dtypes(include=[float, int])  # Keep only numeric features
 
 # Impute missing values
@@ -28,6 +34,7 @@ X_scaled = scaler.fit_transform(X_imputed)
 kf = KFold(n_splits=5, shuffle=True, random_state=42)
 
 mae_scores = []
+rmse_scores = []
 r2_scores = []
 errors = []
 
@@ -40,15 +47,18 @@ for train_index, test_index in kf.split(X_scaled):
     y_pred = model.predict(X_test)
 
     mae = mean_absolute_error(y_test, y_pred)
+    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
     r2 = r2_score(y_test, y_pred)
     error = y_test - y_pred  # residuals
 
     mae_scores.append(mae)
+    rmse_scores.append(rmse)
     r2_scores.append(r2)
     errors.extend(error)
 
 # Summary of results
 print("Average MAE:", np.mean(mae_scores))
+print("Average RMSE:", np.mean(rmse_scores))
 print("Average R² Score:", np.mean(r2_scores))
 
 # Plot error distribution

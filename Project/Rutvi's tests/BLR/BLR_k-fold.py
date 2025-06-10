@@ -13,10 +13,13 @@ df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rec
 # Drop columns with >90% missing data + identifiers
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
 df.drop(columns=[
-    'Formula',
-    'Band gap (HSE06) [eV]',
-    'Direct band gap (PBE) [eV]', 
-    'Direct band gap (HSE06) [eV]'
+    'Direct band gap (PBE) [eV]',
+    'Direct band gap (PBE) [eV].1',
+    'Band gap (PBE) [eV]',
+    'Direct band gap (HSE06) [eV]',
+    'Direct band gap (HSE06) [eV].1',
+    'CBM wrt. vacuum (PBE) [eV]',
+    'VBM wrt. vacuum (PBE) [eV]',
 ], inplace=True)
 df.drop(columns=drop_cols, inplace=True, errors='ignore')
 
@@ -29,8 +32,8 @@ for col in cat_cols:
     label_encoders[col] = le
 
 # Define features and target
-X = df.drop(columns=["Band gap (PBE) [eV]"])
-y = df["Band gap (PBE) [eV]"]
+X = df.drop(columns=["Band gap (HSE06) [eV]"])
+y = df["Band gap (HSE06) [eV]"]
 
 # Fill missing values in X if any
 X = X.fillna(X.mean())
@@ -91,8 +94,8 @@ plt.errorbar(
     fmt='o', ecolor='lightcoral', alpha=0.6, label='Predictions with Error Bars'
 )
 plt.plot([fold_trues.min(), fold_trues.max()], [fold_trues.min(), fold_trues.max()], 'k--', lw=2, label='Ideal Fit')
-plt.xlabel('Actual Band gap (PBE) [eV]')
-plt.ylabel('Predicted Band gap (PBE) [eV]')
+plt.xlabel('Actual Band gap (HSE06) [eV]')
+plt.ylabel('Predicted Band gap (HSE06) [eV]')
 plt.title('Bayesian Linear Regression: Actual vs Predicted with Error Bars (K-Fold CV)')
 plt.legend()
 plt.grid(True)
