@@ -1,11 +1,14 @@
 import pandas as pd
 import numpy as np
-from sklearn.svm import SVR
-from sklearn.preprocessing import StandardScaler
-from sklearn.impute import SimpleImputer
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from sklearn.utils import resample
 import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.svm import SVR
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.utils import resample
 
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
@@ -17,68 +20,71 @@ df = df.drop(columns=[
     'VBM wrt. vacuum (PBE) [eV]'
 ])
 
-# Separate features and target
-X = df.drop(columns=['Band gap (HSE06) [eV]'])
-y = df['Band gap (HSE06) [eV]']
+target = 'Band gap (HSE06) [eV]'
+X = df.drop(columns=[target])
+y = df[target]
 
-# Convert categorical columns to dummy variables
-X = pd.get_dummies(X, drop_first=True)
+numeric_cols = X.select_dtypes(include=[np.number]).columns.tolist()
+categorical_cols = X.select_dtypes(include=['object', 'category']).columns.tolist()
 
-# Impute missing values
-imputer = SimpleImputer(strategy='mean')
-X_imputed = imputer.fit_transform(X)
+numeric_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='mean')),
+    ('scaler', StandardScaler())
+])
 
-# Scale features
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X_imputed)
+categorical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='most_frequent')),
+    ('encoder', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+])
 
-# Bootstrapping
-n_iterations = 100
+preprocessor = ColumnTransformer(transformers=[
+    ('num', numeric_transformer, numeric_cols),
+    ('cat', categorical_transformer, categorical_cols)
+])
+
+# Initialize lists to collect metrics for each bootstrap
+r2_scores = []
 mae_scores = []
 rmse_scores = []
-r2_scores = []
-errors = []
 
+n_bootstraps = 100
 np.random.seed(42)
 
-for i in range(n_iterations):
-    # Resample with replacement
-    X_resampled, y_resampled = resample(X_scaled, y, replace=True, random_state=42 + i)
+for i in range(n_bootstraps):
+    # Bootstrap sampling with replacement
+    X_resampled, y_resampled = resample(X, y, replace=True, random_state=42 + i)
+    # Use out-of-bag samples as test set (those NOT in bootstrap sample)
+    mask = ~X.index.isin(X_resampled.index)
+    X_test = X.loc[mask]
+    y_test = y.loc[mask]
+    
+    # If no test samples (rare but possible), skip this bootstrap
+    if len(X_test) == 0:
+        continue
 
-    # Split into train/test sets
-    split_index = int(0.8 * len(X_resampled))
-    X_train, X_test = X_resampled[:split_index], X_resampled[split_index:]
-    y_train, y_test = y_resampled[:split_index], y_resampled[split_index:]
+    # Define and fit the pipeline
+    model_pipeline = Pipeline(steps=[
+        ('preprocessor', preprocessor),
+        ('regressor', SVR(kernel='rbf'))
+    ])
+    model_pipeline.fit(X_resampled, y_resampled)
 
-    # Train SVR model
-    model = SVR(kernel='rbf')
-    model.fit(X_train, y_train)
+    y_pred = model_pipeline.predict(X_test)
 
-    # Predict and evaluate
-    y_pred = model.predict(X_test)
-
+    r2 = r2_score(y_test, y_pred)
     mae = mean_absolute_error(y_test, y_pred)
     rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-    r2 = r2_score(y_test, y_pred)
-    error = y_test - y_pred
 
+    r2_scores.append(r2)
     mae_scores.append(mae)
     rmse_scores.append(rmse)
-    r2_scores.append(r2)
-    errors.extend(error)
 
-# Summary statistics
-print(f"Bootstrapped Evaluation over {n_iterations} iterations")
-print(f"Average MAE: {np.mean(mae_scores):.4f}")
-print(f"Average RMSE: {np.mean(rmse_scores):.4f}")
-print(f"Average R²: {np.mean(r2_scores):.4f}")
+    if (i + 1) % 10 == 0:
+        print(f"Completed {i + 1}/{n_bootstraps} bootstraps")
 
-# Plot error distribution
-plt.figure(figsize=(10, 6))
-plt.hist(errors, bins=30, color='orange', edgecolor='black')
-plt.title("Bootstrapped Error Distribution (Actual - Predicted)")
-plt.xlabel("Prediction Error")
-plt.ylabel("Frequency")
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+print("\nBootstrap CV results (100 bootstraps):")
+print(f"Mean R²  : {np.mean(r2_scores):.4f} ± {np.std(r2_scores):.4f}")
+print(f"Mean MAE : {np.mean(mae_scores):.4f} ± {np.std(mae_scores):.4f}")
+print(f"Mean RMSE: {np.mean(rmse_scores):.4f} ± {np.std(rmse_scores):.4f}")
+
+

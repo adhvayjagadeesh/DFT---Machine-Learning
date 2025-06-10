@@ -1,110 +1,107 @@
 import pandas as pd
-from sklearn.model_selection import KFold, train_test_split
-from sklearn.svm import SVR
-from sklearn.preprocessing import StandardScaler
-from sklearn.impute import SimpleImputer
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.svm import SVR
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.model_selection import KFold
+from sklearn.utils import resample
 
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
-df = df.drop(columns=['Direct band gap (PBE) [eV]',
-    'Direct band gap (PBE) [eV].1',
-    'Band gap (PBE) [eV]',
-    'Band gap (G₀W₀) [eV]',
-    'Direct band gap (G₀W₀) [eV]',
-    'Direct band gap (HSE06) [eV]',
-    'Direct band gap (HSE06) [eV].1',
-    'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]'])
+df = df.drop(columns=[
+    'Direct band gap (PBE) [eV]', 'Direct band gap (PBE) [eV].1',
+    'Band gap (PBE) [eV]', 'Band gap (G₀W₀) [eV]',
+    'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]',
+    'Direct band gap (HSE06) [eV].1', 'CBM wrt. vacuum (PBE) [eV]',
+    'VBM wrt. vacuum (PBE) [eV]'
+])
 
-# Separate features and target
-X = df.drop(columns=['Band gap (HSE06) [eV]'])  
-y = df['Band gap (HSE06) [eV]']
+target = 'Band gap (HSE06) [eV]'
+X = df.drop(columns=[target])
+y = df[target]
 
-# Keep only numeric features
-X = X.select_dtypes(include=[float, int])
+numeric_cols = X.select_dtypes(include=[np.number]).columns.tolist()
+categorical_cols = X.select_dtypes(include=['object', 'category']).columns.tolist()
 
-# Impute missing values
-imputer = SimpleImputer(strategy='mean')
-X_imputed = imputer.fit_transform(X)
+numeric_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='mean')),
+    ('scaler', StandardScaler())
+])
 
-# Scale features
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X_imputed)
+categorical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='most_frequent')),
+    ('encoder', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+])
 
-# K-Fold + Bootstrapping
+preprocessor = ColumnTransformer(transformers=[
+    ('num', numeric_transformer, numeric_cols),
+    ('cat', categorical_transformer, categorical_cols)
+])
+
 kf = KFold(n_splits=5, shuffle=True, random_state=42)
-n_bootstrap = 50
-mae_scores, rmse_scores, r2_scores = [], [], []
 
-fold_idx = 1
-for train_idx, test_idx in kf.split(X_scaled):
-    print(f"\nFold {fold_idx}...")
-    X_train, X_test = X_scaled[train_idx], X_scaled[test_idx]
-    y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+# Lists to collect scores across all folds and bootstraps
+all_r2 = []
+all_mae = []
+all_rmse = []
 
-    for i in range(n_bootstrap):
-        # Bootstrap sampling
-        bootstrap_idx = np.random.choice(len(X_train), size=len(X_train), replace=True)
-        X_boot, y_boot = X_train[bootstrap_idx], y_train.iloc[bootstrap_idx]
+n_bootstraps = 100
+np.random.seed(42)
 
-        # Train SVR
-        model = SVR(kernel='rbf')
-        model.fit(X_boot, y_boot)
+fold_num = 1
+for train_index, test_index in kf.split(X):
+    print(f"\nStarting fold {fold_num}/5")
+    X_train_full, X_test = X.iloc[train_index], X.iloc[test_index]
+    y_train_full, y_test = y.iloc[train_index], y.iloc[test_index]
 
-        # Predict
-        y_pred = model.predict(X_test)
+    # Store bootstrap metrics per fold
+    fold_r2 = []
+    fold_mae = []
+    fold_rmse = []
 
-        # Metrics
+    for b in range(n_bootstraps):
+        # Bootstrap sample from training fold
+        X_train, y_train = resample(X_train_full, y_train_full, replace=True, random_state=fold_num*1000 + b)
+
+        # Define and fit pipeline
+        model_pipeline = Pipeline(steps=[
+            ('preprocessor', preprocessor),
+            ('regressor', SVR(kernel='rbf'))
+        ])
+
+        model_pipeline.fit(X_train, y_train)
+
+        # Predict on fold test set (not bootstrapped, original fold test set)
+        y_pred = model_pipeline.predict(X_test)
+
+        r2 = r2_score(y_test, y_pred)
         mae = mean_absolute_error(y_test, y_pred)
         rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-        r2 = r2_score(y_test, y_pred)
 
-        mae_scores.append(mae)
-        rmse_scores.append(rmse)
-        r2_scores.append(r2)
+        fold_r2.append(r2)
+        fold_mae.append(mae)
+        fold_rmse.append(rmse)
 
-        # Save final fold + final bootstrap predictions
-        if fold_idx == 5 and i == n_bootstrap - 1:
-            final_y_test = y_test
-            final_y_pred = y_pred
-            final_mae = mae
-            final_rmse = rmse
-            final_r2 = r2
+        if (b + 1) % 20 == 0:
+            print(f"  Bootstrap {b + 1}/{n_bootstraps} done")
 
-    fold_idx += 1
+    # Aggregate fold bootstrap results
+    print(f"Fold {fold_num} results:")
+    print(f"  Mean R²  : {np.mean(fold_r2):.4f} ± {np.std(fold_r2):.4f}")
+    print(f"  Mean MAE : {np.mean(fold_mae):.4f} ± {np.std(fold_mae):.4f}")
+    print(f"  Mean RMSE: {np.mean(fold_rmse):.4f} ± {np.std(fold_rmse):.4f}")
 
-# Summary of metrics across all bootstrapped folds
-print("\nBootstrapped K-Fold Results (All Folds)")
-print(f"Average MAE:  {np.mean(mae_scores):.4f} ± {np.std(mae_scores):.4f}")
-print(f"Average RMSE: {np.mean(rmse_scores):.4f} ± {np.std(rmse_scores):.4f}")
-print(f"Average R²:   {np.mean(r2_scores):.4f} ± {np.std(r2_scores):.4f}")
+    all_r2.extend(fold_r2)
+    all_mae.extend(fold_mae)
+    all_rmse.extend(fold_rmse)
 
-# Final fold's last bootstrap metrics
-print("\nFinal Fold - Last Bootstrap Metrics")
-print(f"MAE:  {final_mae:.4f}")
-print(f"RMSE: {final_rmse:.4f}")
-print(f"R²:   {final_r2:.4f}")
+    fold_num += 1
 
-# --- Regression Plot (Final Fold - Last Bootstrap) ---
-plt.figure(figsize=(10, 6))
-plt.scatter(final_y_test, final_y_pred, color='blue', label='Predicted vs Actual')
-plt.plot([y.min(), y.max()], [y.min(), y.max()], color='red', linestyle='--', label='Perfect Prediction')
-plt.xlabel('Actual Values')
-plt.ylabel('Predicted Values')
-plt.title('SVR: Actual vs Predicted (Final Fold - Last Bootstrap)')
-plt.legend()
-plt.show()
-
-# --- Error Distribution Plot ---
-errors = final_y_test - final_y_pred
-
-plt.figure(figsize=(10, 6))
-plt.hist(errors, bins=30, edgecolor='black', alpha=0.7)
-plt.title("Prediction Error Distribution (Final Fold - Last Bootstrap)")
-plt.xlabel("Error (Actual - Predicted Band Gap)")
-plt.ylabel("Frequency")
-plt.grid(True)
-plt.show()
+print("\nOverall nested CV + bootstrap results:")
+print(f"Mean R²  : {np.mean(all_r2):.4f} ± {np.std(all_r2):.4f}")
+print(f"Mean MAE : {np.mean(all_mae):.4f} ± {np.std(all_mae):.4f}")
+print(f"Mean RMSE: {np.mean(all_rmse):.4f} ± {np.std(all_rmse):.4f}")

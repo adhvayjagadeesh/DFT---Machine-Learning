@@ -1,15 +1,15 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.linear_model import BayesianRidge
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
+from sklearn.utils import resample
 from math import sqrt
 
-# Load dataset
+# Load and prepare the dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
 
-# Drop columns with >90% missing data + identifiers
+# Drop unnecessary and high-missing columns
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
 df.drop(columns=[
     'Direct band gap (PBE) [eV]',
@@ -24,70 +24,33 @@ df.drop(columns=[
 ], inplace=True)
 df.drop(columns=drop_cols, inplace=True, errors='ignore')
 
-# Encode categorical columns
+# Encode categorical features
 cat_cols = df.select_dtypes(include='object').columns
-label_encoders = {}
 for col in cat_cols:
-    le = LabelEncoder()
-    df[col] = le.fit_transform(df[col].astype(str))
-    label_encoders[col] = le
+    df[col] = LabelEncoder().fit_transform(df[col].astype(str))
 
 # Define features and target
 X = df.drop(columns=["Band gap (HSE06) [eV]"])
 y = df["Band gap (HSE06) [eV]"]
 
-# Fill missing values in X if any
+# Impute and scale
 X = X.fillna(X.mean())
+X_scaled = StandardScaler().fit_transform(X)
 
-# Scale features
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+# Bootstrapping
+maes, rmses, r2s = [], [], []
+np.random.seed(42)
+for i in range(100):
+    X_resampled, y_resampled = resample(X_scaled, y, replace=True, random_state=i)
+    model = BayesianRidge()
+    model.fit(X_resampled, y_resampled)
+    y_pred = model.predict(X_scaled)
 
-# Number of bootstrap samples
-n_bootstrap = 100
+    maes.append(mean_absolute_error(y, y_pred))
+    rmses.append(sqrt(mean_squared_error(y, y_pred)))
+    r2s.append(r2_score(y, y_pred))
 
-# Store predictions for each bootstrap model
-all_bootstrap_preds = np.zeros((len(y), n_bootstrap))
-
-for b in range(n_bootstrap):
-    # Bootstrap sample indices (with replacement)
-    bootstrap_indices = np.random.choice(len(X_scaled), size=len(X_scaled), replace=True)
-    X_bootstrap = X_scaled[bootstrap_indices]
-    y_bootstrap = y.iloc[bootstrap_indices]
-
-    # Train BLR on bootstrap sample
-    blr = BayesianRidge()
-    blr.fit(X_bootstrap, y_bootstrap)
-
-    # Predict on entire dataset
-    all_bootstrap_preds[:, b] = blr.predict(X_scaled)
-
-# Average prediction across bootstraps
-y_pred_mean = all_bootstrap_preds.mean(axis=1)
-# Standard deviation as uncertainty measure
-y_pred_std = all_bootstrap_preds.std(axis=1)
-
-# Calculate metrics
-mae = mean_absolute_error(y, y_pred_mean)
-rmse = sqrt(mean_squared_error(y, y_pred_mean))
-r2 = r2_score(y, y_pred_mean)
-
-print(f"Bootstrapped BLR Results:")
-print(f"MAE: {mae:.4f}")
-print(f"RMSE: {rmse:.4f}")
-print(f"R^2: {r2:.4f}")
-
-# Plot Actual vs Predicted with error bars (± std dev)
-plt.figure(figsize=(7, 6))
-plt.errorbar(
-    y, y_pred_mean, yerr=y_pred_std, fmt='o',
-    ecolor='orange', alpha=0.6, label='Predictions ± Std Dev'
-)
-plt.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=2, label='Ideal Fit')
-plt.xlabel('Actual Band gap (HSE06) [eV]')
-plt.ylabel('Predicted Band gap (HSE06) [eV]')
-plt.title('Bootstrapped Bayesian Linear Regression\nPredictions with Uncertainty')
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+print("Bayesian Ridge - 100 Bootstraps:")
+print(f"MAE  : {np.mean(maes):.4f} ± {np.std(maes):.4f}")
+print(f"RMSE : {np.mean(rmses):.4f} ± {np.std(rmses):.4f}")
+print(f"R²   : {np.mean(r2s):.4f} ± {np.std(r2s):.4f}")

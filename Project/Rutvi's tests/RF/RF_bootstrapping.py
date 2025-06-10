@@ -2,14 +2,17 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
 from math import sqrt
 
-# Load and clean the dataset
+# Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
-df = df.drop(columns=['Direct band gap (PBE) [eV]',
+
+# Drop irrelevant columns
+df = df.drop(columns=[
+    'Direct band gap (PBE) [eV]',
     'Direct band gap (PBE) [eV].1',
     'Band gap (PBE) [eV]',
     'Band gap (G₀W₀) [eV]',
@@ -17,71 +20,91 @@ df = df.drop(columns=['Direct band gap (PBE) [eV]',
     'Direct band gap (HSE06) [eV]',
     'Direct band gap (HSE06) [eV].1',
     'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]'])
+    'VBM wrt. vacuum (PBE) [eV]'
+])
+
+# Encode categorical columns
+cat_cols = df.select_dtypes(include='object').columns
+for col in cat_cols:
+    le = LabelEncoder()
+    df[col] = le.fit_transform(df[col].astype(str))
 
 # Define features and target
 target = 'Band gap (HSE06) [eV]'
 X = df.drop(columns=[target])
-y = df[target]
+y = df[target].values
 
-# Train-test split (fixed)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Bootstrap parameters
+n_bootstraps = 100
+n_samples = X.shape[0]
 
-# Initialize metrics
-n_iterations = 100
-mae_list = []
-r2_list = []
-all_y_true = []
+# Containers for metrics and predictions
+r2_scores = []
+mae_scores = []
+rmse_scores = []
+all_y_test = []
 all_y_pred = []
 
-# Bootstrapping loop
-for i in range(n_iterations):
-    # Sample with replacement from training set
-    indices = np.random.choice(len(X_train), size=len(X_train), replace=True)
-    X_sample = X_train.iloc[indices]
-    y_sample = y_train.iloc[indices]
+np.random.seed(42)
 
-    # Train model
-    rf = RandomForestRegressor(n_estimators=100, random_state=i)
-    rf.fit(X_sample, y_sample)
-
-    # Predict on fixed test set
-    y_pred = rf.predict(X_test)
-    mae = mean_absolute_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
-
+for i in range(n_bootstraps):
+    # Bootstrap sampling with replacement
+    indices = np.random.choice(n_samples, n_samples, replace=True)
+    X_boot = X.iloc[indices]
+    y_boot = y[indices]
+    
+    # Out-Of-Bag (OOB) samples (not in bootstrap sample)
+    oob_mask = ~np.isin(range(n_samples), indices)
+    X_oob = X.iloc[oob_mask]
+    y_oob = y[oob_mask]
+    
+    if len(y_oob) == 0:
+        # In rare cases, all samples might be selected; skip this bootstrap
+        continue
+    
+    # Train model on bootstrap sample
+    rf = RandomForestRegressor(n_estimators=100, random_state=42)
+    rf.fit(X_boot, y_boot)
+    
+    # Predict on OOB samples
+    y_pred_oob = rf.predict(X_oob)
+    
     # Store metrics
-    mae_list.append(mae)
-    r2_list.append(r2)
-    all_y_true.extend(y_test)
-    all_y_pred.extend(y_pred)
+    r2_scores.append(r2_score(y_oob, y_pred_oob))
+    mae_scores.append(mean_absolute_error(y_oob, y_pred_oob))
+    rmse_scores.append(sqrt(mean_squared_error(y_oob, y_pred_oob)))
+    
+    # Collect predictions for plotting
+    all_y_test.extend(y_oob)
+    all_y_pred.extend(y_pred_oob)
 
-# Convert predictions to numpy arrays for plotting
-all_y_true = np.array(all_y_true)
+# Aggregate metrics
+print(f"Bootstrap results ({n_bootstraps} iterations):")
+print(f"Mean R²:  {np.mean(r2_scores):.4f} ± {np.std(r2_scores):.4f}")
+print(f"Mean MAE: {np.mean(mae_scores):.4f} ± {np.std(mae_scores):.4f}")
+print(f"Mean RMSE:{np.mean(rmse_scores):.4f} ± {np.std(rmse_scores):.4f}")
+
+# Convert lists to arrays for plotting
+all_y_test = np.array(all_y_test)
 all_y_pred = np.array(all_y_pred)
-errors = all_y_true - all_y_pred
+errors = all_y_test - all_y_pred
 
-# Print metrics
-print(f"\nBootstrapped MAE: {np.mean(mae_list):.4f} ± {np.std(mae_list):.4f}")
-print(f"Bootstrapped R²: {np.mean(r2_list):.4f} ± {np.std(r2_list):.4f}")
-rmse = sqrt(mean_squared_error(y_test, y_pred))
-print(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
+# Regression plot (all OOB predictions)
+plt.figure(figsize=(8, 6))
+sns.regplot(x=all_y_test, y=all_y_pred, line_kws={"color": "red"}, scatter_kws={"alpha":0.5, "edgecolor":"k"})
+plt.xlabel('Actual Band Gap (HSE06) [eV]')
+plt.ylabel('Predicted Band Gap [eV]')
+plt.title('Random Forest Bootstrap: Predicted vs Actual Band Gap')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
 
-
-# --- Plot 1: Error distribution ---
+# Error histogram
 plt.figure(figsize=(8, 5))
 plt.hist(errors, bins=30, edgecolor='k', alpha=0.7)
-plt.title('Prediction Error Distribution (Bootstrapped)')
+plt.title('Bootstrap Prediction Error Distribution')
 plt.xlabel('Error (Actual - Predicted Band Gap)')
 plt.ylabel('Frequency')
 plt.grid(True)
-plt.show()
-
-# --- Plot 2: Regression (Predicted vs Actual) ---
-plt.figure(figsize=(8, 6))
-sns.regplot(x=all_y_true, y=all_y_pred, line_kws={"color": "red"}, scatter_kws={"alpha": 0.3})
-plt.xlabel('Actual Band Gap (HSE06) [eV]')
-plt.ylabel('Predicted Band Gap [eV]')
-plt.title('Regression Plot: Predicted vs Actual (Bootstrapped)')
-plt.grid(True)
+plt.tight_layout()
 plt.show()

@@ -1,16 +1,17 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.linear_model import Lasso, LassoCV
-from sklearn.model_selection import KFold
+from sklearn.linear_model import LassoCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.model_selection import KFold
+from sklearn.utils import resample
 
-# Load and prepare data
+# Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
-df = df.drop(columns=['Direct band gap (PBE) [eV]',
+df = df.drop(columns=[
+    'Direct band gap (PBE) [eV]',
     'Direct band gap (PBE) [eV].1',
     'Band gap (PBE) [eV]',
     'Band gap (G₀W₀) [eV]',
@@ -18,111 +19,75 @@ df = df.drop(columns=['Direct band gap (PBE) [eV]',
     'Direct band gap (HSE06) [eV]',
     'Direct band gap (HSE06) [eV].1',
     'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]',])
+    'VBM wrt. vacuum (PBE) [eV]',
+])
 
-# Define target
-target = 'Band gap (HSE06) [eV]'
-X = df.drop(columns=[target])
-y = df[target]
+# Set target
+target_col = 'Band gap (HSE06) [eV]'
+X = df.drop(columns=[target_col])
+y = df[target_col]
 
-# Encode and clean features
-X = pd.get_dummies(X)                         # One-hot encoding
-X = X.select_dtypes(include=[np.number])      # Keep only numeric
-X = X.dropna(axis=1, how='all')               # Drop columns with all NaNs
-X = pd.DataFrame(SimpleImputer(strategy='mean').fit_transform(X), columns=X.columns)  # Impute remaining NaNs
+# One-hot encode
+X = pd.get_dummies(X)
 
-# Standardize
-X_scaled = StandardScaler().fit_transform(X)
+# Impute missing values
+imputer = SimpleImputer(strategy='mean')
+X_imputed = imputer.fit_transform(X)
 
-# Get feature names (for later interpretation)
-feature_names = X.columns
+# Scale
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X_imputed)
 
-# LASSO with cross-validation to select alpha
-lasso_cv = LassoCV(cv=5, random_state=42)
-lasso_cv.fit(X_scaled, y)
-optimal_alpha = lasso_cv.alpha_
-print(f"\nOptimal alpha from LASSO CV: {optimal_alpha:.6f}")
-
-# ------------------------------------------
-# K-Fold + Bootstrapping
-# ------------------------------------------
+# Setup
 kf = KFold(n_splits=5, shuffle=True, random_state=42)
 n_bootstraps = 100
+r2_scores, mae_scores, rmse_scores = [], [], []
+all_y_true, all_y_pred = [], []
 
-all_y_true = []
-all_y_pred = []
-mae_list = []
-r2_list = []
-
-for fold, (train_idx, test_idx) in enumerate(kf.split(X_scaled), 1):
-    X_train, X_test = X_scaled[train_idx], X_scaled[test_idx]
-    y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+# Cross-validation with bootstraps
+for fold_idx, (train_idx, test_idx) in enumerate(kf.split(X_scaled)):
+    X_train_fold, X_test_fold = X_scaled[train_idx], X_scaled[test_idx]
+    y_train_fold, y_test_fold = y.iloc[train_idx], y.iloc[test_idx]
     
-    fold_preds = []
-
     for b in range(n_bootstraps):
-        boot_idx = np.random.choice(len(X_train), size=len(X_train), replace=True)
-        X_boot = X_train[boot_idx]
-        y_boot = y_train.iloc[boot_idx]
+        X_resampled, y_resampled = resample(X_train_fold, y_train_fold, random_state=fold_idx * 100 + b)
+        
+        model = LassoCV(cv=5, random_state=42)
+        model.fit(X_resampled, y_resampled)
+        
+        y_pred = model.predict(X_test_fold)
+        
+        r2_scores.append(r2_score(y_test_fold, y_pred))
+        mae_scores.append(mean_absolute_error(y_test_fold, y_pred))
+        rmse_scores.append(np.sqrt(mean_squared_error(y_test_fold, y_pred)))
+        
+        all_y_true.extend(y_test_fold)
+        all_y_pred.extend(y_pred)
 
-        model = Lasso(alpha=optimal_alpha)
-        model.fit(X_boot, y_boot)
-        y_pred = model.predict(X_test)
-        fold_preds.append(y_pred)
+# Metrics
+print("\nLASSO with 5-Fold CV + 100 Bootstraps/Fold")
+print(f"Average R²  : {np.mean(r2_scores):.4f} ± {np.std(r2_scores):.4f}")
+print(f"Average MAE : {np.mean(mae_scores):.4f} ± {np.std(mae_scores):.4f}")
+print(f"Average RMSE: {np.mean(rmse_scores):.4f} ± {np.std(rmse_scores):.4f}")
 
-    y_pred_avg = np.mean(fold_preds, axis=0)
-
-    mae = mean_absolute_error(y_test, y_pred_avg)
-    r2 = r2_score(y_test, y_pred_avg)
-
-    mae_list.append(mae)
-    r2_list.append(r2)
-    all_y_true.extend(y_test)
-    all_y_pred.extend(y_pred_avg)
-
-    print(f"Fold {fold}: MAE = {mae:.4f}, R² = {r2:.4f}")
-
-# ------------------------------------------
-# Overall performance
-# ------------------------------------------
-print(f"\nOverall MAE: {np.mean(mae_list):.4f} ± {np.std(mae_list):.4f}")
-print(f"Overall R²: {np.mean(r2_list):.4f} ± {np.std(r2_list):.4f}")
-rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-print(f"RMSE : {rmse:.4f}")
-
-# Error analysis
-errors = np.array(all_y_true) - np.array(all_y_pred)
-
-# Error bar chart
-plt.figure(figsize=(8, 5))
-plt.bar(range(len(errors)), errors, color='steelblue', edgecolor='k', alpha=0.7)
-plt.axhline(0, color='red', linestyle='--')
-plt.title('Prediction Errors (Actual - Predicted Band Gap)')
-plt.xlabel('Sample Index')
-plt.ylabel('Error [eV]')
-plt.tight_layout()
-plt.grid(True, axis='y')
-plt.show()
-
-# Regression plot
-plt.figure(figsize=(8, 6))
-sns.regplot(x=all_y_true, y=all_y_pred, line_kws={"color": "red"}, scatter_kws={"alpha": 0.5})
-plt.xlabel('Actual Band Gap (HSE06) [eV]')
-plt.ylabel('Predicted Band Gap [eV]')
-plt.title('Regression Plot: Predicted vs Actual Band Gap')
+# Plot: Actual vs Predicted
+plt.figure(figsize=(6, 6))
+plt.scatter(all_y_true, all_y_pred, alpha=0.3, edgecolors='k', s=20)
+plt.plot([min(all_y_true), max(all_y_true)], [min(all_y_true), max(all_y_true)], 'r--', lw=2)
+plt.xlabel('Actual Bandgap [eV]')
+plt.ylabel('Predicted Bandgap [eV]')
+plt.title('LASSO: 5-Fold CV + 100 Bootstraps/ Fold')
 plt.grid(True)
 plt.tight_layout()
 plt.show()
 
-# ------------------------------------------
-# Feature importance from final model
-# ------------------------------------------
-final_model = Lasso(alpha=optimal_alpha)
-final_model.fit(X_scaled, y)
-coef_df = pd.DataFrame({
-    'Feature': feature_names,
-    'Coefficient': final_model.coef_
-}).sort_values(by='Coefficient', key=abs, ascending=False)
-
-print("\nTop 10 Most Influential Features:")
-print(coef_df.head(10))
+# Plot: Residual Error Histogram
+errors = np.array(all_y_true) - np.array(all_y_pred)
+plt.figure(figsize=(8, 5))
+plt.hist(errors, bins=50, edgecolor='black', alpha=0.7)
+plt.title('Residual Error Distribution (5-Fold CV with Bootstraps)')
+plt.xlabel('Error (Actual - Predicted)')
+plt.ylabel('Frequency')
+plt.grid(True)
+plt.tight_layout()
+plt.show()

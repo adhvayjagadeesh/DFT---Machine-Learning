@@ -1,15 +1,16 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LassoCV, Lasso
+from sklearn.linear_model import LassoCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.utils import resample
 
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
-df = df.drop(columns=['Direct band gap (PBE) [eV]',
+df = df.drop(columns=[
+    'Direct band gap (PBE) [eV]',
     'Direct band gap (PBE) [eV].1',
     'Band gap (PBE) [eV]',
     'Band gap (G₀W₀) [eV]',
@@ -17,161 +18,76 @@ df = df.drop(columns=['Direct band gap (PBE) [eV]',
     'Direct band gap (HSE06) [eV]',
     'Direct band gap (HSE06) [eV].1',
     'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]'])
+    'VBM wrt. vacuum (PBE) [eV]',
+])
 
-# Set the target column
+# Set target
 target_col = 'Band gap (HSE06) [eV]'
-if target_col not in df.columns:
-    raise ValueError(f"Target column '{target_col}' not found in dataset.")
-
-# Separate features and target
 X = df.drop(columns=[target_col])
 y = df[target_col]
 
-# One-hot encode categorical variables
+# One-hot encode categoricals
 X = pd.get_dummies(X)
 
 # Impute missing values
 imputer = SimpleImputer(strategy='mean')
 X_imputed = imputer.fit_transform(X)
 feature_names = imputer.get_feature_names_out(X.columns)
-X = pd.DataFrame(X_imputed, columns=feature_names)
-
-# Train/test split
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
 
 # Scale features
 scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+X_scaled = scaler.fit_transform(X_imputed)
 
-# Fit LASSO with cross-validation to select alpha
-lasso_cv = LassoCV(cv=5, random_state=42)
-lasso_cv.fit(X_train_scaled, y_train)
-optimal_alpha = lasso_cv.alpha_
+# Set up storage
+n_bootstraps = 100
+r2_list, mae_list, rmse_list = [], [], []
+y_test_all = []
+y_pred_all = []
 
-print(f"\nOptimal alpha selected by LASSO CV: {optimal_alpha:.6f}")
+for i in range(n_bootstraps):
+    X_resampled, y_resampled = resample(X_scaled, y, random_state=42 + i)
+    split_idx = int(0.8 * len(X_resampled))
+    X_train, X_test = X_resampled[:split_idx], X_resampled[split_idx:]
+    y_train, y_test = y_resampled[:split_idx], y_resampled[split_idx:]
+    
+    model = LassoCV(cv=5, random_state=42)
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    
+    r2_list.append(r2_score(y_test, y_pred))
+    mae_list.append(mean_absolute_error(y_test, y_pred))
+    rmse_list.append(np.sqrt(mean_squared_error(y_test, y_pred)))
+    
+    y_test_all.extend(y_test)
+    y_pred_all.extend(y_pred)
 
-# ----------------------------
-# Bootstrapping
-# ----------------------------
-n_iterations = 100
-rng = np.random.default_rng(42)
+# Convert predictions for final plots
+y_test_all = np.array(y_test_all)
+y_pred_all = np.array(y_pred_all)
 
-mae_bootstrap = []
-r2_bootstrap = []
-bootstrap_errors = []
-
-for i in range(n_iterations):
-    # Sample with replacement
-    indices = rng.integers(0, len(X_train_scaled), len(X_train_scaled))
-    X_boot = X_train_scaled[indices]
-    y_boot = y_train.iloc[indices]
-
-    # Fit LASSO with selected alpha
-    model = Lasso(alpha=optimal_alpha)
-    model.fit(X_boot, y_boot)
-
-    # Predict on test set
-    y_pred_boot = model.predict(X_test_scaled)
-    mae_bootstrap.append(mean_absolute_error(y_test, y_pred_boot))
-    r2_bootstrap.append(r2_score(y_test, y_pred_boot))
-
-    # Collect errors for bootstrapping distribution
-    bootstrap_errors.append(y_test - y_pred_boot)
-
-# ----------------------------
-# Final model on full train set
-# ----------------------------
-final_model = Lasso(alpha=optimal_alpha)
-final_model.fit(X_train_scaled, y_train)
-y_pred = final_model.predict(X_test_scaled)
-
-mae_final = mean_absolute_error(y_test, y_pred)
-r2_final = r2_score(y_test, y_pred)
-rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-
-print(f"\nFinal Model Performance on Test Set:")
-print(f"MAE: {mae_final:.4f}")
-print(f"R² : {r2_final:.4f}")
-print(f"RMSE : {rmse:.4f}")
-
-print(f"\nBootstrapping Summary ({n_iterations} iterations):")
-print(f"MAE: Mean = {np.mean(mae_bootstrap):.4f}, Std = {np.std(mae_bootstrap):.4f}")
-print(f"R² : Mean = {np.mean(r2_bootstrap):.4f}, Std = {np.std(r2_bootstrap):.4f}")
-
-# ----------------------------
-# Plots
-# ----------------------------
+# Final evaluation
+print("\nLASSO with 100 Bootstraps")
+print(f"Average R²  : {np.mean(r2_list):.4f} ± {np.std(r2_list):.4f}")
+print(f"Average MAE : {np.mean(mae_list):.4f} ± {np.std(mae_list):.4f}")
+print(f"Average RMSE: {np.mean(rmse_list):.4f} ± {np.std(rmse_list):.4f}")
 
 # Plot: Actual vs Predicted
 plt.figure(figsize=(6, 6))
-plt.scatter(y_test, y_pred, alpha=0.7, edgecolors='k')
+plt.scatter(y_test_all, y_pred_all, alpha=0.4, edgecolors='k', s=20)
 plt.plot([y.min(), y.max()], [y.min(), y.max()], 'r--', lw=2)
 plt.xlabel('Actual Bandgap [eV]')
 plt.ylabel('Predicted Bandgap [eV]')
-plt.title('LASSO: Actual vs Predicted Bandgap (Test Set)')
+plt.title('LASSO (100 Bootstraps): Actual vs Predicted')
 plt.grid(True)
 plt.tight_layout()
 plt.show()
 
-# Histograms of bootstrap errors
-plt.figure(figsize=(12, 5))
-
-plt.subplot(1, 2, 1)
-plt.hist(mae_bootstrap, bins=20, color='skyblue', edgecolor='black')
-plt.axvline(mae_final, color='red', linestyle='--', label=f'Final MAE = {mae_final:.3f}')
-plt.title('Bootstrap MAE Distribution')
-plt.xlabel('MAE')
-plt.ylabel('Frequency')
-plt.legend()
-
-plt.subplot(1, 2, 2)
-plt.hist(r2_bootstrap, bins=20, color='lightgreen', edgecolor='black')
-plt.axvline(r2_final, color='red', linestyle='--', label=f'Final R² = {r2_final:.3f}')
-plt.title('Bootstrap R² Distribution')
-plt.xlabel('R²')
-plt.ylabel('Frequency')
-plt.legend()
-
-plt.tight_layout()
-plt.show()
-
-# ----------------------------
-# Error Distribution of Final Model (Test Set)
-# ----------------------------
-test_errors = y_test - y_pred
+# Plot: Residual error distribution
+errors = y_test_all - y_pred_all
 plt.figure(figsize=(8, 5))
-plt.hist(test_errors, bins=30, edgecolor='k', alpha=0.7)
-plt.title('Prediction Error Distribution (Test Set)')
-plt.xlabel('Error (Actual - Predicted Bandgap)')
-plt.ylabel('Frequency')
-plt.grid(True)
-plt.tight_layout()
-plt.show()
-
-# ----------------------------
-# Feature Importance
-# ----------------------------
-coef_df = pd.DataFrame({
-    'Feature': feature_names,
-    'Coefficient': final_model.coef_
-}).sort_values(by='Coefficient', key=abs, ascending=False)
-
-print("\nTop 10 most influential features:")
-print(coef_df.head(10))
-
-# ----------------------------
-# Error Distribution for Bootstrapped Iterations
-# ----------------------------
-all_bootstrap_errors = np.concatenate(bootstrap_errors)
-
-plt.figure(figsize=(8, 5))
-plt.hist(all_bootstrap_errors, bins=30, edgecolor='k', alpha=0.7)
-plt.title('Bootstrap Prediction Error Distribution')
-plt.xlabel('Error (Actual - Predicted Bandgap)')
+plt.hist(errors, bins=40, edgecolor='black', alpha=0.7)
+plt.title('Prediction Error Distribution (LASSO 100 Bootstraps)')
+plt.xlabel('Error (Actual - Predicted)')
 plt.ylabel('Frequency')
 plt.grid(True)
 plt.tight_layout()
