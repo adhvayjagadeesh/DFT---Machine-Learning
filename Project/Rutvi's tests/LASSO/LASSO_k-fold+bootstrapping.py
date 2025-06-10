@@ -47,7 +47,7 @@ print(f"\nOptimal alpha from LASSO CV: {optimal_alpha:.6f}")
 # K-Fold + Bootstrapping
 # ------------------------------------------
 kf = KFold(n_splits=5, shuffle=True, random_state=42)
-n_bootstraps = 30
+n_bootstraps = 100
 
 all_y_true = []
 all_y_pred = []

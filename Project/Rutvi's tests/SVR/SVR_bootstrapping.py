@@ -4,27 +4,25 @@ from sklearn.svm import SVR
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-import matplotlib.pyplot as plt
 from sklearn.utils import resample
+import matplotlib.pyplot as plt
 
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
-df = df.drop(columns=['Direct band gap (PBE) [eV]',
-    'Direct band gap (PBE) [eV].1',
-    'Band gap (PBE) [eV]',
-    'Band gap (G₀W₀) [eV]',
-    'Direct band gap (G₀W₀) [eV]',
-    'Direct band gap (HSE06) [eV]',
-    'Direct band gap (HSE06) [eV].1',
-    'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]'])
+df = df.drop(columns=[
+    'Direct band gap (PBE) [eV]', 'Direct band gap (PBE) [eV].1',
+    'Band gap (PBE) [eV]', 'Band gap (G₀W₀) [eV]',
+    'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]',
+    'Direct band gap (HSE06) [eV].1', 'CBM wrt. vacuum (PBE) [eV]',
+    'VBM wrt. vacuum (PBE) [eV]'
+])
 
 # Separate features and target
 X = df.drop(columns=['Band gap (HSE06) [eV]'])
 y = df['Band gap (HSE06) [eV]']
 
-# Keep only numeric features
-X = X.select_dtypes(include=[float, int])
+# Convert categorical columns to dummy variables
+X = pd.get_dummies(X, drop_first=True)
 
 # Impute missing values
 imputer = SimpleImputer(strategy='mean')
@@ -70,7 +68,7 @@ for i in range(n_iterations):
     errors.extend(error)
 
 # Summary statistics
-print("Bootstrapped Evaluation over", n_iterations, "iterations")
+print(f"Bootstrapped Evaluation over {n_iterations} iterations")
 print(f"Average MAE: {np.mean(mae_scores):.4f}")
 print(f"Average RMSE: {np.mean(rmse_scores):.4f}")
 print(f"Average R²: {np.mean(r2_scores):.4f}")
@@ -82,4 +80,5 @@ plt.title("Bootstrapped Error Distribution (Actual - Predicted)")
 plt.xlabel("Prediction Error")
 plt.ylabel("Frequency")
 plt.grid(True)
+plt.tight_layout()
 plt.show()

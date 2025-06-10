@@ -48,7 +48,7 @@ X_scaled = scaler.fit_transform(X)
 kf = KFold(n_splits=5, shuffle=True, random_state=42)
 
 # Number of bootstrap samples per fold
-n_bootstrap = 30
+n_bootstrap = 100
 
 # Lists to store metrics and predictions for plotting
 mae_scores = []

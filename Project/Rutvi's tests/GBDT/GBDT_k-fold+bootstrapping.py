@@ -2,11 +2,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.model_selection import KFold
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.impute import SimpleImputer
 
-# Load the dataset
+# Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
 df = df.drop(columns=[
     'Direct band gap (PBE) [eV]',
@@ -21,67 +22,97 @@ df = df.drop(columns=[
 ])
 
 # Separate features and target
-X = df.drop(columns=['Band gap (HSE06) [eV]'])
+X = df.drop(columns=['Band gap (HSE06) [eV]']) 
 y = df['Band gap (HSE06) [eV]']
-X = X.select_dtypes(include=[float, int])  # Keep only numeric columns
 
-# Impute missing values with mean
+# Convert categorical variables to dummies
+X = pd.get_dummies(X, drop_first=True)
+
+# Impute missing values
 imputer = SimpleImputer(strategy='mean')
 X_imputed = imputer.fit_transform(X)
 
-# Initialize the Gradient Boosting model
-model = GradientBoostingRegressor(
-    n_estimators=100,
-    learning_rate=0.1,
-    max_depth=3,
-    random_state=42
-)
+# Initialize model
+model = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=3, random_state=42)
 
-# Bootstrapping parameters
-n_bootstrap = 100
-n_samples = X_imputed.shape[0]
-bootstrap_preds = np.zeros((n_bootstrap, n_samples))
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
 
-# Bootstrapping loop
-np.random.seed(42)
-for i in range(n_bootstrap):
-    bootstrap_indices = np.random.choice(n_samples, size=n_samples, replace=True)
-    X_bootstrap = X_imputed[bootstrap_indices]
-    y_bootstrap = y.iloc[bootstrap_indices]
+mae_scores = []
+rmse_scores = []
+r2_scores = []
+errors_all = []
 
-    model.fit(X_bootstrap, y_bootstrap)
-    preds = model.predict(X_imputed)
-    bootstrap_preds[i] = preds
+for fold, (train_index, test_index) in enumerate(kf.split(X_imputed), 1):
+    X_train, X_test = X_imputed[train_index], X_imputed[test_index]
+    y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
-# Aggregate predictions
-y_pred_bootstrap = bootstrap_preds.mean(axis=0)
+    n_samples = X_train.shape[0]
+    n_bootstrap = 100
+    bootstrap_preds = np.zeros((n_bootstrap, X_test.shape[0]))
 
-# Calculate evaluation metrics
-mae_bootstrap = mean_absolute_error(y, y_pred_bootstrap)
-rmse_bootstrap = np.sqrt(mean_squared_error(y, y_pred_bootstrap))
-r2_bootstrap = r2_score(y, y_pred_bootstrap)
+    np.random.seed(42 + fold)  # Different seed per fold
 
-# Print metrics
-print("Model Performance - Bootstrapping on Full Dataset:")
-print(f"  R²   : {r2_bootstrap:.4f}")
-print(f"  MAE  : {mae_bootstrap:.4f}")
-print(f"  RMSE : {rmse_bootstrap:.4f}")
+    for i in range(n_bootstrap):
+        bootstrap_idx = np.random.choice(n_samples, n_samples, replace=True)
+        X_bootstrap = X_train[bootstrap_idx]
+        y_bootstrap = y_train.iloc[bootstrap_idx]
+
+        model.fit(X_bootstrap, y_bootstrap)
+        preds = model.predict(X_test)
+        bootstrap_preds[i] = preds
+
+    # Aggregate predictions by mean for this fold
+    y_pred_fold = bootstrap_preds.mean(axis=0)
+
+    mae_scores.append(mean_absolute_error(y_test, y_pred_fold))
+    rmse_scores.append(np.sqrt(mean_squared_error(y_test, y_pred_fold)))
+    r2_scores.append(r2_score(y_test, y_pred_fold))
+    errors_all.extend(y_test - y_pred_fold)
+
+    print(f"Fold {fold} - MAE: {mae_scores[-1]:.4f}, RMSE: {rmse_scores[-1]:.4f}, R²: {r2_scores[-1]:.4f}")
+
+print(f"\n5-Fold CV with Bootstrapping Mean MAE: {np.mean(mae_scores):.4f} ± {np.std(mae_scores):.4f}")
+print(f"5-Fold CV with Bootstrapping Mean RMSE: {np.mean(rmse_scores):.4f} ± {np.std(rmse_scores):.4f}")
+print(f"5-Fold CV with Bootstrapping Mean R²: {np.mean(r2_scores):.4f} ± {np.std(r2_scores):.4f}")
 
 # Plot error distribution
-error_bootstrap = y - y_pred_bootstrap
-plt.figure(figsize=(8, 6))
-sns.histplot(error_bootstrap, kde=True, bins=30, color='lightcoral', edgecolor='black')
-plt.title('Error Distribution (Actual - Predicted) - Bootstrap')
+plt.figure(figsize=(8,6))
+sns.histplot(errors_all, kde=True, bins=30, color='mediumseagreen', edgecolor='black')
+plt.title('Error Distribution (Actual - Predicted) - 5-Fold CV + Bootstrapping')
 plt.xlabel('Error')
 plt.ylabel('Frequency')
 plt.grid(True)
 plt.show()
 
-# Plot regression (true vs predicted)
-plt.figure(figsize=(8, 6))
-sns.regplot(x=y, y=y_pred_bootstrap, scatter_kws={'s': 50, 'alpha': 0.6}, line_kws={'color': 'blue'})
-plt.title('Regression Plot: True vs Predicted Bandgap - Bootstrap')
-plt.xlabel('True Bandgap (eV)')
-plt.ylabel('Predicted Bandgap (eV)')
+# Regression plot with combined true and predicted values
+y_all_true = np.concatenate([y.iloc[test_idx].values for _, test_idx in kf.split(X_imputed)])
+y_all_pred = []
+
+kf = KFold(n_splits=5, shuffle=True, random_state=42)
+for fold, (train_index, test_index) in enumerate(kf.split(X_imputed), 1):
+    X_train, X_test = X_imputed[train_index], X_imputed[test_index]
+    y_train = y.iloc[train_index]
+
+    n_samples = X_train.shape[0]
+    bootstrap_preds = np.zeros((n_bootstrap, X_test.shape[0]))
+
+    np.random.seed(42 + fold)
+    for i in range(n_bootstrap):
+        bootstrap_idx = np.random.choice(n_samples, n_samples, replace=True)
+        X_bootstrap = X_train[bootstrap_idx]
+        y_bootstrap = y_train.iloc[bootstrap_idx]
+
+        model.fit(X_bootstrap, y_bootstrap)
+        preds = model.predict(X_test)
+        bootstrap_preds[i] = preds
+
+    y_pred_fold = bootstrap_preds.mean(axis=0)
+    y_all_pred.extend(y_pred_fold)
+
+plt.figure(figsize=(8,6))
+sns.regplot(x=y_all_true, y=np.array(y_all_pred), scatter_kws={'s':50}, line_kws={'color':'green'})
+plt.title('Regression Plot: True vs Predicted Bandgap - 5-Fold CV + Bootstrapping')
+plt.xlabel('True Bandgap')
+plt.ylabel('Predicted Bandgap')
 plt.grid(True)
 plt.show()

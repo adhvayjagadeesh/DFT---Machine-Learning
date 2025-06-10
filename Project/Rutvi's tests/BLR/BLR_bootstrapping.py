@@ -44,7 +44,7 @@ scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
 # Number of bootstrap samples
-n_bootstrap = 50
+n_bootstrap = 100
 
 # Store predictions for each bootstrap model
 all_bootstrap_preds = np.zeros((len(y), n_bootstrap))

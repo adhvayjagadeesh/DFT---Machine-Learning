@@ -10,7 +10,8 @@ from sklearn.impute import SimpleImputer
 
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
-df = df.drop(columns=['Direct band gap (PBE) [eV]',
+df = df.drop(columns=[
+    'Direct band gap (PBE) [eV]',
     'Direct band gap (PBE) [eV].1',
     'Band gap (PBE) [eV]',
     'Band gap (G₀W₀) [eV]',
@@ -18,12 +19,15 @@ df = df.drop(columns=['Direct band gap (PBE) [eV]',
     'Direct band gap (HSE06) [eV]',
     'Direct band gap (HSE06) [eV].1',
     'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]'])
+    'VBM wrt. vacuum (PBE) [eV]'
+])
 
 # Separate features and target
 X = df.drop(columns=['Band gap (HSE06) [eV]']) 
 y = df['Band gap (HSE06) [eV]']
-X = X.select_dtypes(include=[float, int])  # Select only numeric columns
+
+# Convert categorical variables to dummy/indicator variables
+X = pd.get_dummies(X, drop_first=True)
 
 # Handle missing values by imputing with the mean
 imputer = SimpleImputer(strategy='mean')

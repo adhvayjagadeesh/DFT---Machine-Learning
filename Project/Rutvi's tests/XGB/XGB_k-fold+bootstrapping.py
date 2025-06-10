@@ -8,7 +8,15 @@ from sklearn.metrics import mean_absolute_error, r2_score
 
 # Load the dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final - rectangular_materials_sortedby_bandgap_HSE06.csv")
-df = df.drop(columns=['Band gap (G₀W₀) [eV]', 'Direct band gap (PBE) [eV]', 'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]'])
+df = df.drop(columns=['Direct band gap (PBE) [eV]',
+    'Direct band gap (PBE) [eV].1',
+    'Band gap (PBE) [eV]',
+    'Band gap (G₀W₀) [eV]',
+    'Direct band gap (G₀W₀) [eV]',
+    'Direct band gap (HSE06) [eV]',
+    'Direct band gap (HSE06) [eV].1',
+    'CBM wrt. vacuum (PBE) [eV]',
+    'VBM wrt. vacuum (PBE) [eV]'])
 
 
 # Encode categorical features if any
@@ -23,8 +31,8 @@ for col in cat_cols:
 df.fillna(df.mean(numeric_only=True), inplace=True)
 
 # Define features and target
-X = df.drop(columns=["Band gap (PBE) [eV]"])
-y = df["Band gap (PBE) [eV]"]
+X = df.drop(columns=["Band gap (HSE06) [eV]"])
+y = df["Band gap (HSE06) [eV]"]
 
 # Standardize features
 scaler = StandardScaler()
@@ -71,9 +79,9 @@ print(f"Bootstrapped K-Fold R²: {np.mean(r2_scores):.4f} ± {np.std(r2_scores):
 
 # Plot regression graph (last fold's last bootstrap model)
 plt.scatter(final_y_test, final_y_pred, alpha=0.5)
-plt.xlabel("Actual Band Gap (PBE) [eV]")
-plt.ylabel("Predicted Band Gap (PBE) [eV]")
-plt.title("Actual vs Predicted Band Gap (PBE) [Final Fold - Last Bootstrap]")
+plt.xlabel("Actual Band Gap (HSE06) [eV]")
+plt.ylabel("Predicted Band Gap (HSE06) [eV]")
+plt.title("Actual vs Predicted Band Gap (HSE06) [Final Fold - Last Bootstrap]")
 plt.plot([min(final_y_test), max(final_y_test)], [min(final_y_test), max(final_y_test)], color='red', linestyle='dashed')
 plt.grid(True)
 plt.show()

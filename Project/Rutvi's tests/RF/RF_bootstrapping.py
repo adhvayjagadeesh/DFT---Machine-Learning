@@ -4,14 +4,23 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
+from math import sqrt
 
 # Load and clean the dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
-df = df.drop(columns=['Direct band gap (PBE) [eV]','Band gap (HSE06) [eV]', 'Direct band gap (HSE06) [eV]'])
+df = df.drop(columns=['Direct band gap (PBE) [eV]',
+    'Direct band gap (PBE) [eV].1',
+    'Band gap (PBE) [eV]',
+    'Band gap (G₀W₀) [eV]',
+    'Direct band gap (G₀W₀) [eV]',
+    'Direct band gap (HSE06) [eV]',
+    'Direct band gap (HSE06) [eV].1',
+    'CBM wrt. vacuum (PBE) [eV]',
+    'VBM wrt. vacuum (PBE) [eV]'])
 
 # Define features and target
-target = 'Band gap (PBE) [eV]'
+target = 'Band gap (HSE06) [eV]'
 X = df.drop(columns=[target])
 y = df[target]
 
@@ -55,6 +64,9 @@ errors = all_y_true - all_y_pred
 # Print metrics
 print(f"\nBootstrapped MAE: {np.mean(mae_list):.4f} ± {np.std(mae_list):.4f}")
 print(f"Bootstrapped R²: {np.mean(r2_list):.4f} ± {np.std(r2_list):.4f}")
+rmse = sqrt(mean_squared_error(y_test, y_pred))
+print(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
+
 
 # --- Plot 1: Error distribution ---
 plt.figure(figsize=(8, 5))
@@ -68,7 +80,7 @@ plt.show()
 # --- Plot 2: Regression (Predicted vs Actual) ---
 plt.figure(figsize=(8, 6))
 sns.regplot(x=all_y_true, y=all_y_pred, line_kws={"color": "red"}, scatter_kws={"alpha": 0.3})
-plt.xlabel('Actual Band Gap (PBE) [eV]')
+plt.xlabel('Actual Band Gap (HSE06) [eV]')
 plt.ylabel('Predicted Band Gap [eV]')
 plt.title('Regression Plot: Predicted vs Actual (Bootstrapped)')
 plt.grid(True)
