@@ -16,10 +16,11 @@ df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rec
 # Drop high-null and specified columns
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
 df.drop(columns=[
-    'Formula',
-    'Band gap (HSE06) [eV]',
-    'Direct band gap (PBE) [eV]', 
-    'Direct band gap (HSE06) [eV]'
+    'Direct band gap (PBE) [eV]', 'Direct band gap (PBE) [eV].1',
+    'Band gap (PBE) [eV]', 'Band gap (G₀W₀) [eV]',
+    'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]',
+    'Direct band gap (HSE06) [eV].1', 'CBM wrt. vacuum (PBE) [eV]',
+    'VBM wrt. vacuum (PBE) [eV]'
 ], inplace=True)
 df.drop(columns=drop_cols, inplace=True, errors='ignore')
 
@@ -32,7 +33,7 @@ for col in cat_cols:
     label_encoders[col] = le
 
 # Define target and features
-target_col = 'Band gap (PBE) [eV]'
+target_col = 'Band gap (HSE06) [eV]'
 df = df.dropna(subset=[target_col])
 X = df.drop(columns=[target_col])
 y = df[target_col]
@@ -114,8 +115,8 @@ with torch.no_grad():
 plt.figure(figsize=(6, 6))
 sns.scatterplot(x=y_true, y=y_pred, alpha=0.7)
 plt.plot([y_true.min(), y_true.max()], [y_true.min(), y_true.max()], 'r--')
-plt.xlabel("Actual Band Gap (PBE) [eV]")
-plt.ylabel("Predicted Band Gap (PBE) [eV]")
+plt.xlabel("Actual Band Gap (HSE06) [eV]")
+plt.ylabel("Predicted Band Gap (HSE06) [eV]")
 plt.title("Predicted vs Actual Band Gap")
 plt.grid(True)
 plt.tight_layout()
