@@ -6,7 +6,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import BayesianRidge
 from sklearn.svm import SVR
-from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
 from scipy.optimize import minimize
 import xgboost as xgb
 
@@ -127,6 +127,7 @@ hybrid_pred = np.dot(pred_holdout_matrix, optimal_weights)
 # Evaluate
 mae = mean_absolute_error(y_holdout, hybrid_pred)
 r2 = r2_score(y_holdout, hybrid_pred)
+rmse = np.sqrt(mean_squared_error(y_holdout, hybrid_pred))
 n = len(y_holdout)
 p = X.shape[1]
 adj_r2 = 1 - (1 - r2) * (n - 1) / (n - p - 1)
@@ -134,6 +135,7 @@ adj_r2 = 1 - (1 - r2) * (n - 1) / (n - p - 1)
 print("Optimal Weights (SVR, RF, XGB, BLR):", optimal_weights)
 print(f"Hybrid Model MAE (Test Set): {mae:.4f}")
 print(f"Hybrid Model R² (Test Set): {r2:.4f}")
+print(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
 print(f"Hybrid Model Adjusted R² (Test Set): {adj_r2:.4f}")
 
 # Plot: Actual vs Predicted

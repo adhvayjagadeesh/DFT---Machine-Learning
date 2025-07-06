@@ -6,7 +6,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPRegressor
 from sklearn.linear_model import BayesianRidge
-from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
 from xgboost import XGBRegressor
 from scipy.optimize import minimize
 
@@ -16,10 +16,11 @@ df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rec
 # Drop columns with >90% missing data + identifiers
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
 df.drop(columns=[
-    'Formula',
-    'Band gap (HSE06) [eV]',
-    'Direct band gap (PBE) [eV]', 
-    'Direct band gap (HSE06) [eV]'
+    'Direct band gap (PBE) [eV]', 'Direct band gap (PBE) [eV].1',
+    'Band gap (PBE) [eV]', 'Band gap (G₀W₀) [eV]',
+    'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]',
+    'Direct band gap (HSE06) [eV].1', 'CBM wrt. vacuum (PBE) [eV]',
+    'VBM wrt. vacuum (PBE) [eV]'
 ], inplace=True)
 df.drop(columns=drop_cols, inplace=True, errors='ignore')
 
@@ -35,8 +36,8 @@ for col in cat_cols:
 df.fillna(df.mean(numeric_only=True), inplace=True)
 
 # Features and target
-X = df.drop(columns=["Band gap (PBE) [eV]"])
-y = df["Band gap (PBE) [eV]"]
+X = df.drop(columns=["Band gap (HSE06) [eV]"])
+y = df["Band gap (HSE06) [eV]"]
 
 # Train-test split
 X_train_full, X_test_final, y_train_full, y_test_final = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -138,6 +139,7 @@ hybrid_pred_final = np.dot(pred_matrix_final, optimal_weights)
 # Evaluation
 mae = mean_absolute_error(y_test_final, hybrid_pred_final)
 r2 = r2_score(y_test_final, hybrid_pred_final)
+rmse = np.sqrt(mean_squared_error(y_test_final, hybrid_pred_final))
 n = len(y_test_final)
 k = X.shape[1]
 adjusted_r2 = 1 - (1 - r2) * (n - 1) / (n - k - 1)
@@ -145,14 +147,15 @@ adjusted_r2 = 1 - (1 - r2) * (n - 1) / (n - k - 1)
 print("Optimal Weights (XGB, RF, MLP, BLR):", optimal_weights)
 print(f"Hybrid Model MAE (Test Set): {mae:.4f}")
 print(f"Hybrid Model R² (Test Set): {r2:.4f}")
+print(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
 print(f"Hybrid Model Adjusted R² (Test Set): {adjusted_r2:.4f}")
 
 # Plot Actual vs Predicted
 plt.figure(figsize=(6, 5))
 plt.scatter(y_test_final, hybrid_pred_final, color='purple', alpha=0.7, label="Hybrid Prediction")
 plt.plot([min(y_test_final), max(y_test_final)], [min(y_test_final), max(y_test_final)], 'r--')
-plt.xlabel("Actual Band gap (PBE) [eV]")
-plt.ylabel("Predicted Band gap (PBE) [eV]")
+plt.xlabel("Actual Band gap (HSE06) [eV]")
+plt.ylabel("Predicted Band gap (HSE06) [eV]")
 plt.title("Hybrid Model: Actual vs Predicted Band gap")
 plt.grid(True)
 plt.legend()
