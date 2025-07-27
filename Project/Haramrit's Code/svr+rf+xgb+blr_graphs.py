@@ -139,7 +139,6 @@ print(f"Hybrid Model R² (Test Set): {r2:.4f}")
 print(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
 print(f"Hybrid Model Adjusted R² (Test Set): {adj_r2:.4f}")
 
-# --- Plot: Actual vs Predicted ---
 y_actual_values = y_holdout
 y_predicted_values = hybrid_pred
 
@@ -155,7 +154,6 @@ plt.legend(fontsize=10)
 plt.tight_layout()
 plt.show()
 
-# --- Plot error distribution ---
 errors = y_predicted_values - y_actual_values
 plt.figure(figsize=(8, 6)) # Increased figure size
 sns.histplot(errors, bins=50, color='teal', alpha=0.7, edgecolor='black', kde=True) # Using seaborn for better aesthetics and KDE
@@ -166,9 +164,6 @@ plt.grid(True, linestyle='--', alpha=0.6)
 plt.tight_layout()
 plt.show()
 
-# --- Plot: Feature Correlation Heatmap ---
-# This requires the original 'df' DataFrame to be available and preprocessed
-# (categorical columns encoded, missing values filled)
 df_numeric = df.select_dtypes(include=np.number)
 correlation_matrix = df_numeric.corr()
 
