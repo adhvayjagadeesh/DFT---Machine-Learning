@@ -12,10 +12,8 @@ from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
 from scipy.optimize import minimize
 
 # Load dataset
-# IMPORTANT: Update this path if your CSV file is located elsewhere in your environment.
 df = pd.read_csv("/Users/amrit/Desktop/Projects/asdrp/Final_rect_materials_filled_in_correctly.csv")
 
-# Drop columns with >90% missing data + identifiers
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
 df.drop(columns=[
     'Direct band gap (PBE) [eV]', 'Direct band gap (PBE) [eV].1',
@@ -140,13 +138,12 @@ print(f"Hybrid Model R² (Test Set): {r2:.4f}")
 print(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
 print(f"Hybrid Model Adjusted R² (Test Set): {adj_r2:.4f}")
 
-# --- Plot: Actual vs Predicted ---
 y_actual_values = y_holdout
 y_predicted_values = hybrid_pred
 
 plt.figure(figsize=(8, 7)) # Increased figure size for better readability
 plt.scatter(y_actual_values, y_predicted_values, color='purple', alpha=0.7, label="Hybrid Prediction")
-# Plot a perfect prediction line
+# Plot prediction line
 plt.plot([min(y_actual_values), max(y_actual_values)], [min(y_actual_values), max(y_actual_values)], 'r--', label='Perfect Prediction')
 plt.xlabel("Actual Band gap (HSE06) [eV]", fontsize=12)
 plt.ylabel("Predicted Band gap (HSE06) [eV]", fontsize=12)
@@ -156,7 +153,6 @@ plt.legend(fontsize=10)
 plt.tight_layout()
 plt.show()
 
-# --- Plot error distribution ---
 errors = y_predicted_values - y_actual_values
 plt.figure(figsize=(8, 6)) # Increased figure size
 sns.histplot(errors, bins=50, color='teal', alpha=0.7, edgecolor='black', kde=True) # Using seaborn for better aesthetics and KDE
@@ -167,9 +163,6 @@ plt.grid(True, linestyle='--', alpha=0.6)
 plt.tight_layout()
 plt.show()
 
-# --- Plot: Feature Correlation Heatmap ---
-# This requires the original 'df' DataFrame to be available and preprocessed
-# (categorical columns encoded, missing values filled)
 df_numeric = df.select_dtypes(include=np.number)
 correlation_matrix = df_numeric.corr()
 
