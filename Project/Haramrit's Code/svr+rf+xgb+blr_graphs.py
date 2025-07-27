@@ -142,9 +142,8 @@ print(f"Hybrid Model Adjusted R² (Test Set): {adj_r2:.4f}")
 y_actual_values = y_holdout
 y_predicted_values = hybrid_pred
 
-plt.figure(figsize=(8, 7)) # Increased figure size for better readability
+plt.figure(figsize=(8, 7)) 
 plt.scatter(y_actual_values, y_predicted_values, color='purple', alpha=0.7, label="Hybrid Prediction")
-# Plot a perfect prediction line
 plt.plot([min(y_actual_values), max(y_actual_values)], [min(y_actual_values), max(y_actual_values)], 'r--', label='Perfect Prediction')
 plt.xlabel("Actual Band gap (HSE06) [eV]", fontsize=12)
 plt.ylabel("Predicted Band gap (HSE06) [eV]", fontsize=12)
