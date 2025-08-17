@@ -1,3 +1,5 @@
+# type: ignore
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,9 +11,10 @@ from sklearn.linear_model import BayesianRidge
 from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
 from xgboost import XGBRegressor
 from scipy.optimize import minimize
+from scipy.stats import spearmanr
 
 # Load dataset
-df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
+df = pd.read_csv("../../c2db_data/Final_rect_materials_filled_in_correctly.csv")
 
 # Drop columns with >90% missing data + identifiers
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
@@ -40,12 +43,12 @@ X = df.drop(columns=["Band gap (HSE06) [eV]"])
 y = df["Band gap (HSE06) [eV]"]
 
 # Train-test split
-X_train_full, X_test_final, y_train_full, y_test_final = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_holdout, y_train_full, y_test_final = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Standardize features
 scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train_full)
-X_test_scaled = scaler.transform(X_test_final)
+X_train_scaled = scaler.fit_transform(X_train)
+X_holdout_scaled = scaler.transform(X_holdout)
 
 # K-Fold setup
 kf = KFold(n_splits=5, shuffle=True, random_state=42)
@@ -126,20 +129,22 @@ rf_final.fit(X_train_scaled, y_train_full)
 mlp_final.fit(X_train_scaled, y_train_full)
 blr_final.fit(X_train_scaled, y_train_full)
 
-# Final test predictions
-xgb_pred_final = xgb_final.predict(X_test_scaled)
-rf_pred_final = rf_final.predict(X_test_scaled)
-mlp_pred_final = mlp_final.predict(X_test_scaled)
-blr_pred_final = blr_final.predict(X_test_scaled)
+# Final predictions on holdout set
+xgb_pred_final = xgb_final.predict(X_holdout_scaled)
+rf_pred_final = rf_final.predict(X_holdout_scaled)
+mlp_pred_final = mlp_final.predict(X_holdout_scaled)
+blr_pred_final = blr_final.predict(X_holdout_scaled)
 
 # Hybrid prediction
 pred_matrix_final = np.vstack([xgb_pred_final, rf_pred_final, mlp_pred_final, blr_pred_final]).T
+
 hybrid_pred_final = np.dot(pred_matrix_final, optimal_weights)
 
 # Evaluation
 mae = mean_absolute_error(y_test_final, hybrid_pred_final)
 r2 = r2_score(y_test_final, hybrid_pred_final)
 rmse = np.sqrt(mean_squared_error(y_test_final, hybrid_pred_final))
+spearman, _ = spearmanr(y_holdout, hybrid_pred)
 n = len(y_test_final)
 k = X.shape[1]
 adjusted_r2 = 1 - (1 - r2) * (n - 1) / (n - k - 1)
@@ -148,6 +153,7 @@ print("Optimal Weights (XGB, RF, MLP, BLR):", optimal_weights)
 print(f"Hybrid Model MAE (Test Set): {mae:.4f}")
 print(f"Hybrid Model R² (Test Set): {r2:.4f}")
 print(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
+print(f"Spearman correlation: {spearman:.4f}")
 print(f"Hybrid Model Adjusted R² (Test Set): {adjusted_r2:.4f}")
 
 # Plot Actual vs Predicted

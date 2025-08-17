@@ -4,8 +4,7 @@ from .data_utilities.generate_data import prepare_data
 from .ML_models.ML_models import run_perovskite_formability, run_perovskite_stability, run_insulator_classification, run_bandgap_regression
 from .ML_utilities.RFC_functions import classify_data
 from .ML_utilities.RFR_functions import predict_regression,predict_regression_arbitary
-import sys, os, shutil
-import json
+import sys, os
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 
 def create_perovskite_formability_training_data(training_compounds, ele_data):

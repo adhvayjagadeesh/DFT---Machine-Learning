@@ -1,3 +1,5 @@
+# type: ignore
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,10 +10,11 @@ from sklearn.linear_model import BayesianRidge
 from sklearn.svm import SVR
 from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
 from scipy.optimize import minimize
+from scipy.stats import spearmanr
 import xgboost as xgb
 
 # Load dataset
-df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
+df = pd.read_csv("../../c2db_data/Final_rect_materials_filled_in_correctly.csv")
 
 # Drop columns with >90% missing data + identifiers
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
@@ -39,14 +42,13 @@ df.fillna(df.mean(numeric_only=True), inplace=True)
 X = df.drop(columns=["Band gap (HSE06) [eV]"])
 y = df["Band gap (HSE06) [eV]"]
 
+# Train-test split
+X_train, X_holdout, y_train_full, y_holdout = train_test_split(X, y, test_size=0.2, random_state=42)
+
 # Standardize features
 scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-# Train-test split
-X_train_val, X_holdout, y_train_val, y_holdout = train_test_split(
-    X_scaled, y, test_size=0.2, random_state=42
-)
+X_train_scaled = scaler.fit_transform(X_train)
+X_holdout_scaled = scaler.transform(X_holdout)
 
 # Initialize K-Fold
 kf = KFold(n_splits=5, shuffle=True, random_state=42)
@@ -59,9 +61,9 @@ xgb_all = []
 blr_all = []
 
 # Cross-validation loop
-for train_idx, val_idx in kf.split(X_train_val):
-    X_train, X_val = X_train_val[train_idx], X_train_val[val_idx]
-    y_train, y_val = y_train_val.iloc[train_idx], y_train_val.iloc[val_idx]
+for train_idx, val_idx in kf.split(X_train_scaled):
+    X_train, X_val = X_train_scaled[train_idx], X_train_scaled[val_idx]
+    y_train, y_val = y_train_full.iloc[train_idx], y_train_full.iloc[val_idx]
 
     # Define models
     svr = SVR(kernel='rbf', C=10, epsilon=0.1)
@@ -110,24 +112,27 @@ rf_final = RandomForestRegressor(n_estimators=100, random_state=42)
 xgb_final = xgb.XGBRegressor(objective='reg:squarederror', n_estimators=100, random_state=42)
 blr_final = BayesianRidge()
 
-svr_final.fit(X_train_val, y_train_val)
-rf_final.fit(X_train_val, y_train_val)
-xgb_final.fit(X_train_val, y_train_val)
-blr_final.fit(X_train_val, y_train_val)
+svr_final.fit(X_train_scaled, y_train_full)
+rf_final.fit(X_train_scaled, y_train_full)
+xgb_final.fit(X_train_scaled, y_train_full)
+blr_final.fit(X_train_scaled, y_train_full)
 
 # Final predictions on holdout set
-svr_holdout = svr_final.predict(X_holdout)
-rf_holdout = rf_final.predict(X_holdout)
-xgb_holdout = xgb_final.predict(X_holdout)
-blr_holdout = blr_final.predict(X_holdout)
+svr_pred_final = svr_final.predict(X_holdout_scaled)
+rf_pred_final = rf_final.predict(X_holdout_scaled)
+xgb_pred_final = xgb_final.predict(X_holdout_scaled)
+blr_pred_final = blr_final.predict(X_holdout_scaled)
 
-pred_holdout_matrix = np.vstack([svr_holdout, rf_holdout, xgb_holdout, blr_holdout]).T
-hybrid_pred = np.dot(pred_holdout_matrix, optimal_weights)
+# Hybrid prediction
+pred_matrix_final = np.vstack([svr_pred_final, rf_pred_final, xgb_pred_final, blr_pred_final]).T
+
+hybrid_pred = np.dot(pred_matrix_final, optimal_weights)
 
 # Evaluate
 mae = mean_absolute_error(y_holdout, hybrid_pred)
 r2 = r2_score(y_holdout, hybrid_pred)
 rmse = np.sqrt(mean_squared_error(y_holdout, hybrid_pred))
+spearman, _ = spearmanr(y_holdout, hybrid_pred)
 n = len(y_holdout)
 p = X.shape[1]
 adj_r2 = 1 - (1 - r2) * (n - 1) / (n - p - 1)
@@ -136,6 +141,7 @@ print("Optimal Weights (SVR, RF, XGB, BLR):", optimal_weights)
 print(f"Hybrid Model MAE (Test Set): {mae:.4f}")
 print(f"Hybrid Model R² (Test Set): {r2:.4f}")
 print(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
+print(f"Spearman correlation: {spearman:.4f}")
 print(f"Hybrid Model Adjusted R² (Test Set): {adj_r2:.4f}")
 
 # Plot: Actual vs Predicted
