@@ -43,7 +43,7 @@ X = df.drop(columns=["Band gap (HSE06) [eV]"])
 y = df["Band gap (HSE06) [eV]"]
 
 # Train-test split
-X_train, X_holdout, y_train_full, y_test_final = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_holdout, y_train_full, y_holdout = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Standardize features
 scaler = StandardScaler()
@@ -138,14 +138,14 @@ blr_pred_final = blr_final.predict(X_holdout_scaled)
 # Hybrid prediction
 pred_matrix_final = np.vstack([xgb_pred_final, rf_pred_final, mlp_pred_final, blr_pred_final]).T
 
-hybrid_pred_final = np.dot(pred_matrix_final, optimal_weights)
+hybrid_pred = np.dot(pred_matrix_final, optimal_weights)
 
 # Evaluation
-mae = mean_absolute_error(y_test_final, hybrid_pred_final)
-r2 = r2_score(y_test_final, hybrid_pred_final)
-rmse = np.sqrt(mean_squared_error(y_test_final, hybrid_pred_final))
+mae = mean_absolute_error(y_holdout, hybrid_pred)
+r2 = r2_score(y_holdout, hybrid_pred)
+rmse = np.sqrt(mean_squared_error(y_holdout, hybrid_pred))
 spearman, _ = spearmanr(y_holdout, hybrid_pred)
-n = len(y_test_final)
+n = len(y_holdout)
 k = X.shape[1]
 adjusted_r2 = 1 - (1 - r2) * (n - 1) / (n - k - 1)
 
@@ -158,8 +158,8 @@ print(f"Hybrid Model Adjusted R² (Test Set): {adjusted_r2:.4f}")
 
 # Plot Actual vs Predicted
 plt.figure(figsize=(6, 5))
-plt.scatter(y_test_final, hybrid_pred_final, color='purple', alpha=0.7, label="Hybrid Prediction")
-plt.plot([min(y_test_final), max(y_test_final)], [min(y_test_final), max(y_test_final)], 'r--')
+plt.scatter(y_holdout, hybrid_pred, color='purple', alpha=0.7, label="Hybrid Prediction")
+plt.plot([min(y_holdout), max(y_holdout)], [min(y_holdout), max(y_holdout)], 'r--')
 plt.xlabel("Actual Band gap (HSE06) [eV]")
 plt.ylabel("Predicted Band gap (HSE06) [eV]")
 plt.title("Hybrid Model: Actual vs Predicted Band gap")
@@ -169,7 +169,7 @@ plt.tight_layout()
 plt.show()
 
 # Plot error distribution
-errors = hybrid_pred_final - y_test_final
+errors = hybrid_pred - y_holdout
 plt.figure(figsize=(6, 4))
 plt.hist(errors, bins=50, color='teal', alpha=0.7, edgecolor='black')
 plt.title("Hybrid Prediction Error Distribution")
