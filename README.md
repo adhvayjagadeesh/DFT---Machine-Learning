@@ -24,3 +24,4 @@ python -m visualization.single [name]
 
 # Model notes
 - Define `y_pred` and `y_test` to support visualization
+- We are only reporting performance of model types, not creating a super good model, so prefer k-fold

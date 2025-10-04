@@ -1,6 +1,7 @@
 panda
 numpy
 scikit-learn
+scikit-optimize
 matplotlib
 importlib
 argparse
