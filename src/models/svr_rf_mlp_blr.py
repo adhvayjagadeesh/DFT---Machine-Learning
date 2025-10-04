@@ -4,59 +4,23 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split, KFold
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPRegressor
 from sklearn.linear_model import BayesianRidge
 from sklearn.svm import SVR
-from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
 from scipy.optimize import minimize
-from scipy.stats import spearmanr
-from data.c2db import df
-
-# Drop columns with >90% missing data + identifiers
-drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
-df.drop(columns=drop_cols, inplace=True, errors='ignore')
-
-# Encode categorical columns
-cat_cols = df.select_dtypes(include='object').columns
-label_encoders = {}
-for col in cat_cols:
-    le = LabelEncoder()
-    df[col] = le.fit_transform(df[col].astype(str))
-    label_encoders[col] = le
-
-# Fill missing numerical values
-df.fillna(df.mean(numeric_only=True), inplace=True)
-
-# Features and target
-X = df.drop(columns=["Band gap (HSE06) [eV]"])
-y = df["Band gap (HSE06) [eV]"]
-
-# Train-test split
-X_train, X_holdout, y_train_full, y_holdout = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Standardize features
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_holdout_scaled = scaler.transform(X_holdout)
-
-# Initialize K-Fold
-kf = KFold(n_splits=5, shuffle=True, random_state=42)
+from data.final import k_fold
 
 # Storage for true and predicted values
-all_true = []
+all_true = []   
 svr_all = []
 rf_all = []
 mlp_all = []
 blr_all = []
 
-# Cross-validation loop
-for train_idx, val_idx in kf.split(X_train_scaled):
-    X_train, X_val = X_train_scaled[train_idx], X_train_scaled[val_idx]
-    y_train, y_val = y_train_full.iloc[train_idx], y_train_full.iloc[val_idx]
-
+# Cross-validation loop to find optimal weights
+for x_train, y_train, x_test, y_test in k_fold():
     # Define models
     svr = SVR(kernel='rbf', C=10, epsilon=0.1)
     rf = RandomForestRegressor(n_estimators=100, random_state=42)
@@ -64,32 +28,32 @@ for train_idx, val_idx in kf.split(X_train_scaled):
     blr = BayesianRidge()
 
     # Train models
-    svr.fit(X_train, y_train)
-    rf.fit(X_train, y_train)
-    mlp.fit(X_train, y_train)
-    blr.fit(X_train, y_train)
+    svr.fit(x_train, y_train)
+    rf.fit(x_train, y_train)
+    mlp.fit(x_train, y_train)
+    blr.fit(x_train, y_train)
 
     # Predict
-    svr_pred = svr.predict(X_val)
-    rf_pred = rf.predict(X_val)
-    mlp_pred = mlp.predict(X_val)
-    blr_pred = blr.predict(X_val)
+    svr_pred = svr.predict(x_test)
+    rf_pred = rf.predict(x_test)
+    mlp_pred = mlp.predict(x_test)
+    blr_pred = blr.predict(x_test)
 
     # Store predictions
-    all_true.extend(y_val)
+    all_true.extend(y_test)
     svr_all.extend(svr_pred)
     rf_all.extend(rf_pred)
     mlp_all.extend(mlp_pred)
     blr_all.extend(blr_pred)
 
 # Convert to arrays
-y_true = np.array(all_true)
+y_test = np.array(all_true)
 pred_matrix = np.vstack([svr_all, rf_all, mlp_all, blr_all]).T
 
 # Optimize weights for hybrid model
 def loss_fn(weights):
     blended = np.dot(pred_matrix, weights)
-    return mean_absolute_error(y_true, blended)
+    return mean_absolute_error(y_test, blended)
 
 init_weights = [1/4, 1/4, 1/4, 1/4]
 bounds = [(0, 1)] * 4
@@ -104,10 +68,10 @@ rf_final = RandomForestRegressor(n_estimators=100, random_state=42)
 mlp_final = MLPRegressor(hidden_layer_sizes=(32, 16), max_iter=500, random_state=42)
 blr_final = BayesianRidge()
 
-svr_final.fit(X_train_scaled, y_train_full)
-rf_final.fit(X_train_scaled, y_train_full)
-mlp_final.fit(X_train_scaled, y_train_full)
-blr_final.fit(X_train_scaled, y_train_full)
+svr_final.fit(x_train_scaled, y_train_full)
+rf_final.fit(x_train_scaled, y_train_full)
+mlp_final.fit(x_train_scaled, y_train_full)
+blr_final.fit(x_train_scaled, y_train_full)
 
 # Final predictions on holdout set
 svr_pred_final = svr_final.predict(X_holdout_scaled)
@@ -117,11 +81,4 @@ blr_pred_final = blr_final.predict(X_holdout_scaled)
 
 # Hybrid prediction
 pred_matrix_final = np.vstack([svr_pred_final, rf_pred_final, mlp_pred_final, blr_pred_final]).T
-
-hybrid_pred = np.dot(pred_matrix_final, optimal_weights)
-
-# Exports for visualization
-y_true = y_holdout
-y_pred = hybrid_pred
-k = X.shape[1]
-
+y_pred = np.dot(pred_matrix_final, optimal_weights)
