@@ -1,5 +1,3 @@
-# Raw data provider
-
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split as tts, KFold
@@ -8,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 
 # Fixed random seed for reproducibility, in practice use None
 np.random.seed(67) # SIX SEVEN
-# np.random.seed(None)
+np.random.seed(None)
 
 # Load c2db
 df = pd.read_csv("data/Final_rect_materials_filled_in_correctly.csv")

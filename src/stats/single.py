@@ -1,5 +1,6 @@
 import argparse
 import importlib
+import sys
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 from scipy.stats import spearmanr
 import numpy as np
@@ -13,7 +14,7 @@ model = importlib.import_module(f"models.{modelName}")
 
 for var in ["y_test", "y_pred"]:
   if not hasattr(model, var):
-    print(f"Model '{args.model}' is missing required variable: {var}")
+    print(f"Model '{modelName}' is missing required variable: {var}")
     sys.exit(1)
 y_test = model.y_test
 y_pred = model.y_pred
@@ -27,7 +28,7 @@ rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 spearman, _ = spearmanr(y_test, y_pred)
 
 perf_summary = (
-    f"Performance summary:\n\n"
+    f"{modelName} summary:\n\n"
     f"R²:          {r2:.4f}\n"
     f"Adjusted R²: {adj_r2:.4f}\n"
     f"MAE:         {mae:.4f} eV\n"

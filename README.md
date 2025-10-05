@@ -29,9 +29,9 @@ pip install -r requirements.txt
 From `src`, run:
 ```bash
 # Replace [name] with a filename in the models folder, without the .py
-python -m visualization.single [name]
+python -m stats.single [name]
 ```
 
 # Model notes
-- Define `y_pred` and `y_test` to support visualization
+- Define `y_pred` and `y_test` to support stats display
 - We are only reporting performance of model types, not creating a super good model, so prefer k-fold
