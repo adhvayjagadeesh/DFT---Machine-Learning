@@ -7,7 +7,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPRegressor
 from sklearn.linear_model import BayesianRidge
-from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
+from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error, roc_curve, auc, RocCurveDisplay
 from xgboost import XGBRegressor
 from scipy.optimize import minimize
 
@@ -184,3 +184,28 @@ plt.xticks(rotation=45, ha='right')
 plt.yticks(rotation=0)
 plt.tight_layout()
 plt.show()
+
+# --- ROC curve for hybrid model on holdout set ---
+T = 1.0  # threshold in eV to consider positive class; adjust as needed
+y_true_holdout = np.array(y_actual_values)
+y_score_holdout = np.array(y_predicted_values)
+
+if y_true_holdout.size == 0:
+    print("No holdout true labels found; skipping ROC.")
+else:
+    y_bin = (y_true_holdout > T).astype(int)
+    if np.unique(y_bin).size < 2:
+        print(f"ROC skipped: need both classes present for threshold T={T}. Found classes: {np.unique(y_bin)}")
+    else:
+        fpr, tpr, _ = roc_curve(y_bin, y_score_holdout)
+        roc_auc = auc(fpr, tpr)
+
+        disp = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc)
+        fig, ax = plt.subplots(figsize=(7, 6))
+        disp.plot(ax=ax)
+        ax.plot([0, 1], [0, 1], '--', color='gray')
+        ax.set_title(f'Hybrid Model ROC (holdout, T={T} eV) AUC={roc_auc:.3f}')
+        fig.tight_layout()
+        fig.savefig('hybrid_xgb_mlp_roc.png', dpi=200)
+        print(f"Hybrid holdout ROC AUC: {roc_auc:.4f} (saved to hybrid_xgb_mlp_roc.png)")
+        plt.show()
