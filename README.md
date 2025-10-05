@@ -4,10 +4,20 @@
 ```bash
 # Make venv called ".venv"
 python -m venv .venv
+```
 
-# Activate the venv
+### Activate venv
+Linux/WSL
+```bash
 source .venv/bin/activate
+```
+Windows
+```bash
+.venv\Scripts\activate
+```
 
+### Finally
+```bash
 # Go to src directory
 cd src
 
@@ -15,7 +25,7 @@ cd src
 pip install -r requirements.txt
 ```
 
-## Run + visualize 1 model (WIP)
+## Run + visualize 1 model
 From `src`, run:
 ```bash
 # Replace [name] with a filename in the models folder, without the .py
