@@ -1,4 +1,4 @@
-from skopt import BayesSearchCV
+from sklearn.model_selection import RandomizedSearchCV
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -21,8 +21,8 @@ hyperparams = {
     "rf__max_depth": [None, 25, 50, 75, 100]
 }
 
-for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
-    rand_rf = BayesSearchCV(
+for x_train, y_train, x_test_f, y_test_f in k_fold(scale=False):
+    rand_rf = RandomizedSearchCV(
         pipe,
         hyperparams,
         cv = k_,

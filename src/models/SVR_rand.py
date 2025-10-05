@@ -1,5 +1,4 @@
-from skopt import BayesSearchCV
-from skopt.space import Real
+from sklearn.model_selection import RandomizedSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVR
 from data.final import k_fold, k_
@@ -18,15 +17,15 @@ pipe = Pipeline([
 
 # Stolen from the docs of BayesSearchCV
 hyperparams = {
-    'svr__C': Real(1e-3, 1e+6, "log-uniform"),
-    'svr__gamma': Real(1e-6, 1e+1, "log-uniform"),
+    'svr__C': loguniform(1e-3, 1e+6),
+    'svr__gamma': loguniform(1e-6, 1e+1),
     "svr__degree": [1, 2, 3, 4, 5, 6, 7, 8],
     "svr__kernel": ["linear", "poly", "rbf"]
 }
 
 # By _f I mean fold, no scaling cuz pipeline is gonna handle that
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
-    rand_svr = BayesSearchCV(pipe,
+    rand_svr = RandomizedSearchCV(pipe,
                             hyperparams, 
                             cv = k_,
                             n_jobs = -1,

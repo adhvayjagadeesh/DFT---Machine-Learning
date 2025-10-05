@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 
 # Fixed random seed for reproducibility, in practice use None
 np.random.seed(67) # SIX SEVEN
-np.random.seed(None)
+#np.random.seed(None)
 
 # Load c2db
 df = pd.read_csv("data/Final_rect_materials_filled_in_correctly.csv")
@@ -59,7 +59,7 @@ def train_test_split(x = x_, y = y_, test_size = 0.2):
 
 # Default k for k-fold
 k_ = 4
-def k_fold(x = x_, y = y_, k = k_):
+def k_fold(x = x_, y = y_, k = k_, scale = True):
     kf = KFold(n_splits=k, shuffle=True)
     for train_indices, test_indices in kf.split(x):
         x_train_u = x.iloc[train_indices]
@@ -67,10 +67,13 @@ def k_fold(x = x_, y = y_, k = k_):
         x_test_u = x.iloc[test_indices]
         y_test = y.iloc[test_indices]
 
-        # Standardize features
-        scaler = StandardScaler()
-        x_train = scaler.fit_transform(x_train_u)
-        x_test = scaler.transform(x_test_u)
+        if scale:
+            # Standardize features
+            scaler = StandardScaler()
+            x_train = scaler.fit_transform(x_train_u)
+            x_test = scaler.transform(x_test_u)
 
-        yield x_train, y_train, x_test, y_test
+            yield x_train, y_train, x_test, y_test
+        else:
+            yield x_train_u, y_train, x_test_u, y_test
 
