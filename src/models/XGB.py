@@ -1,11 +1,17 @@
 from xgboost import XGBRegressor
-from data.final import train_test_split
+from data.final import k_fold
+import numpy as np
 
-x_train, y_train, x_test, y_test = train_test_split()
+# For combining predictions from all folds
+y_pred = np.array([])
+y_test = np.array([])
 
-# Train RF
-xgb = XGBRegressor()
-xgb.fit(x_train, y_train)
+# By _f I mean fold
+for x_train, y_train, x_test_f, y_test_f in k_fold():
+    # Train XGB
+    xgb = XGBRegressor()
+    xgb.fit(x_train, y_train)
 
-# Predict and evaluate
-y_pred = xgb.predict(x_test)
+    # Predict and evaluate
+    y_test = np.concatenate([y_test, y_test_f])
+    y_pred = np.concatenate([y_pred, xgb.predict(x_test_f)])

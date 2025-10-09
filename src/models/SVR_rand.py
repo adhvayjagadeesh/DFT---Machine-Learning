@@ -3,7 +3,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.svm import SVR
 from data.final import k_fold, k_
 from sklearn.preprocessing import StandardScaler
-from scipy.stats import loguniform
+from scipy.stats import loguniform, randint
 import numpy as np
 
 # For combining predictions from all folds
@@ -15,11 +15,11 @@ pipe = Pipeline([
     ("svr", SVR(max_iter = 1000000)) # Some of the cv is taking too long
 ])
 
-# Stolen from the docs of BayesSearchCV
 hyperparams = {
     'svr__C': loguniform(1e-3, 1e+6),
     'svr__gamma': loguniform(1e-6, 1e+1),
-    "svr__degree": [1, 2, 3, 4, 5, 6, 7, 8],
+    "svr__degree": randint(1, 9),
+    "svr__epsilon": loguniform(1e-4, 1e-1),
     "svr__kernel": ["linear", "poly", "rbf"]
 }
 
