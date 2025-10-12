@@ -5,9 +5,11 @@ from sklearn.utils import resample
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 
-# Fixed random seed for reproducibility, in practice use None
-np.random.seed(67) # SIX SEVEN
-np.random.seed(None)
+import random
+# Fixed random seed for reproducibility, in practice use None, NOT A HYPERPARAM
+rng_seed = 67 # SIX SEVEN
+
+np.random.seed(rng_seed)
 
 # Load c2db
 df = pd.read_csv("data/Final_rect_materials_filled_in_correctly.csv")
@@ -49,7 +51,7 @@ y_ = df["Band gap (HSE06) [eV]"]
 
 def train_test_split(x = x_, y = y_, test_size = 0.2):
     # Sorry by _u I meant unscaled but that's gonna make the line too long
-    x_train_u, x_test_u, y_train, y_test = tts(x, y, test_size=test_size)
+    x_train_u, x_test_u, y_train, y_test = tts(x, y, test_size = test_size)
 
     scaler = StandardScaler()
     x_train = scaler.fit_transform(x_train_u)
@@ -60,7 +62,7 @@ def train_test_split(x = x_, y = y_, test_size = 0.2):
 # Default k for k-fold
 k_ = 4
 def k_fold(x = x_, y = y_, k = k_, scale = True):
-    kf = KFold(n_splits=k, shuffle=True)
+    kf = KFold(n_splits = k, shuffle = True)
     for train_indices, test_indices in kf.split(x):
         x_train_u = x.iloc[train_indices]
         y_train = y.iloc[train_indices]
