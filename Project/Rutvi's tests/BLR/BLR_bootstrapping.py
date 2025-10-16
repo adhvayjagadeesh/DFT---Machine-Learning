@@ -21,8 +21,8 @@ df.drop(columns=[
     'Direct band gap (HSE06) [eV].1',
     'CBM wrt. vacuum (PBE) [eV]',
     'VBM wrt. vacuum (PBE) [eV]'
-], inplace=True)
-df.drop(columns=drop_cols, inplace=True, errors='ignore')
+], inplace = True)
+df.drop(columns = drop_cols, inplace = True, errors = 'ignore')
 
 # Encode categorical features
 cat_cols = df.select_dtypes(include='object').columns

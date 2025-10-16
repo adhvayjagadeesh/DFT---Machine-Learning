@@ -31,7 +31,7 @@ hyperparams = {
     "xgb__tree_method": ["hist", "approx"]
 }
 
-for x_train, y_train, x_test_f, y_test_f in k_fold(scale=False):
+for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
     halv_rand_xgb = HalvingRandomSearchCV(
         pipe,
         hyperparams,
