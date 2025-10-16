@@ -5,10 +5,8 @@ from sklearn.utils import resample
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 
-import random
 # Fixed random seed for reproducibility, in practice use None, NOT A HYPERPARAM
 rng_seed = 67 # SIX SEVEN
-
 np.random.seed(rng_seed)
 
 # Load c2db
@@ -78,21 +76,17 @@ def k_fold(x = x_, y = y_, k = k_, scale = True):
         else:
             yield x_train_u, y_train, x_test_u, y_test
 
-n_bootstrap_ = 10
+n_bootstrap_ = 4
 def bootstrap(x = x_, y = y_, k = k_, n_bootstrap = n_bootstrap_, scale = True): 
     for i in range(n_bootstrap):
         # Resample with replacement for training 
-        x_train_u, y_train = resample(x, y, n_samples=len(x)) 
-        
-        # OOB = those not in training set
-        train_indices = x_train_u.index
-
-        test_indices = x.index.difference(train_indices) 
-        x_test_u, y_test = x.iloc[test_indices], y.iloc[test_indices] 
-        if scale: 
-            scaler = StandardScaler() 
+        x_train_u, y_train = resample(x, y, n_samples=len(x))
+        test_indices = x.index.difference(x_train_u.index) 
+        x_test_u, y_test = x.iloc[test_indices], y.iloc[test_indices]
+        if scale:
+            scaler = StandardScaler()
             x_train = scaler.fit_transform(x_train_u)
             x_test = scaler.transform(x_test_u) 
-            yield x_train, y_train, x_test, y_test 
+            yield x_train, y_train, x_test, y_test
         else: 
             yield x_train_u, y_train, x_test_u, y_test

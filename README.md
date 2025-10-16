@@ -1,4 +1,5 @@
 # DFT---Machine-Learning
+Benchmarking ML models for predicting band gap of 2D material without DFT
 
 ## 1st time setup
 ```bash
@@ -34,6 +35,5 @@ python -m stats.single [name]
 
 # Model notes
 - Define `y_pred` and `y_test` to support stats display
-- We are only reporting performance of model types, not creating a super good model, so prefer k-fold
+- We are only reporting performance of model types, not creating a super good model, so use k-fold for base performance
 - For XGB, using "dart" booster takes way too long, if u got time, try it
-- Generally tree-based models are good for this
