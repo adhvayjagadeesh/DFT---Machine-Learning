@@ -25,7 +25,7 @@ hyperparams = {
 }
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
-    rand_rf = BayesSearchCV(
+    bayes_rf = BayesSearchCV(
         pipe,
         hyperparams,
         cv = k_,
@@ -33,8 +33,8 @@ for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
         n_jobs = -1,
         verbose = 4
     )
-    rand_rf.fit(x_train, y_train)
+    bayes_rf.fit(x_train, y_train)
 
     # Predict and evaluate
     y_test = np.concatenate([y_test, y_test_f])
-    y_pred = np.concatenate([y_pred, rand_rf.predict(x_test_f)])
+    y_pred = np.concatenate([y_pred, bayes_rf.predict(x_test_f)])

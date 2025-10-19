@@ -4,7 +4,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from data.final import k_fold, k_
 import numpy as np
-from skopt.space import Real, Integer, Categorical
+from skopt.space import Real, Integer
 
 # For combining predictions from all folds
 y_pred = np.array([])

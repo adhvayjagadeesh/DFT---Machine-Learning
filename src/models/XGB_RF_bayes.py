@@ -11,6 +11,7 @@ from skopt.space import Real, Integer, Categorical
 y_pred = np.array([])
 y_test = np.array([])
 
+
 pipe_xgb = Pipeline([
     ("scaler", StandardScaler()),
     ("xgb", XGBRegressor())
@@ -58,7 +59,7 @@ for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
     bayes_xgb.fit(x_train, y_train)
 
     # Tune RF (same as your RF_bayes.py)
-    rand_rf = BayesSearchCV(
+    bayes_rf = BayesSearchCV(
         pipe_rf,
         hyperparams_rf,
         cv = k_,
@@ -66,11 +67,11 @@ for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
         n_jobs = -1,
         verbose = 4
     )
-    rand_rf.fit(x_train, y_train)
+    bayes_rf.fit(x_train, y_train)
 
     # Predict and evaluate (simple average blend of the two models)
     y_test = np.concatenate([y_test, y_test_f])
     preds_xgb = bayes_xgb.predict(x_test_f)
-    preds_rf = rand_rf.predict(x_test_f)
+    preds_rf = bayes_rf.predict(x_test_f)
     preds_blend = (preds_xgb + preds_rf) / 2.0
     y_pred = np.concatenate([y_pred, preds_blend])

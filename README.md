@@ -1,23 +1,30 @@
 # DFT---Machine-Learning
+
 Benchmarking ML models for predicting band gap of 2D material without DFT
 
 ## 1st time setup
+
 ```bash
 # Make venv called ".venv"
 python -m venv .venv
 ```
 
 ### Activate venv
+
 Linux/WSL
+
 ```bash
 source .venv/bin/activate
 ```
+
 Windows
+
 ```bash
 .venv\Scripts\activate
 ```
 
 ### Finally
+
 ```bash
 # Go to src directory
 cd src
@@ -27,13 +34,17 @@ pip install -r requirements.txt
 ```
 
 ## Run + visualize 1 model
+
 From `src`, run:
+
 ```bash
 # Replace [name] with a filename in the models folder, without the .py
 python -m stats.single [name]
 ```
 
-# Model notes
-- Define `y_pred` and `y_test` to support stats display
+## Model notes
+
+- Small compromise: To avoid the deadly triply-nested loop on hybrid models with weights & hyperparam tuned, we are going to use `train_test_split` to split 80% into hyperparam tuning, and 20% to weighting.
+- Define `y_pred` and `y_test` to support stats display. Optional definitions: `weights` (for hybrid models)
 - We are only reporting performance of model types, not creating a super good model, so use k-fold for base performance
 - For XGB, using "dart" booster takes way too long, if u got time, try it

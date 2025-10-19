@@ -7,9 +7,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from data.final import feat_cnt
 
-parser = argparse.ArgumentParser(prog="1-model stat", description="Prediction and error for 1 model")
+parser = argparse.ArgumentParser(prog = "1-model stat", description = "Prediction and error for 1 model")
 parser.add_argument("model")
+parser.add_argument("-s", "--save", help = "Save the figure instead of showing it")
 modelName = parser.parse_args().model
+save_loc = parser.parse_args().save
 model = importlib.import_module(f"models.{modelName}")
 
 for var in ["y_test", "y_pred"]:
@@ -37,7 +39,9 @@ perf_summary = (
 )
 
 # Plotting
-fig, axes = plt.subplots(2, 2, figsize=(8, 8))
+row = 2
+col = 2
+fig, axes = plt.subplots(row, col, figsize=(row * 4, col * 4))
 
 # "Plot" 1: Performance summary
 axes[0][0].axis('off')  # Hide the axes
@@ -70,9 +74,12 @@ area_over = 1- auc(tolerances, accuracies)
 axes[1][1].plot(tolerances, accuracies, label=f"AOC = {area_over: .4f}",)
 axes[1][1].set_xlabel("Tolerance (eV)")
 axes[1][1].set_ylabel("Accuracy (%)")
-axes[1][1].set_title("Prediction tolerance")
+axes[1][1].set_title("Prediction tolerance vs Accuracy")
 axes[1][1].legend(loc = 4)
 axes[1][1].grid(True)
 
 plt.tight_layout()
-plt.show()
+if save_loc:
+    plt.savefig(f"{save_loc}/{modelName}.svg")
+else:
+  plt.show()
