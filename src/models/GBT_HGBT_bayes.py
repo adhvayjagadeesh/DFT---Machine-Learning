@@ -1,3 +1,5 @@
+# models/GBT_HGBT_bayes.py
+
 from sklearn.ensemble import GradientBoostingRegressor, HistGradientBoostingRegressor
 from skopt import BayesSearchCV
 from sklearn.pipeline import Pipeline
@@ -20,7 +22,7 @@ pipe_hgbt = Pipeline([
     ("hgbt", HistGradientBoostingRegressor())
 ])
 
-# GradientBoosting hyperparameters (unchanged)
+# GradientBoosting hyperparameters (EXACT)
 hyperparams_gbt = {
     "gbt__n_estimators": Integer(200, 800),
     "gbt__learning_rate": Real(1e-3, 0.2, prior="log-uniform"),
@@ -31,7 +33,7 @@ hyperparams_gbt = {
     "gbt__max_features": Categorical(["sqrt", 0.7, None]),
 }
 
-# HistGradientBoosting hyperparameters (unchanged)
+# HistGradientBoosting hyperparameters (EXACT)
 hyperparams_hgbt = {
     "hgbt__learning_rate": Real(1e-3, 0.2, prior="log-uniform"),
     "hgbt__max_iter": Integer(150, 800),
@@ -41,28 +43,37 @@ hyperparams_hgbt = {
     "hgbt__max_bins": Integer(127, 255),
 }
 
-for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
-    # Tune GBT (same as your GBT_bayes.py)
+# K-Fold loop
+for x_train, y_train, x_test_f, y_test_f in k_fold(scale=False):
+    # Tune GBT
     bayes_gbt = BayesSearchCV(
         pipe_gbt,
         hyperparams_gbt,
-        cv = k_,
-        n_iter = 20,
-        n_jobs = 1,  # same as your GBT_bayes.py
-        verbose = 4
+        cv=k_,
+        n_iter=20,
+        n_jobs=1,
+        verbose=4
     )
     bayes_gbt.fit(x_train, y_train)
 
-    # Tune HGBT (same as your HGBT_bayes.py)
+    # Tune HGBT
     bayes_hgbt = BayesSearchCV(
         pipe_hgbt,
         hyperparams_hgbt,
-        cv = k_,
-        n_iter = 20,
-        n_jobs = 1,  # same as your HGBT_bayes.py
-        verbose = 4
+        cv=k_,
+        n_iter=20,
+        n_jobs=1,
+        verbose=4
     )
     bayes_hgbt.fit(x_train, y_train)
 
-    # Predict and evaluate (simple average blend of the two models)
-    y_test = np.concatenate
+    # Predict with both models
+    pred_gbt = bayes_gbt.predict(x_test_f)
+    pred_hgbt = bayes_hgbt.predict(x_test_f)
+
+    # Average hybrid prediction
+    hybrid_pred = (pred_gbt + pred_hgbt) / 2
+
+    # Store predictions and ground truth
+    y_test = np.concatenate([y_test, y_test_f])
+    y_pred = np.concatenate([y_pred, hybrid_pred])
