@@ -13,65 +13,65 @@ y_test = np.array([])
 
 
 pipe_xgb = Pipeline([
-    ("scaler", StandardScaler()),
-    ("xgb", XGBRegressor())
+  ("scaler", StandardScaler()),
+  ("xgb", XGBRegressor())
 ])
 
 pipe_rf = Pipeline([
-    ("scaler", StandardScaler()),
-    ("rf", RandomForestRegressor())
+  ("scaler", StandardScaler()),
+  ("rf", RandomForestRegressor())
 ])
 
 # XGBoost hyperparameters (unchanged)
 hyperparams_xgb = {
-    "xgb__max_depth": Integer(3, 10),
-    "xgb__min_child_weight": Integer(1, 8),
-    "xgb__learning_rate": Real(1e-2, 0.2, prior="log-uniform"),
-    "xgb__n_estimators": Integer(100, 800),
-    "xgb__subsample": Real(0.7, 1.0),
-    "xgb__colsample_bytree": Real(0.6, 1.0),
-    "xgb__reg_alpha": Real(1e-5, 0.5, prior="log-uniform"),
-    "xgb__reg_lambda": Real(0.5, 2.0, prior="log-uniform"),
-    "xgb__gamma": Real(0.0, 2.0),
-    "xgb__tree_method": Categorical(["hist", "approx"]),
+  "xgb__max_depth": Integer(3, 10),
+  "xgb__min_child_weight": Integer(1, 8),
+  "xgb__learning_rate": Real(1e-2, 0.2, prior="log-uniform"),
+  "xgb__n_estimators": Integer(100, 800),
+  "xgb__subsample": Real(0.7, 1.0),
+  "xgb__colsample_bytree": Real(0.6, 1.0),
+  "xgb__reg_alpha": Real(1e-5, 0.5, prior="log-uniform"),
+  "xgb__reg_lambda": Real(0.5, 2.0, prior="log-uniform"),
+  "xgb__gamma": Real(0.0, 2.0),
+  "xgb__tree_method": Categorical(["hist", "approx"]),
 }
 
 # RandomForest hyperparameters (unchanged)
 hyperparams_rf = {
-    "rf__n_estimators": Integer(100, 1000),
-    "rf__max_depth": Categorical([None, 10, 25, 50, 75, 100]),
-    "rf__min_samples_split": Integer(2, 20),
-    "rf__min_samples_leaf": Integer(1, 10),
-    "rf__max_features": [1, "sqrt", "log2"],
-    "rf__bootstrap": Categorical([True, False]),
+  "rf__n_estimators": Integer(100, 1000),
+  "rf__max_depth": Categorical([None, 10, 25, 50, 75, 100]),
+  "rf__min_samples_split": Integer(2, 20),
+  "rf__min_samples_leaf": Integer(1, 10),
+  "rf__max_features": [1, "sqrt", "log2"],
+  "rf__bootstrap": Categorical([True, False]),
 }
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
-    # Tune XGB (same as your XGB_bayes.py)
-    bayes_xgb = BayesSearchCV(
-        pipe_xgb,
-        hyperparams_xgb,
-        cv = k_,
-        n_iter = 20,
-        n_jobs = 1, # This default to all threads, which conflict with XGB, worsening performance
-        verbose = 4
-    )
-    bayes_xgb.fit(x_train, y_train)
+  # Tune XGB (same as your XGB_bayes.py)
+  bayes_xgb = BayesSearchCV(
+    pipe_xgb,
+    hyperparams_xgb,
+    cv = k_,
+    n_iter = 20,
+    n_jobs = 1, # This default to all threads, which conflict with XGB, worsening performance
+    verbose = 4
+  )
+  bayes_xgb.fit(x_train, y_train)
 
-    # Tune RF (same as your RF_bayes.py)
-    bayes_rf = BayesSearchCV(
-        pipe_rf,
-        hyperparams_rf,
-        cv = k_,
-        n_iter = 20,
-        n_jobs = -1,
-        verbose = 4
-    )
-    bayes_rf.fit(x_train, y_train)
+  # Tune RF (same as your RF_bayes.py)
+  bayes_rf = BayesSearchCV(
+    pipe_rf,
+    hyperparams_rf,
+    cv = k_,
+    n_iter = 20,
+    n_jobs = -1,
+    verbose = 4
+  )
+  bayes_rf.fit(x_train, y_train)
 
-    # Predict and evaluate (simple average blend of the two models)
-    y_test = np.concatenate([y_test, y_test_f])
-    preds_xgb = bayes_xgb.predict(x_test_f)
-    preds_rf = bayes_rf.predict(x_test_f)
-    preds_blend = (preds_xgb + preds_rf) / 2.0
-    y_pred = np.concatenate([y_pred, preds_blend])
+  # Predict and evaluate (simple average blend of the two models)
+  y_test = np.concatenate([y_test, y_test_f])
+  preds_xgb = bayes_xgb.predict(x_test_f)
+  preds_rf = bayes_rf.predict(x_test_f)
+  preds_blend = (preds_xgb + preds_rf) / 2.0
+  y_pred = np.concatenate([y_pred, preds_blend])

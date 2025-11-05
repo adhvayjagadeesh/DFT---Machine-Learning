@@ -19,11 +19,11 @@ df = pd.read_csv("../../c2db_data/Final_rect_materials_filled_in_correctly.csv")
 # Drop columns with >90% missing data + identifiers
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
 df.drop(columns=[
-    'Direct band gap (PBE) [eV]', 'Direct band gap (PBE) [eV].1',
-    'Band gap (PBE) [eV]', 'Band gap (G₀W₀) [eV]',
-    'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]',
-    'Direct band gap (HSE06) [eV].1', 'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]'
+  'Direct band gap (PBE) [eV]', 'Direct band gap (PBE) [eV].1',
+  'Band gap (PBE) [eV]', 'Band gap (G₀W₀) [eV]',
+  'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]',
+  'Direct band gap (HSE06) [eV].1', 'CBM wrt. vacuum (PBE) [eV]',
+  'VBM wrt. vacuum (PBE) [eV]'
 ], inplace=True)
 df.drop(columns=drop_cols, inplace=True, errors='ignore')
 
@@ -31,9 +31,9 @@ df.drop(columns=drop_cols, inplace=True, errors='ignore')
 cat_cols = df.select_dtypes(include='object').columns
 label_encoders = {}
 for col in cat_cols:
-    le = LabelEncoder()
-    df[col] = le.fit_transform(df[col].astype(str))
-    label_encoders[col] = le
+  le = LabelEncoder()
+  df[col] = le.fit_transform(df[col].astype(str))
+  label_encoders[col] = le
 
 # Fill missing numerical values
 df.fillna(df.mean(numeric_only=True), inplace=True)
@@ -62,33 +62,33 @@ blr_all = []
 
 # Cross-validation loop
 for train_idx, val_idx in kf.split(X_train_scaled):
-    X_train, X_val = X_train_scaled[train_idx], X_train_scaled[val_idx]
-    y_train, y_val = y_train_full.iloc[train_idx], y_train_full.iloc[val_idx]
+  X_train, X_val = X_train_scaled[train_idx], X_train_scaled[val_idx]
+  y_train, y_val = y_train_full.iloc[train_idx], y_train_full.iloc[val_idx]
 
-    # Define models
-    svr = SVR(kernel='rbf', C=10, epsilon=0.1)
-    rf = RandomForestRegressor(n_estimators=100, random_state=42)
-    xgb_model = xgb.XGBRegressor(objective='reg:squarederror', n_estimators=100, random_state=42)
-    blr = BayesianRidge()
+  # Define models
+  svr = SVR(kernel='rbf', C=10, epsilon=0.1)
+  rf = RandomForestRegressor(n_estimators=100, random_state=42)
+  xgb_model = xgb.XGBRegressor(objective='reg:squarederror', n_estimators=100, random_state=42)
+  blr = BayesianRidge()
 
-    # Train models
-    svr.fit(X_train, y_train)
-    rf.fit(X_train, y_train)
-    xgb_model.fit(X_train, y_train)
-    blr.fit(X_train, y_train)
+  # Train models
+  svr.fit(X_train, y_train)
+  rf.fit(X_train, y_train)
+  xgb_model.fit(X_train, y_train)
+  blr.fit(X_train, y_train)
 
-    # Predict
-    svr_pred = svr.predict(X_val)
-    rf_pred = rf.predict(X_val)
-    xgb_pred = xgb_model.predict(X_val)
-    blr_pred = blr.predict(X_val)
+  # Predict
+  svr_pred = svr.predict(X_val)
+  rf_pred = rf.predict(X_val)
+  xgb_pred = xgb_model.predict(X_val)
+  blr_pred = blr.predict(X_val)
 
-    # Store predictions
-    all_true.extend(y_val)
-    svr_all.extend(svr_pred)
-    rf_all.extend(rf_pred)
-    xgb_all.extend(xgb_pred)
-    blr_all.extend(blr_pred)
+  # Store predictions
+  all_true.extend(y_val)
+  svr_all.extend(svr_pred)
+  rf_all.extend(rf_pred)
+  xgb_all.extend(xgb_pred)
+  blr_all.extend(blr_pred)
 
 # Convert to arrays
 y_true = np.array(all_true)
@@ -96,8 +96,8 @@ pred_matrix = np.vstack([svr_all, rf_all, xgb_all, blr_all]).T
 
 # Optimize weights for hybrid model
 def loss_fn(weights):
-    blended = np.dot(pred_matrix, weights)
-    return mean_absolute_error(y_true, blended)
+  blended = np.dot(pred_matrix, weights)
+  return mean_absolute_error(y_true, blended)
 
 init_weights = [1/4, 1/4, 1/4, 1/4]
 bounds = [(0, 1)] * 4

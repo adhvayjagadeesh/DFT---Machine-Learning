@@ -11,15 +11,15 @@ from sklearn.utils import resample
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
 df = df.drop(columns=[
-    'Direct band gap (PBE) [eV]',
-    'Direct band gap (PBE) [eV].1',
-    'Band gap (PBE) [eV]',
-    'Band gap (G₀W₀) [eV]',
-    'Direct band gap (G₀W₀) [eV]',
-    'Direct band gap (HSE06) [eV]',
-    'Direct band gap (HSE06) [eV].1',
-    'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]',
+  'Direct band gap (PBE) [eV]',
+  'Direct band gap (PBE) [eV].1',
+  'Band gap (PBE) [eV]',
+  'Band gap (G₀W₀) [eV]',
+  'Direct band gap (G₀W₀) [eV]',
+  'Direct band gap (HSE06) [eV]',
+  'Direct band gap (HSE06) [eV].1',
+  'CBM wrt. vacuum (PBE) [eV]',
+  'VBM wrt. vacuum (PBE) [eV]',
 ])
 
 # Set target
@@ -46,23 +46,23 @@ all_y_true, all_y_pred = [], []
 
 # Cross-validation with bootstraps
 for fold_idx, (train_idx, test_idx) in enumerate(kf.split(X_scaled)):
-    X_train_fold, X_test_fold = X_scaled[train_idx], X_scaled[test_idx]
-    y_train_fold, y_test_fold = y.iloc[train_idx], y.iloc[test_idx]
+  X_train_fold, X_test_fold = X_scaled[train_idx], X_scaled[test_idx]
+  y_train_fold, y_test_fold = y.iloc[train_idx], y.iloc[test_idx]
+  
+  for b in range(n_bootstraps):
+    X_resampled, y_resampled = resample(X_train_fold, y_train_fold, random_state=fold_idx * 100 + b)
     
-    for b in range(n_bootstraps):
-        X_resampled, y_resampled = resample(X_train_fold, y_train_fold, random_state=fold_idx * 100 + b)
-        
-        model = LassoCV(cv=5, random_state=42)
-        model.fit(X_resampled, y_resampled)
-        
-        y_pred = model.predict(X_test_fold)
-        
-        r2_scores.append(r2_score(y_test_fold, y_pred))
-        mae_scores.append(mean_absolute_error(y_test_fold, y_pred))
-        rmse_scores.append(np.sqrt(mean_squared_error(y_test_fold, y_pred)))
-        
-        all_y_true.extend(y_test_fold)
-        all_y_pred.extend(y_pred)
+    model = LassoCV(cv=5, random_state=42)
+    model.fit(X_resampled, y_resampled)
+    
+    y_pred = model.predict(X_test_fold)
+    
+    r2_scores.append(r2_score(y_test_fold, y_pred))
+    mae_scores.append(mean_absolute_error(y_test_fold, y_pred))
+    rmse_scores.append(np.sqrt(mean_squared_error(y_test_fold, y_pred)))
+    
+    all_y_true.extend(y_test_fold)
+    all_y_pred.extend(y_pred)
 
 # Metrics
 print("\nLASSO with 5-Fold CV + 100 Bootstraps/Fold")

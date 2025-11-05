@@ -12,12 +12,12 @@ df = pd.read_csv(file_path)
 
 # Drop columns with too many missing values and non-relevant identifiers
 drop_columns = [
-    "Unnamed: 0", "Material ID", "Formula", "Structure", 
-    "Bulk Modulus, Voigt", "Bulk Modulus, Reuss", "Bulk Modulus, VRH",
-    "Shear Modulus, Voigt", "Shear Modulus, Reuss", "Shear Modulus, VRH",
-    "Piezoelectric Modulus", "Total Dielectric Constant", 
-    "Ionic Dielectric Constant", "Static Dielectric Constant",
-    "Weighted Surface Energy", "Surface Anisotropy", "Shape Factor", "Work Function"
+  "Unnamed: 0", "Material ID", "Formula", "Structure", 
+  "Bulk Modulus, Voigt", "Bulk Modulus, Reuss", "Bulk Modulus, VRH",
+  "Shear Modulus, Voigt", "Shear Modulus, Reuss", "Shear Modulus, VRH",
+  "Piezoelectric Modulus", "Total Dielectric Constant", 
+  "Ionic Dielectric Constant", "Static Dielectric Constant",
+  "Weighted Surface Energy", "Surface Anisotropy", "Shape Factor", "Work Function"
 ]
 df = df.drop(columns=drop_columns)
 
@@ -25,9 +25,9 @@ df = df.drop(columns=drop_columns)
 categorical_cols = ["Crystal System", "Space Group Symbol", "Magnetic Ordering"]
 label_encoders = {}
 for col in categorical_cols:
-    le = LabelEncoder()
-    df[col] = le.fit_transform(df[col])
-    label_encoders[col] = le
+  le = LabelEncoder()
+  df[col] = le.fit_transform(df[col])
+  label_encoders[col] = le
 
 # Fill remaining missing values with column means
 df.fillna(df.mean(), inplace=True)

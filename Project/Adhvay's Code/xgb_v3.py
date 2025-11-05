@@ -18,9 +18,9 @@ df.drop(columns=drop_cols, inplace=True, errors='ignore')
 cat_cols = df.select_dtypes(include='object').columns
 label_encoders = {}
 for col in cat_cols:
-    le = LabelEncoder()
-    df[col] = le.fit_transform(df[col].astype(str))
-    label_encoders[col] = le
+  le = LabelEncoder()
+  df[col] = le.fit_transform(df[col].astype(str))
+  label_encoders[col] = le
 
 # Fill remaining missing values
 df.fillna(df.mean(numeric_only=True), inplace=True)

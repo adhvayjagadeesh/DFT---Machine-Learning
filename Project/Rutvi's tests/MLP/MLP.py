@@ -16,11 +16,11 @@ df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rec
 # Drop high-null and specified columns
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
 df.drop(columns=[
-    'Direct band gap (PBE) [eV]', 'Direct band gap (PBE) [eV].1',
-    'Band gap (PBE) [eV]', 'Band gap (G₀W₀) [eV]',
-    'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]',
-    'Direct band gap (HSE06) [eV].1', 'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]'
+  'Direct band gap (PBE) [eV]', 'Direct band gap (PBE) [eV].1',
+  'Band gap (PBE) [eV]', 'Band gap (G₀W₀) [eV]',
+  'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]',
+  'Direct band gap (HSE06) [eV].1', 'CBM wrt. vacuum (PBE) [eV]',
+  'VBM wrt. vacuum (PBE) [eV]'
 ], inplace=True)
 df.drop(columns=drop_cols, inplace=True, errors='ignore')
 
@@ -28,9 +28,9 @@ df.drop(columns=drop_cols, inplace=True, errors='ignore')
 cat_cols = df.select_dtypes(include='object').columns
 label_encoders = {}
 for col in cat_cols:
-    le = LabelEncoder()
-    df[col] = le.fit_transform(df[col].astype(str))
-    label_encoders[col] = le
+  le = LabelEncoder()
+  df[col] = le.fit_transform(df[col].astype(str))
+  label_encoders[col] = le
 
 # Define target and features
 target_col = 'Band gap (HSE06) [eV]'
@@ -58,18 +58,18 @@ train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 
 # Define MLP
 class MLP(nn.Module):
-    def __init__(self, input_size):
-        super(MLP, self).__init__()
-        self.model = nn.Sequential(
-            nn.Linear(input_size, 128),
-            nn.ReLU(),
-            nn.Linear(128, 64),
-            nn.ReLU(),
-            nn.Linear(64, 1)
-        )
+  def __init__(self, input_size):
+    super(MLP, self).__init__()
+    self.model = nn.Sequential(
+      nn.Linear(input_size, 128),
+      nn.ReLU(),
+      nn.Linear(128, 64),
+      nn.ReLU(),
+      nn.Linear(64, 1)
+    )
 
-    def forward(self, x):
-        return self.model(x)
+  def forward(self, x):
+    return self.model(x)
 
 # Instantiate model
 model = MLP(input_size=X_train.shape[1])
@@ -82,34 +82,34 @@ train_losses = []
 test_losses = []
 
 for epoch in range(epochs):
-    model.train()
-    running_loss = 0.0
-    for batch_X, batch_y in train_loader:
-        optimizer.zero_grad()
-        outputs = model(batch_X)
-        loss = criterion(outputs, batch_y)
-        loss.backward()
-        optimizer.step()
-        running_loss += loss.item()
-    
-    avg_loss = running_loss / len(train_loader)
-    train_losses.append(avg_loss)
+  model.train()
+  running_loss = 0.0
+  for batch_X, batch_y in train_loader:
+    optimizer.zero_grad()
+    outputs = model(batch_X)
+    loss = criterion(outputs, batch_y)
+    loss.backward()
+    optimizer.step()
+    running_loss += loss.item()
+  
+  avg_loss = running_loss / len(train_loader)
+  train_losses.append(avg_loss)
 
-    model.eval()
-    with torch.no_grad():
-        test_preds = model(X_test_tensor)
-        test_loss = criterion(test_preds, y_test_tensor)
-        test_losses.append(test_loss.item())
+  model.eval()
+  with torch.no_grad():
+    test_preds = model(X_test_tensor)
+    test_loss = criterion(test_preds, y_test_tensor)
+    test_losses.append(test_loss.item())
 
-    if epoch % 10 == 0:
-        print(f"Epoch {epoch}: Train MSE = {avg_loss:.4f}, Test MSE = {test_loss.item():.4f}")
+  if epoch % 10 == 0:
+    print(f"Epoch {epoch}: Train MSE = {avg_loss:.4f}, Test MSE = {test_loss.item():.4f}")
 
 # Final predictions
 model.eval()
 with torch.no_grad():
-    y_pred = model(X_test_tensor).numpy().flatten()
-    y_true = y_test_tensor.numpy().flatten()
-    errors = y_pred - y_true
+  y_pred = model(X_test_tensor).numpy().flatten()
+  y_true = y_test_tensor.numpy().flatten()
+  errors = y_pred - y_true
 
 # Plot 1: Prediction vs Actual
 plt.figure(figsize=(6, 6))
@@ -152,6 +152,6 @@ rmse = np.sqrt(mean_squared_error(y_true, y_pred))
 
 # Print the results
 print(f"\nPerformance Metrics on Test Set:")
-print(f"R² Score:      {r2:.4f}")
-print(f"MAE:           {mae:.4f} eV")
-print(f"RMSE:          {rmse:.4f} eV")
+print(f"R² Score:    {r2:.4f}")
+print(f"MAE:       {mae:.4f} eV")
+print(f"RMSE:      {rmse:.4f} eV")

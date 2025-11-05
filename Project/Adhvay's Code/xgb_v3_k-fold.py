@@ -18,9 +18,9 @@ df.drop(columns=drop_cols, inplace=True, errors='ignore')
 cat_cols = df.select_dtypes(include='object').columns
 label_encoders = {}
 for col in cat_cols:
-    le = LabelEncoder()
-    df[col] = le.fit_transform(df[col].astype(str))
-    label_encoders[col] = le
+  le = LabelEncoder()
+  df[col] = le.fit_transform(df[col].astype(str))
+  label_encoders[col] = le
 
 # Fill remaining missing values
 df.fillna(df.mean(numeric_only=True), inplace=True)
@@ -43,25 +43,25 @@ last_y_test = None
 last_y_pred = None
 
 for fold, (train_index, test_index) in enumerate(kf.split(X_scaled), 1):
-    X_train, X_test = X_scaled[train_index], X_scaled[test_index]
-    y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+  X_train, X_test = X_scaled[train_index], X_scaled[test_index]
+  y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
-    model = XGBRegressor(n_estimators=50, learning_rate=0.1, max_depth=3, random_state=42)
-    model.fit(X_train, y_train)
-    
-    y_pred = model.predict(X_test)
-    mae = mean_absolute_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
+  model = XGBRegressor(n_estimators=50, learning_rate=0.1, max_depth=3, random_state=42)
+  model.fit(X_train, y_train)
+  
+  y_pred = model.predict(X_test)
+  mae = mean_absolute_error(y_test, y_pred)
+  r2 = r2_score(y_test, y_pred)
 
-    mae_scores.append(mae)
-    r2_scores.append(r2)
+  mae_scores.append(mae)
+  r2_scores.append(r2)
 
-    print(f"Fold {fold}: MAE = {mae:.4f}, R² = {r2:.4f}")
+  print(f"Fold {fold}: MAE = {mae:.4f}, R² = {r2:.4f}")
 
-    # Save last fold data for plotting
-    if fold == kf.get_n_splits():
-        last_y_test = y_test
-        last_y_pred = y_pred
+  # Save last fold data for plotting
+  if fold == kf.get_n_splits():
+    last_y_test = y_test
+    last_y_pred = y_pred
 
 # Final metrics summary
 print(f"\nAverage MAE: {np.mean(mae_scores):.4f} ± {np.std(mae_scores):.4f}")

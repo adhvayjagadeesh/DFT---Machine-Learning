@@ -47,42 +47,42 @@ BAYES_N_JOBS = 1
 # Pipelines & param spaces
 # ------------------------
 pipe_xgb = Pipeline([
-    ("scaler", StandardScaler()),
-    ("xgb", XGBRegressor(
-        objective="reg:squarederror",
-        random_state=RNG_SEED,
-        tree_method="hist",
-        n_jobs=1,
-        use_label_encoder=False,
-        verbosity=0,
-        eval_metric="rmse"
-    ))
+  ("scaler", StandardScaler()),
+  ("xgb", XGBRegressor(
+    objective="reg:squarederror",
+    random_state=RNG_SEED,
+    tree_method="hist",
+    n_jobs=1,
+    use_label_encoder=False,
+    verbosity=0,
+    eval_metric="rmse"
+  ))
 ])
 
 pipe_rf = Pipeline([
-    ("scaler", StandardScaler()),
-    ("rf", RandomForestRegressor(random_state=RNG_SEED, n_jobs=1))
+  ("scaler", StandardScaler()),
+  ("rf", RandomForestRegressor(random_state=RNG_SEED, n_jobs=1))
 ])
 
 hyperparams_xgb = {
-    "xgb__max_depth": Integer(3, 8),
-    "xgb__min_child_weight": Integer(1, 8),
-    "xgb__learning_rate": Real(1e-2, 1e-1, prior="log-uniform"),
-    "xgb__n_estimators": Integer(100, 500),
-    "xgb__subsample": Real(0.7, 1.0),
-    "xgb__colsample_bytree": Real(0.5, 1.0),
-    "xgb__reg_alpha": Real(1e-6, 0.5, prior="log-uniform"),
-    "xgb__reg_lambda": Real(0.5, 2.0, prior="log-uniform"),
-    "xgb__gamma": Real(0.0, 2.0),
+  "xgb__max_depth": Integer(3, 8),
+  "xgb__min_child_weight": Integer(1, 8),
+  "xgb__learning_rate": Real(1e-2, 1e-1, prior="log-uniform"),
+  "xgb__n_estimators": Integer(100, 500),
+  "xgb__subsample": Real(0.7, 1.0),
+  "xgb__colsample_bytree": Real(0.5, 1.0),
+  "xgb__reg_alpha": Real(1e-6, 0.5, prior="log-uniform"),
+  "xgb__reg_lambda": Real(0.5, 2.0, prior="log-uniform"),
+  "xgb__gamma": Real(0.0, 2.0),
 }
 
 hyperparams_rf = {
-    "rf__n_estimators": Integer(100, 500),
-    "rf__max_depth": Categorical([None, 10, 25, 50]),
-    "rf__min_samples_split": Integer(2, 12),
-    "rf__min_samples_leaf": Integer(1, 6),
-    "rf__max_features": Categorical(["sqrt", "log2"]),
-    "rf__bootstrap": Categorical([True, False]),
+  "rf__n_estimators": Integer(100, 500),
+  "rf__max_depth": Categorical([None, 10, 25, 50]),
+  "rf__min_samples_split": Integer(2, 12),
+  "rf__min_samples_leaf": Integer(1, 6),
+  "rf__max_features": Categorical(["sqrt", "log2"]),
+  "rf__bootstrap": Categorical([True, False]),
 }
 
 # ------------------------
@@ -94,22 +94,22 @@ n_iter_bayes = 20
 verbose_bayes = 1
 
 def make_bayes_xgb(n_iter=n_iter_bayes):
-    return BayesSearchCV(
-        pipe_xgb, hyperparams_xgb,
-        cv=inner_k, n_iter=n_iter,
-        n_jobs=BAYES_N_JOBS,
-        scoring="neg_mean_squared_error",
-        verbose=verbose_bayes, random_state=RNG_SEED
-    )
+  return BayesSearchCV(
+    pipe_xgb, hyperparams_xgb,
+    cv=inner_k, n_iter=n_iter,
+    n_jobs=BAYES_N_JOBS,
+    scoring="neg_mean_squared_error",
+    verbose=verbose_bayes, random_state=RNG_SEED
+  )
 
 def make_bayes_rf(n_iter=n_iter_bayes):
-    return BayesSearchCV(
-        pipe_rf, hyperparams_rf,
-        cv=inner_k, n_iter=n_iter,
-        n_jobs=BAYES_N_JOBS,
-        scoring="neg_mean_squared_error",
-        verbose=verbose_bayes, random_state=RNG_SEED
-    )
+  return BayesSearchCV(
+    pipe_rf, hyperparams_rf,
+    cv=inner_k, n_iter=n_iter,
+    n_jobs=BAYES_N_JOBS,
+    scoring="neg_mean_squared_error",
+    verbose=verbose_bayes, random_state=RNG_SEED
+  )
 
 # ------------------------------
 # Prepare data & containers
@@ -129,76 +129,76 @@ start_time = time.time()
 print(f"Starting nested CV: outer_k={outer_k}, inner_k={inner_k}, n_iter_bayes={n_iter_bayes}")
 
 for fold_idx, (train_idx, val_idx) in enumerate(outer_cv.split(X, y), start=1):
-    t0 = time.time()
-    print("\n" + "="*60)
-    print(f"OUTER FOLD {fold_idx}/{outer_k}")
-    print("="*60)
+  t0 = time.time()
+  print("\n" + "="*60)
+  print(f"OUTER FOLD {fold_idx}/{outer_k}")
+  print("="*60)
 
-    X_train, X_val = X.iloc[train_idx], X.iloc[val_idx]
-    y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
+  X_train, X_val = X.iloc[train_idx], X.iloc[val_idx]
+  y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
 
-    # --- Inner tuning ---
-    print("Tuning XGBoost (inner CV)...")
-    bayes_xgb = make_bayes_xgb()
-    bayes_xgb.fit(X_train, y_train)
-    best_xgb = bayes_xgb.best_estimator_
-    print(" -> Best XGB params:", bayes_xgb.best_params_)
+  # --- Inner tuning ---
+  print("Tuning XGBoost (inner CV)...")
+  bayes_xgb = make_bayes_xgb()
+  bayes_xgb.fit(X_train, y_train)
+  best_xgb = bayes_xgb.best_estimator_
+  print(" -> Best XGB params:", bayes_xgb.best_params_)
 
-    print("Tuning RandomForest (inner CV)...")
-    bayes_rf = make_bayes_rf()
-    bayes_rf.fit(X_train, y_train)
-    best_rf = bayes_rf.best_estimator_
-    print(" -> Best RF params:", bayes_rf.best_params_)
+  print("Tuning RandomForest (inner CV)...")
+  bayes_rf = make_bayes_rf()
+  bayes_rf.fit(X_train, y_train)
+  best_rf = bayes_rf.best_estimator_
+  print(" -> Best RF params:", bayes_rf.best_params_)
 
-    # --- OOF preds for meta training (safe single-threaded)
-    print("Generating OOF predictions for meta training (single-threaded safe mode)...")
-    oof_xgb = cross_val_predict(best_xgb, X_train, y_train, cv=inner_k, method="predict", n_jobs=1)
-    oof_rf  = cross_val_predict(best_rf,  X_train, y_train, cv=inner_k, method="predict", n_jobs=1)
+  # --- OOF preds for meta training (safe single-threaded)
+  print("Generating OOF predictions for meta training (single-threaded safe mode)...")
+  oof_xgb = cross_val_predict(best_xgb, X_train, y_train, cv=inner_k, method="predict", n_jobs=1)
+  oof_rf  = cross_val_predict(best_rf,  X_train, y_train, cv=inner_k, method="predict", n_jobs=1)
 
-    meta_X_train = np.vstack([oof_xgb, oof_rf]).T
-    meta = Ridge(alpha=1.0, random_state=RNG_SEED)
-    meta.fit(meta_X_train, y_train)
+  meta_X_train = np.vstack([oof_xgb, oof_rf]).T
+  meta = Ridge(alpha=1.0, random_state=RNG_SEED)
+  meta.fit(meta_X_train, y_train)
 
-    # --- Predictions on outer validation split ---
-    preds_xgb = best_xgb.predict(X_val)
-    preds_rf  = best_rf.predict(X_val)
-    preds_blend = meta.predict(np.vstack([preds_xgb, preds_rf]).T)  # meta learner blend (preferred)
-    # if you prefer simple average: preds_blend = (preds_xgb + preds_rf) / 2.0
+  # --- Predictions on outer validation split ---
+  preds_xgb = best_xgb.predict(X_val)
+  preds_rf  = best_rf.predict(X_val)
+  preds_blend = meta.predict(np.vstack([preds_xgb, preds_rf]).T)  # meta learner blend (preferred)
+  # if you prefer simple average: preds_blend = (preds_xgb + preds_rf) / 2.0
 
-    # mimic your original accumulators
-    y_test = np.concatenate([y_test, y_val.values])
-    y_pred = np.concatenate([y_pred, preds_blend])
+  # mimic your original accumulators
+  y_test = np.concatenate([y_test, y_val.values])
+  y_pred = np.concatenate([y_pred, preds_blend])
 
-    # compute robust metrics (RMSE = sqrt(MSE))
-    def metrics(y_t, y_p):
-        y_t = np.asarray(y_t)
-        y_p = np.asarray(y_p)
-        mse = mean_squared_error(y_t, y_p)
-        rmse = float(np.sqrt(mse))
-        mae = float(mean_absolute_error(y_t, y_p))
-        r2 = float(r2_score(y_t, y_p))
-        return {"rmse": rmse, "mae": mae, "r2": r2}
+  # compute robust metrics (RMSE = sqrt(MSE))
+  def metrics(y_t, y_p):
+    y_t = np.asarray(y_t)
+    y_p = np.asarray(y_p)
+    mse = mean_squared_error(y_t, y_p)
+    rmse = float(np.sqrt(mse))
+    mae = float(mean_absolute_error(y_t, y_p))
+    r2 = float(r2_score(y_t, y_p))
+    return {"rmse": rmse, "mae": mae, "r2": r2}
 
-    m_xgb = metrics(y_val, preds_xgb)
-    m_rf  = metrics(y_val, preds_rf)
-    m_meta = metrics(y_val, preds_blend)
+  m_xgb = metrics(y_val, preds_xgb)
+  m_rf  = metrics(y_val, preds_rf)
+  m_meta = metrics(y_val, preds_blend)
 
-    print(f"Fold {fold_idx} — XGB: RMSE={m_xgb['rmse']:.6f}, MAE={m_xgb['mae']:.6f}, R2={m_xgb['r2']:.6f}")
-    print(f"Fold {fold_idx} — RF : RMSE={m_rf['rmse']:.6f}, MAE={m_rf['mae']:.6f}, R2={m_rf['r2']:.6f}")
-    print(f"Fold {fold_idx} — META: RMSE={m_meta['rmse']:.6f}, MAE={m_meta['mae']:.6f}, R2={m_meta['r2']:.6f}")
+  print(f"Fold {fold_idx} — XGB: RMSE={m_xgb['rmse']:.6f}, MAE={m_xgb['mae']:.6f}, R2={m_xgb['r2']:.6f}")
+  print(f"Fold {fold_idx} — RF : RMSE={m_rf['rmse']:.6f}, MAE={m_rf['mae']:.6f}, R2={m_rf['r2']:.6f}")
+  print(f"Fold {fold_idx} — META: RMSE={m_meta['rmse']:.6f}, MAE={m_meta['mae']:.6f}, R2={m_meta['r2']:.6f}")
 
-    # meta coefficients
-    print("Meta coefficients:", getattr(meta, "coef_", None), "intercept:", getattr(meta, "intercept_", None))
+  # meta coefficients
+  print("Meta coefficients:", getattr(meta, "coef_", None), "intercept:", getattr(meta, "intercept_", None))
 
-    fold_results.append({
-        "fold": fold_idx,
-        "xgb": m_xgb,
-        "rf": m_rf,
-        "meta": m_meta,
-        "meta_coef": getattr(meta, "coef_", None).tolist() if getattr(meta, "coef_", None) is not None else None
-    })
+  fold_results.append({
+    "fold": fold_idx,
+    "xgb": m_xgb,
+    "rf": m_rf,
+    "meta": m_meta,
+    "meta_coef": getattr(meta, "coef_", None).tolist() if getattr(meta, "coef_", None) is not None else None
+  })
 
-    print(f"Time for fold {fold_idx}: {time.time() - t0:.1f}s")
+  print(f"Time for fold {fold_idx}: {time.time() - t0:.1f}s")
 
 # -------------------------
 # Aggregated metrics (like original script might report)
@@ -253,10 +253,10 @@ fig_path = os.path.join("models", "pred_vs_true.png")
 plt.savefig(fig_path, dpi=150)
 print(f"Saved figure -> {fig_path}")
 try:
-    plt.show()
+  plt.show()
 except Exception:
-    # some headless environments can't show -> continue
-    pass
+  # some headless environments can't show -> continue
+  pass
 
 # -------------------------
 # Optional: final refit on full dataset and save final models
@@ -265,26 +265,26 @@ REFIT_FINAL = True
 FINAL_N_ITER = max(n_iter_bayes, 30)
 
 if REFIT_FINAL:
-    print("\nRefitting tuned models on full dataset (this can take time)...")
-    t_ref = time.time()
-    bayes_xgb_full = make_bayes_xgb(n_iter=FINAL_N_ITER)
-    bayes_rf_full = make_bayes_rf(n_iter=FINAL_N_ITER)
-    bayes_xgb_full.fit(X, y)
-    bayes_rf_full.fit(X, y)
-    best_xgb_full = bayes_xgb_full.best_estimator_
-    best_rf_full  = bayes_rf_full.best_estimator_
-    print("Final best XGB params:", bayes_xgb_full.best_params_)
-    print("Final best RF params :", bayes_rf_full.best_params_)
+  print("\nRefitting tuned models on full dataset (this can take time)...")
+  t_ref = time.time()
+  bayes_xgb_full = make_bayes_xgb(n_iter=FINAL_N_ITER)
+  bayes_rf_full = make_bayes_rf(n_iter=FINAL_N_ITER)
+  bayes_xgb_full.fit(X, y)
+  bayes_rf_full.fit(X, y)
+  best_xgb_full = bayes_xgb_full.best_estimator_
+  best_rf_full  = bayes_rf_full.best_estimator_
+  print("Final best XGB params:", bayes_xgb_full.best_params_)
+  print("Final best RF params :", bayes_rf_full.best_params_)
 
-    oof_xgb_full = cross_val_predict(best_xgb_full, X, y, cv=inner_k, method="predict", n_jobs=1)
-    oof_rf_full  = cross_val_predict(best_rf_full,  X, y, cv=inner_k, method="predict", n_jobs=1)
-    meta_X_full = np.vstack([oof_xgb_full, oof_rf_full]).T
-    meta_final = Ridge(alpha=1.0, random_state=RNG_SEED)
-    meta_final.fit(meta_X_full, y)
+  oof_xgb_full = cross_val_predict(best_xgb_full, X, y, cv=inner_k, method="predict", n_jobs=1)
+  oof_rf_full  = cross_val_predict(best_rf_full,  X, y, cv=inner_k, method="predict", n_jobs=1)
+  meta_X_full = np.vstack([oof_xgb_full, oof_rf_full]).T
+  meta_final = Ridge(alpha=1.0, random_state=RNG_SEED)
+  meta_final.fit(meta_X_full, y)
 
-    joblib.dump(best_xgb_full, os.path.join("models", "best_xgb_full.joblib"))
-    joblib.dump(best_rf_full,  os.path.join("models", "best_rf_full.joblib"))
-    joblib.dump(meta_final,    os.path.join("models", "meta_final.joblib"))
-    print(f"Saved final models to models/ (time: {time.time()-t_ref:.1f}s)")
+  joblib.dump(best_xgb_full, os.path.join("models", "best_xgb_full.joblib"))
+  joblib.dump(best_rf_full,  os.path.join("models", "best_rf_full.joblib"))
+  joblib.dump(meta_final,  os.path.join("models", "meta_final.joblib"))
+  print(f"Saved final models to models/ (time: {time.time()-t_ref:.1f}s)")
 
 print("Script finished.")

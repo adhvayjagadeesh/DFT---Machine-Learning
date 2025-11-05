@@ -10,15 +10,15 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
 df = df.drop(columns=[
-    'Direct band gap (PBE) [eV]',
-    'Direct band gap (PBE) [eV].1',
-    'Band gap (PBE) [eV]',
-    'Band gap (G₀W₀) [eV]',
-    'Direct band gap (G₀W₀) [eV]',
-    'Direct band gap (HSE06) [eV]',
-    'Direct band gap (HSE06) [eV].1',
-    'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]',
+  'Direct band gap (PBE) [eV]',
+  'Direct band gap (PBE) [eV].1',
+  'Band gap (PBE) [eV]',
+  'Band gap (G₀W₀) [eV]',
+  'Direct band gap (G₀W₀) [eV]',
+  'Direct band gap (HSE06) [eV]',
+  'Direct band gap (HSE06) [eV].1',
+  'CBM wrt. vacuum (PBE) [eV]',
+  'VBM wrt. vacuum (PBE) [eV]',
 ])
 
 # Set target
@@ -56,8 +56,8 @@ r2 = r2_score(y_test, y_pred)
 print(f"\nLASSO with 5-Fold CV")
 print(f"Optimal alpha: {lasso.alpha_:.6f}")
 print(f"R² Score: {r2:.4f}")
-print(f"MAE     : {mae:.4f}")
-print(f"RMSE    : {rmse:.4f}")
+print(f"MAE   : {mae:.4f}")
+print(f"RMSE  : {rmse:.4f}")
 
 # Plot: Actual vs Predicted
 plt.figure(figsize=(6, 6))

@@ -13,24 +13,24 @@ df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rec
 
 # Drop irrelevant or redundant columns
 df = df.drop(columns=[
-    'Direct band gap (PBE) [eV]',
-    'Direct band gap (PBE) [eV].1',
-    'Band gap (PBE) [eV]',
-    'Band gap (G₀W₀) [eV]',
-    'Direct band gap (G₀W₀) [eV]',
-    'Direct band gap (HSE06) [eV]',
-    'Direct band gap (HSE06) [eV].1',
-    'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]'
+  'Direct band gap (PBE) [eV]',
+  'Direct band gap (PBE) [eV].1',
+  'Band gap (PBE) [eV]',
+  'Band gap (G₀W₀) [eV]',
+  'Direct band gap (G₀W₀) [eV]',
+  'Direct band gap (HSE06) [eV]',
+  'Direct band gap (HSE06) [eV].1',
+  'CBM wrt. vacuum (PBE) [eV]',
+  'VBM wrt. vacuum (PBE) [eV]'
 ])
 
 # Encode categorical columns BEFORE defining X
 cat_cols = df.select_dtypes(include='object').columns
 label_encoders = {}
 for col in cat_cols:
-    le = LabelEncoder()
-    df[col] = le.fit_transform(df[col].astype(str))
-    label_encoders[col] = le
+  le = LabelEncoder()
+  df[col] = le.fit_transform(df[col].astype(str))
+  label_encoders[col] = le
 
 # Define features and target
 target = 'Band gap (HSE06) [eV]'
@@ -39,7 +39,7 @@ y = df[target]
 
 # Split data into train/test sets
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
+  X, y, test_size=0.2, random_state=42
 )
 
 # Train the Random Forest model

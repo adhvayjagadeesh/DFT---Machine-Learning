@@ -18,12 +18,12 @@ df = pd.read_csv("c2db_rectangular-lattice-structure_materials.csv")
 # Drop columns with >90% missing data + identifiers
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
 df.drop(columns=[
-    'Formula', 
-    'Band gap (G₀W₀) [eV]', 
-    'Band gap (HSE06) [eV] ▲',
-    'Direct band gap (PBE) [eV]', 
-    'Direct band gap (G₀W₀) [eV]', 
-    'Direct band gap (HSE06) [eV]'
+  'Formula', 
+  'Band gap (G₀W₀) [eV]', 
+  'Band gap (HSE06) [eV] ▲',
+  'Direct band gap (PBE) [eV]', 
+  'Direct band gap (G₀W₀) [eV]', 
+  'Direct band gap (HSE06) [eV]'
 ], inplace=True)
 df.drop(columns=drop_cols, inplace=True, errors='ignore')
 
@@ -31,9 +31,9 @@ df.drop(columns=drop_cols, inplace=True, errors='ignore')
 cat_cols = df.select_dtypes(include='object').columns
 label_encoders = {}
 for col in cat_cols:
-    le = LabelEncoder()
-    df[col] = le.fit_transform(df[col].astype(str))
-    label_encoders[col] = le
+  le = LabelEncoder()
+  df[col] = le.fit_transform(df[col].astype(str))
+  label_encoders[col] = le
 
 # Fill missing numerical values
 df.fillna(df.mean(numeric_only=True), inplace=True)
@@ -48,7 +48,7 @@ X_scaled = scaler.fit_transform(X)
 
 # Train-test split
 X_train_val, X_holdout, y_train_val, y_holdout = train_test_split(
-    X_scaled, y, test_size=0.2, random_state=42
+  X_scaled, y, test_size=0.2, random_state=42
 )
 
 # Initialize K-Fold
@@ -62,29 +62,29 @@ mlp_all = []
 
 # Cross-validation loop
 for train_idx, val_idx in kf.split(X_train_val):
-    X_train, X_val = X_train_val[train_idx], X_train_val[val_idx]
-    y_train, y_val = y_train_val.iloc[train_idx], y_train_val.iloc[val_idx]
+  X_train, X_val = X_train_val[train_idx], X_train_val[val_idx]
+  y_train, y_val = y_train_val.iloc[train_idx], y_train_val.iloc[val_idx]
 
-    # Define models
-    svr = SVR(kernel='rbf', C=10, epsilon=0.1)
-    rf = RandomForestRegressor(n_estimators=100, random_state=42)
-    mlp = MLPRegressor(hidden_layer_sizes=(32, 16), max_iter=500, random_state=42)
+  # Define models
+  svr = SVR(kernel='rbf', C=10, epsilon=0.1)
+  rf = RandomForestRegressor(n_estimators=100, random_state=42)
+  mlp = MLPRegressor(hidden_layer_sizes=(32, 16), max_iter=500, random_state=42)
 
-    # Train
-    svr.fit(X_train, y_train)
-    rf.fit(X_train, y_train)
-    mlp.fit(X_train, y_train)
+  # Train
+  svr.fit(X_train, y_train)
+  rf.fit(X_train, y_train)
+  mlp.fit(X_train, y_train)
 
-    # Predict
-    svr_pred = svr.predict(X_val)
-    rf_pred = rf.predict(X_val)
-    mlp_pred = mlp.predict(X_val)
+  # Predict
+  svr_pred = svr.predict(X_val)
+  rf_pred = rf.predict(X_val)
+  mlp_pred = mlp.predict(X_val)
 
-    # Store predictions
-    all_true.extend(y_val)
-    svr_all.extend(svr_pred)
-    rf_all.extend(rf_pred)
-    mlp_all.extend(mlp_pred)
+  # Store predictions
+  all_true.extend(y_val)
+  svr_all.extend(svr_pred)
+  rf_all.extend(rf_pred)
+  mlp_all.extend(mlp_pred)
 
 # Convert to arrays
 y_true = np.array(all_true)
@@ -92,8 +92,8 @@ pred_matrix = np.vstack([svr_all, rf_all, mlp_all]).T
 
 # Optimize weights for hybrid model
 def loss_fn(weights):
-    blended = np.dot(pred_matrix, weights)
-    return mean_absolute_error(y_true, blended)
+  blended = np.dot(pred_matrix, weights)
+  return mean_absolute_error(y_true, blended)
 
 init_weights = [1/3, 1/3, 1/3]
 bounds = [(0, 1)] * 3

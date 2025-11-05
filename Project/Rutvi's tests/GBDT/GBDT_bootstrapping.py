@@ -9,15 +9,15 @@ from sklearn.impute import SimpleImputer
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
 df = df.drop(columns=[
-    'Direct band gap (PBE) [eV]',
-    'Direct band gap (PBE) [eV].1',
-    'Band gap (PBE) [eV]',
-    'Band gap (G₀W₀) [eV]',
-    'Direct band gap (G₀W₀) [eV]',
-    'Direct band gap (HSE06) [eV]',
-    'Direct band gap (HSE06) [eV].1',
-    'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]'
+  'Direct band gap (PBE) [eV]',
+  'Direct band gap (PBE) [eV].1',
+  'Band gap (PBE) [eV]',
+  'Band gap (G₀W₀) [eV]',
+  'Direct band gap (G₀W₀) [eV]',
+  'Direct band gap (HSE06) [eV]',
+  'Direct band gap (HSE06) [eV].1',
+  'CBM wrt. vacuum (PBE) [eV]',
+  'VBM wrt. vacuum (PBE) [eV]'
 ])
 
 # Separate features and target
@@ -40,13 +40,13 @@ bootstrap_preds = np.zeros((n_bootstrap, n_samples))
 
 np.random.seed(42)
 for i in range(n_bootstrap):
-    bootstrap_idx = np.random.choice(n_samples, n_samples, replace=True)
-    X_bootstrap = X_imputed[bootstrap_idx]
-    y_bootstrap = y.iloc[bootstrap_idx]
+  bootstrap_idx = np.random.choice(n_samples, n_samples, replace=True)
+  X_bootstrap = X_imputed[bootstrap_idx]
+  y_bootstrap = y.iloc[bootstrap_idx]
 
-    model.fit(X_bootstrap, y_bootstrap)
-    preds = model.predict(X_imputed)
-    bootstrap_preds[i] = preds
+  model.fit(X_bootstrap, y_bootstrap)
+  preds = model.predict(X_imputed)
+  bootstrap_preds[i] = preds
 
 # Aggregate predictions by mean
 y_pred_bootstrap = bootstrap_preds.mean(axis=0)

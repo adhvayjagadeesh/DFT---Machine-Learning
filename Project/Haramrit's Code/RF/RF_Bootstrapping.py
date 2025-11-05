@@ -11,22 +11,22 @@ from math import sqrt
 df = pd.read_csv("Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
 # Drop irrelevant columns
 df = df.drop(columns=[
-    'Direct band gap (PBE) [eV]',
-    'Direct band gap (PBE) [eV].1',
-    'Band gap (PBE) [eV]',
-    'Band gap (G₀W₀) [eV]',
-    'Direct band gap (G₀W₀) [eV]',
-    'Direct band gap (HSE06) [eV]',
-    'Direct band gap (HSE06) [eV].1',
-    'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]'
+  'Direct band gap (PBE) [eV]',
+  'Direct band gap (PBE) [eV].1',
+  'Band gap (PBE) [eV]',
+  'Band gap (G₀W₀) [eV]',
+  'Direct band gap (G₀W₀) [eV]',
+  'Direct band gap (HSE06) [eV]',
+  'Direct band gap (HSE06) [eV].1',
+  'CBM wrt. vacuum (PBE) [eV]',
+  'VBM wrt. vacuum (PBE) [eV]'
 ])
 
 # Encode categorical columns
 cat_cols = df.select_dtypes(include='object').columns
 for col in cat_cols:
-    le = LabelEncoder()
-    df[col] = le.fit_transform(df[col].astype(str))
+  le = LabelEncoder()
+  df[col] = le.fit_transform(df[col].astype(str))
 
 # Define features and target
 target = 'Band gap (HSE06) [eV]'
@@ -47,35 +47,35 @@ all_y_pred = []
 np.random.seed(42)
 
 for i in range(n_bootstraps):
-    # Bootstrap sampling with replacement
-    indices = np.random.choice(n_samples, n_samples, replace=True)
-    X_boot = X.iloc[indices]
-    y_boot = y[indices]
-    
-    # Out-Of-Bag (OOB) samples (not in bootstrap sample)
-    oob_mask = ~np.isin(range(n_samples), indices)
-    X_oob = X.iloc[oob_mask]
-    y_oob = y[oob_mask]
-    
-    if len(y_oob) == 0:
-        # In rare cases, all samples might be selected; skip this bootstrap
-        continue
-    
-    # Train model on bootstrap sample
-    rf = RandomForestRegressor(n_estimators=100, random_state=42)
-    rf.fit(X_boot, y_boot)
-    
-    # Predict on OOB samples
-    y_pred_oob = rf.predict(X_oob)
-    
-    # Store metrics
-    r2_scores.append(r2_score(y_oob, y_pred_oob))
-    mae_scores.append(mean_absolute_error(y_oob, y_pred_oob))
-    rmse_scores.append(sqrt(mean_squared_error(y_oob, y_pred_oob)))
-    
-    # Collect predictions for plotting
-    all_y_test.extend(y_oob)
-    all_y_pred.extend(y_pred_oob)
+  # Bootstrap sampling with replacement
+  indices = np.random.choice(n_samples, n_samples, replace=True)
+  X_boot = X.iloc[indices]
+  y_boot = y[indices]
+  
+  # Out-Of-Bag (OOB) samples (not in bootstrap sample)
+  oob_mask = ~np.isin(range(n_samples), indices)
+  X_oob = X.iloc[oob_mask]
+  y_oob = y[oob_mask]
+  
+  if len(y_oob) == 0:
+    # In rare cases, all samples might be selected; skip this bootstrap
+    continue
+  
+  # Train model on bootstrap sample
+  rf = RandomForestRegressor(n_estimators=100, random_state=42)
+  rf.fit(X_boot, y_boot)
+  
+  # Predict on OOB samples
+  y_pred_oob = rf.predict(X_oob)
+  
+  # Store metrics
+  r2_scores.append(r2_score(y_oob, y_pred_oob))
+  mae_scores.append(mean_absolute_error(y_oob, y_pred_oob))
+  rmse_scores.append(sqrt(mean_squared_error(y_oob, y_pred_oob)))
+  
+  # Collect predictions for plotting
+  all_y_test.extend(y_oob)
+  all_y_pred.extend(y_pred_oob)
 
 # Aggregate metrics
 print(f"Bootstrap results ({n_bootstraps} iterations):")
@@ -112,8 +112,8 @@ from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 
 T = 1.0
-y_test_bin = (y_test > T).astype(int)    # true binary labels for test set
-y_scores_from_reg = y_pred               # continuous regressor predictions from RFRegressor
+y_test_bin = (y_test > T).astype(int)  # true binary labels for test set
+y_scores_from_reg = y_pred         # continuous regressor predictions from RFRegressor
 
 fpr, tpr, _ = roc_curve(y_test_bin, y_scores_from_reg)
 roc_auc = auc(fpr, tpr)

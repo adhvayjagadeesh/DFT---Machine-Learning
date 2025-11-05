@@ -16,11 +16,11 @@ df = pd.read_csv("/Users/amrit/Desktop/Projects/asdrp/Final_rect_materials_fille
 
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
 df.drop(columns=[
-    'Direct band gap (PBE) [eV]', 'Direct band gap (PBE) [eV].1',
-    'Band gap (PBE) [eV]', 'Band gap (G₀W₀) [eV]',
-    'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]',
-    'Direct band gap (HSE06) [eV].1', 'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]'
+  'Direct band gap (PBE) [eV]', 'Direct band gap (PBE) [eV].1',
+  'Band gap (PBE) [eV]', 'Band gap (G₀W₀) [eV]',
+  'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]',
+  'Direct band gap (HSE06) [eV].1', 'CBM wrt. vacuum (PBE) [eV]',
+  'VBM wrt. vacuum (PBE) [eV]'
 ], inplace=True)
 df.drop(columns=drop_cols, inplace=True, errors='ignore')
 
@@ -28,9 +28,9 @@ df.drop(columns=drop_cols, inplace=True, errors='ignore')
 cat_cols = df.select_dtypes(include='object').columns
 label_encoders = {}
 for col in cat_cols:
-    le = LabelEncoder()
-    df[col] = le.fit_transform(df[col].astype(str))
-    label_encoders[col] = le
+  le = LabelEncoder()
+  df[col] = le.fit_transform(df[col].astype(str))
+  label_encoders[col] = le
 
 # Fill missing numerical values
 df.fillna(df.mean(numeric_only=True), inplace=True)
@@ -59,39 +59,39 @@ blr_all = []
 
 # Cross-validation loop
 for train_idx, val_idx in kf.split(X_train_scaled):
-    X_train, X_val = X_train_scaled[train_idx], X_train_scaled[val_idx]
-    y_train, y_val = y_train_full.iloc[train_idx], y_train_full.iloc[val_idx]
+  X_train, X_val = X_train_scaled[train_idx], X_train_scaled[val_idx]
+  y_train, y_val = y_train_full.iloc[train_idx], y_train_full.iloc[val_idx]
 
-    # Define models
-    xgb = XGBRegressor(
-        n_estimators=300,
-        learning_rate=0.05,
-        max_depth=6,
-        subsample=0.8,
-        colsample_bytree=0.8,
-        random_state=42)
-    rf = RandomForestRegressor(n_estimators=100, random_state=42)
-    mlp = MLPRegressor(hidden_layer_sizes=(32, 16), max_iter=500, random_state=42)
-    blr = BayesianRidge()
+  # Define models
+  xgb = XGBRegressor(
+    n_estimators=300,
+    learning_rate=0.05,
+    max_depth=6,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    random_state=42)
+  rf = RandomForestRegressor(n_estimators=100, random_state=42)
+  mlp = MLPRegressor(hidden_layer_sizes=(32, 16), max_iter=500, random_state=42)
+  blr = BayesianRidge()
 
-    # Train models
-    xgb.fit(X_train, y_train)
-    rf.fit(X_train, y_train)
-    mlp.fit(X_train, y_train)
-    blr.fit(X_train, y_train)
+  # Train models
+  xgb.fit(X_train, y_train)
+  rf.fit(X_train, y_train)
+  mlp.fit(X_train, y_train)
+  blr.fit(X_train, y_train)
 
-    # Predict
-    xgb_pred = xgb.predict(X_val)
-    rf_pred = rf.predict(X_val)
-    mlp_pred = mlp.predict(X_val)
-    blr_pred = blr.predict(X_val)
+  # Predict
+  xgb_pred = xgb.predict(X_val)
+  rf_pred = rf.predict(X_val)
+  mlp_pred = mlp.predict(X_val)
+  blr_pred = blr.predict(X_val)
 
-    # Store results
-    all_true.extend(y_val)
-    xgb_all.extend(xgb_pred)
-    rf_all.extend(rf_pred)
-    mlp_all.extend(mlp_pred)
-    blr_all.extend(blr_pred)
+  # Store results
+  all_true.extend(y_val)
+  xgb_all.extend(xgb_pred)
+  rf_all.extend(rf_pred)
+  mlp_all.extend(mlp_pred)
+  blr_all.extend(blr_pred)
 
 # Convert predictions to numpy arrays
 y_true = np.array(all_true)
@@ -99,8 +99,8 @@ pred_matrix = np.vstack([xgb_all, rf_all, mlp_all, blr_all]).T
 
 # Define loss and optimize weights
 def loss_fn(weights):
-    blended = np.dot(pred_matrix, weights)
-    return mean_absolute_error(y_true, blended)
+  blended = np.dot(pred_matrix, weights)
+  return mean_absolute_error(y_true, blended)
 
 init_weights = [1/4] * 4
 bounds = [(0, 1)] * 4
@@ -111,12 +111,12 @@ optimal_weights = result.x
 
 # Final training on full data
 xgb_final = XGBRegressor(
-    n_estimators=300,
-    learning_rate=0.05,
-    max_depth=6,
-    subsample=0.8,
-    colsample_bytree=0.8,
-    random_state=42)
+  n_estimators=300,
+  learning_rate=0.05,
+  max_depth=6,
+  subsample=0.8,
+  colsample_bytree=0.8,
+  random_state=42)
 rf_final = RandomForestRegressor(n_estimators=100, random_state=42)
 mlp_final = MLPRegressor(hidden_layer_sizes=(32, 16), max_iter=500, random_state=42)
 blr_final = BayesianRidge()
@@ -191,21 +191,21 @@ y_true_holdout = np.array(y_actual_values)
 y_score_holdout = np.array(y_predicted_values)
 
 if y_true_holdout.size == 0:
-    print("No holdout true labels found; skipping ROC.")
+  print("No holdout true labels found; skipping ROC.")
 else:
-    y_bin = (y_true_holdout > T).astype(int)
-    if np.unique(y_bin).size < 2:
-        print(f"ROC skipped: need both classes present for threshold T={T}. Found classes: {np.unique(y_bin)}")
-    else:
-        fpr, tpr, _ = roc_curve(y_bin, y_score_holdout)
-        roc_auc = auc(fpr, tpr)
+  y_bin = (y_true_holdout > T).astype(int)
+  if np.unique(y_bin).size < 2:
+    print(f"ROC skipped: need both classes present for threshold T={T}. Found classes: {np.unique(y_bin)}")
+  else:
+    fpr, tpr, _ = roc_curve(y_bin, y_score_holdout)
+    roc_auc = auc(fpr, tpr)
 
-        disp = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc)
-        fig, ax = plt.subplots(figsize=(7, 6))
-        disp.plot(ax=ax)
-        ax.plot([0, 1], [0, 1], '--', color='gray')
-        ax.set_title(f'Hybrid Model ROC (holdout, T={T} eV) AUC={roc_auc:.3f}')
-        fig.tight_layout()
-        fig.savefig('hybrid_xgb_mlp_roc.png', dpi=200)
-        print(f"Hybrid holdout ROC AUC: {roc_auc:.4f} (saved to hybrid_xgb_mlp_roc.png)")
-        plt.show()
+    disp = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc)
+    fig, ax = plt.subplots(figsize=(7, 6))
+    disp.plot(ax=ax)
+    ax.plot([0, 1], [0, 1], '--', color='gray')
+    ax.set_title(f'Hybrid Model ROC (holdout, T={T} eV) AUC={roc_auc:.3f}')
+    fig.tight_layout()
+    fig.savefig('hybrid_xgb_mlp_roc.png', dpi=200)
+    print(f"Hybrid holdout ROC AUC: {roc_auc:.4f} (saved to hybrid_xgb_mlp_roc.png)")
+    plt.show()

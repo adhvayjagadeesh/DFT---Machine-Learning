@@ -46,8 +46,8 @@ def predict_using_ML_models(all_candidate_data, formability_feature_list, formab
 		save_predicted_data(stable_formable_insulator_data,dir_name='predicted_candidates', fname = 'stable_formable_insulator_candidates.pkl')
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 def predict_arbitary_regression(candidate_data, feature_list, best_estimator, pred_label='Predicted_band_gap'):
-    bandgap_data = predict_regression_arbitary(candidate_data, feature_list, best_estimator, pred_label='Predicted_band_gap')
-    save_predicted_data(bandgap_data,dir_name='predicted_candidates', fname = 'test_band_gap_candidates.pkl')   
+  bandgap_data = predict_regression_arbitary(candidate_data, feature_list, best_estimator, pred_label='Predicted_band_gap')
+  save_predicted_data(bandgap_data,dir_name='predicted_candidates', fname = 'test_band_gap_candidates.pkl')   
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 def create_core_energy_dataset(training_compounds, ele_data):

@@ -10,34 +10,34 @@ extracted_folder = 'extracted_files'
 os.makedirs(extracted_folder, exist_ok=True)
 
 with tarfile.open(archive_path, 'r:xz') as archive:
-    archive.extractall(path=extracted_folder)
+  archive.extractall(path=extracted_folder)
 
 # Step 2: Locate JSON file(s)
 json_files = [f for f in os.listdir(extracted_folder) if f.endswith('.json')]
 if not json_files:
-    raise FileNotFoundError("No JSON files found in the archive.")
+  raise FileNotFoundError("No JSON files found in the archive.")
 
 for json_file in json_files:
-    json_path = os.path.join(extracted_folder, json_file)
+  json_path = os.path.join(extracted_folder, json_file)
 
-    # Step 3: Load JSON
-    with open(json_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
+  # Step 3: Load JSON
+  with open(json_path, 'r', encoding='utf-8') as f:
+    data = json.load(f)
 
-    # Step 4: Ensure it's a list of dictionaries
-    if isinstance(data, dict):
-        # Optional: flatten if needed or convert to list
-        data = [data]
-    elif not isinstance(data, list):
-        raise ValueError("JSON structure not supported for direct CSV conversion.")
+  # Step 4: Ensure it's a list of dictionaries
+  if isinstance(data, dict):
+    # Optional: flatten if needed or convert to list
+    data = [data]
+  elif not isinstance(data, list):
+    raise ValueError("JSON structure not supported for direct CSV conversion.")
 
-    # Step 5: Write to CSV
-    csv_file = json_file.replace('.json', '.csv')
-    csv_path = os.path.join(extracted_folder, csv_file)
+  # Step 5: Write to CSV
+  csv_file = json_file.replace('.json', '.csv')
+  csv_path = os.path.join(extracted_folder, csv_file)
 
-    with open(csv_path, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=data[0].keys())
-        writer.writeheader()
-        writer.writerows(data)
+  with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+    writer = csv.DictWriter(f, fieldnames=data[0].keys())
+    writer.writeheader()
+    writer.writerows(data)
 
-    print(f"Converted {json_file} to {csv_file}")
+  print(f"Converted {json_file} to {csv_file}")

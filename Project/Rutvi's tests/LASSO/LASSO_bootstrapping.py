@@ -10,15 +10,15 @@ from sklearn.utils import resample
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
 df = df.drop(columns=[
-    'Direct band gap (PBE) [eV]',
-    'Direct band gap (PBE) [eV].1',
-    'Band gap (PBE) [eV]',
-    'Band gap (G₀W₀) [eV]',
-    'Direct band gap (G₀W₀) [eV]',
-    'Direct band gap (HSE06) [eV]',
-    'Direct band gap (HSE06) [eV].1',
-    'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]',
+  'Direct band gap (PBE) [eV]',
+  'Direct band gap (PBE) [eV].1',
+  'Band gap (PBE) [eV]',
+  'Band gap (G₀W₀) [eV]',
+  'Direct band gap (G₀W₀) [eV]',
+  'Direct band gap (HSE06) [eV]',
+  'Direct band gap (HSE06) [eV].1',
+  'CBM wrt. vacuum (PBE) [eV]',
+  'VBM wrt. vacuum (PBE) [eV]',
 ])
 
 # Set target
@@ -45,21 +45,21 @@ y_test_all = []
 y_pred_all = []
 
 for i in range(n_bootstraps):
-    X_resampled, y_resampled = resample(X_scaled, y, random_state=42 + i)
-    split_idx = int(0.8 * len(X_resampled))
-    X_train, X_test = X_resampled[:split_idx], X_resampled[split_idx:]
-    y_train, y_test = y_resampled[:split_idx], y_resampled[split_idx:]
-    
-    model = LassoCV(cv=5, random_state=42)
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
-    
-    r2_list.append(r2_score(y_test, y_pred))
-    mae_list.append(mean_absolute_error(y_test, y_pred))
-    rmse_list.append(np.sqrt(mean_squared_error(y_test, y_pred)))
-    
-    y_test_all.extend(y_test)
-    y_pred_all.extend(y_pred)
+  X_resampled, y_resampled = resample(X_scaled, y, random_state=42 + i)
+  split_idx = int(0.8 * len(X_resampled))
+  X_train, X_test = X_resampled[:split_idx], X_resampled[split_idx:]
+  y_train, y_test = y_resampled[:split_idx], y_resampled[split_idx:]
+  
+  model = LassoCV(cv=5, random_state=42)
+  model.fit(X_train, y_train)
+  y_pred = model.predict(X_test)
+  
+  r2_list.append(r2_score(y_test, y_pred))
+  mae_list.append(mean_absolute_error(y_test, y_pred))
+  rmse_list.append(np.sqrt(mean_squared_error(y_test, y_pred)))
+  
+  y_test_all.extend(y_test)
+  y_pred_all.extend(y_pred)
 
 # Convert predictions for final plots
 y_test_all = np.array(y_test_all)

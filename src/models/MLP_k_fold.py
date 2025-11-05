@@ -8,10 +8,10 @@ y_test = np.array([])
 
 # By _f I mean fold
 for x_train, y_train, x_test_f, y_test_f in k_fold():
-    # Train mlp
-    mlp = MLPRegressor()
-    mlp.fit(x_train, y_train)
+  # Train mlp
+  mlp = MLPRegressor()
+  mlp.fit(x_train, y_train)
 
-    # Predict and evaluate
-    y_test = np.concatenate([y_test, y_test_f])
-    y_pred = np.concatenate([y_pred, mlp.predict(x_test_f)])
+  # Predict and evaluate
+  y_test = np.concatenate([y_test, y_test_f])
+  y_pred = np.concatenate([y_pred, mlp.predict(x_test_f)])

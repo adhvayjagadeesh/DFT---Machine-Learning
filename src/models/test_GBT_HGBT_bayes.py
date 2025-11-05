@@ -47,44 +47,44 @@ BAYES_N_JOBS = 1
 
 # Print versions for diagnostics (optional)
 try:
-    import sklearn
-    print("sklearn:", sklearn.__version__)
+  import sklearn
+  print("sklearn:", sklearn.__version__)
 except Exception:
-    print("Could not determine sklearn version", file=sys.stderr)
+  print("Could not determine sklearn version", file=sys.stderr)
 
 # -------------------------
 # Pipelines
 # -------------------------
 pipe_gbt = Pipeline([
-    ("scaler", StandardScaler()),
-    ("gbt", GradientBoostingRegressor(random_state=RNG_SEED))
+  ("scaler", StandardScaler()),
+  ("gbt", GradientBoostingRegressor(random_state=RNG_SEED))
 ])
 
 pipe_hgbt = Pipeline([
-    ("scaler", StandardScaler()),
-    ("hgbt", HistGradientBoostingRegressor(random_state=RNG_SEED))
+  ("scaler", StandardScaler()),
+  ("hgbt", HistGradientBoostingRegressor(random_state=RNG_SEED))
 ])
 
 # -------------------------
 # Hyperparameter spaces (UNCHANGED from your original)
 # -------------------------
 hyperparams_gbt = {
-    "gbt__n_estimators": Integer(200, 800),
-    "gbt__learning_rate": Real(1e-3, 0.2, prior="log-uniform"),
-    "gbt__max_depth": Integer(3, 10),
-    "gbt__min_samples_split": Integer(2, 15),
-    "gbt__min_samples_leaf": Integer(1, 10),
-    "gbt__subsample": Real(0.7, 1),
-    "gbt__max_features": Categorical(["sqrt", 0.7, None]),
+  "gbt__n_estimators": Integer(200, 800),
+  "gbt__learning_rate": Real(1e-3, 0.2, prior="log-uniform"),
+  "gbt__max_depth": Integer(3, 10),
+  "gbt__min_samples_split": Integer(2, 15),
+  "gbt__min_samples_leaf": Integer(1, 10),
+  "gbt__subsample": Real(0.7, 1),
+  "gbt__max_features": Categorical(["sqrt", 0.7, None]),
 }
 
 hyperparams_hgbt = {
-    "hgbt__learning_rate": Real(1e-3, 0.2, prior="log-uniform"),
-    "hgbt__max_iter": Integer(150, 800),
-    "hgbt__max_leaf_nodes": Integer(20, 50),
-    "hgbt__min_samples_leaf": Integer(10, 40),
-    "hgbt__l2_regularization": Real(1e-6, 1.0, prior="log-uniform"),
-    "hgbt__max_bins": Integer(127, 255),
+  "hgbt__learning_rate": Real(1e-3, 0.2, prior="log-uniform"),
+  "hgbt__max_iter": Integer(150, 800),
+  "hgbt__max_leaf_nodes": Integer(20, 50),
+  "hgbt__min_samples_leaf": Integer(10, 40),
+  "hgbt__l2_regularization": Real(1e-6, 1.0, prior="log-uniform"),
+  "hgbt__max_bins": Integer(127, 255),
 }
 
 # -------------------------
@@ -96,28 +96,28 @@ n_iter_bayes = 20
 verbose_bayes = 2
 
 def make_bayes_gbt(n_iter=n_iter_bayes):
-    return BayesSearchCV(
-        pipe_gbt,
-        hyperparams_gbt,
-        cv=inner_k,
-        n_iter=n_iter,
-        n_jobs=BAYES_N_JOBS,
-        scoring="neg_mean_squared_error",
-        verbose=verbose_bayes,
-        random_state=RNG_SEED
-    )
+  return BayesSearchCV(
+    pipe_gbt,
+    hyperparams_gbt,
+    cv=inner_k,
+    n_iter=n_iter,
+    n_jobs=BAYES_N_JOBS,
+    scoring="neg_mean_squared_error",
+    verbose=verbose_bayes,
+    random_state=RNG_SEED
+  )
 
 def make_bayes_hgbt(n_iter=n_iter_bayes):
-    return BayesSearchCV(
-        pipe_hgbt,
-        hyperparams_hgbt,
-        cv=inner_k,
-        n_iter=n_iter,
-        n_jobs=BAYES_N_JOBS,
-        scoring="neg_mean_squared_error",
-        verbose=verbose_bayes,
-        random_state=RNG_SEED
-    )
+  return BayesSearchCV(
+    pipe_hgbt,
+    hyperparams_hgbt,
+    cv=inner_k,
+    n_iter=n_iter,
+    n_jobs=BAYES_N_JOBS,
+    scoring="neg_mean_squared_error",
+    verbose=verbose_bayes,
+    random_state=RNG_SEED
+  )
 
 # -------------------------
 # Prepare data & containers
@@ -141,99 +141,99 @@ print(f"Starting nested CV: outer_k={outer_k}, inner_k={inner_k}, n_iter_bayes={
 # Outer CV loop (nested workflow)
 # -------------------------
 for fold_idx, (train_idx, val_idx) in enumerate(outer_cv.split(X, y), start=1):
-    t0 = time.time()
-    print("\n" + "="*60)
-    print(f"OUTER FOLD {fold_idx}/{outer_k}")
-    print("="*60)
+  t0 = time.time()
+  print("\n" + "="*60)
+  print(f"OUTER FOLD {fold_idx}/{outer_k}")
+  print("="*60)
 
-    X_train, X_val = X.iloc[train_idx], X.iloc[val_idx]
-    y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
+  X_train, X_val = X.iloc[train_idx], X.iloc[val_idx]
+  y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
 
-    # -------------------------
-    # Inner tuning: GBT
-    # -------------------------
-    print("Tuning GradientBoosting (inner CV)...")
-    bayes_gbt = make_bayes_gbt()
-    bayes_gbt.fit(X_train, y_train)
-    best_gbt = bayes_gbt.best_estimator_
-    print(" -> Best GBT params:", bayes_gbt.best_params_)
+  # -------------------------
+  # Inner tuning: GBT
+  # -------------------------
+  print("Tuning GradientBoosting (inner CV)...")
+  bayes_gbt = make_bayes_gbt()
+  bayes_gbt.fit(X_train, y_train)
+  best_gbt = bayes_gbt.best_estimator_
+  print(" -> Best GBT params:", bayes_gbt.best_params_)
 
-    # -------------------------
-    # Inner tuning: HGBT
-    # -------------------------
-    print("Tuning HistGradientBoosting (inner CV)...")
-    bayes_hgbt = make_bayes_hgbt()
-    bayes_hgbt.fit(X_train, y_train)
-    best_hgbt = bayes_hgbt.best_estimator_
-    print(" -> Best HGBT params:", bayes_hgbt.best_params_)
+  # -------------------------
+  # Inner tuning: HGBT
+  # -------------------------
+  print("Tuning HistGradientBoosting (inner CV)...")
+  bayes_hgbt = make_bayes_hgbt()
+  bayes_hgbt.fit(X_train, y_train)
+  best_hgbt = bayes_hgbt.best_estimator_
+  print(" -> Best HGBT params:", bayes_hgbt.best_params_)
 
-    # -------------------------
-    # Create OOF predictions on the training partition for meta training
-    # -------------------------
-    print("Generating out-of-fold (OOF) predictions for meta training (safe single-threaded)...")
-    # cross_val_predict clones the tuned estimators (keeps tuned hyperparams)
-    oof_gbt = cross_val_predict(best_gbt, X_train, y_train, cv=inner_k, method="predict", n_jobs=1)
-    oof_hgbt = cross_val_predict(best_hgbt, X_train, y_train, cv=inner_k, method="predict", n_jobs=1)
+  # -------------------------
+  # Create OOF predictions on the training partition for meta training
+  # -------------------------
+  print("Generating out-of-fold (OOF) predictions for meta training (safe single-threaded)...")
+  # cross_val_predict clones the tuned estimators (keeps tuned hyperparams)
+  oof_gbt = cross_val_predict(best_gbt, X_train, y_train, cv=inner_k, method="predict", n_jobs=1)
+  oof_hgbt = cross_val_predict(best_hgbt, X_train, y_train, cv=inner_k, method="predict", n_jobs=1)
 
-    meta_X_train = np.vstack([oof_gbt, oof_hgbt]).T
-    meta = Ridge(alpha=1.0, random_state=RNG_SEED)
-    meta.fit(meta_X_train, y_train)
+  meta_X_train = np.vstack([oof_gbt, oof_hgbt]).T
+  meta = Ridge(alpha=1.0, random_state=RNG_SEED)
+  meta.fit(meta_X_train, y_train)
 
-    # -------------------------
-    # Evaluate on the outer validation set
-    # -------------------------
-    preds_gbt_val = best_gbt.predict(X_val)
-    preds_hgbt_val = best_hgbt.predict(X_val)
+  # -------------------------
+  # Evaluate on the outer validation set
+  # -------------------------
+  preds_gbt_val = best_gbt.predict(X_val)
+  preds_hgbt_val = best_hgbt.predict(X_val)
 
-    # Use learned meta-learner to blend predictions (preferred over fixed average)
-    meta_X_val = np.vstack([preds_gbt_val, preds_hgbt_val]).T
-    preds_meta_val = meta.predict(meta_X_val)
+  # Use learned meta-learner to blend predictions (preferred over fixed average)
+  meta_X_val = np.vstack([preds_gbt_val, preds_hgbt_val]).T
+  preds_meta_val = meta.predict(meta_X_val)
 
-    # Append to accumulators (exact semantics as your original loop)
-    y_test = np.concatenate([y_test, y_val.values])
-    y_pred = np.concatenate([y_pred, preds_meta_val])
+  # Append to accumulators (exact semantics as your original loop)
+  y_test = np.concatenate([y_test, y_val.values])
+  y_pred = np.concatenate([y_pred, preds_meta_val])
 
-    # -------------------------
-    # Compute metrics (robust RMSE)
-    # -------------------------
-    def metrics(y_t, y_p):
-        y_t = np.asarray(y_t)
-        y_p = np.asarray(y_p)
-        mse = mean_squared_error(y_t, y_p)
-        rmse = float(np.sqrt(mse))
-        mae = float(mean_absolute_error(y_t, y_p))
-        r2 = float(r2_score(y_t, y_p))
-        return {"rmse": rmse, "mae": mae, "r2": r2}
+  # -------------------------
+  # Compute metrics (robust RMSE)
+  # -------------------------
+  def metrics(y_t, y_p):
+    y_t = np.asarray(y_t)
+    y_p = np.asarray(y_p)
+    mse = mean_squared_error(y_t, y_p)
+    rmse = float(np.sqrt(mse))
+    mae = float(mean_absolute_error(y_t, y_p))
+    r2 = float(r2_score(y_t, y_p))
+    return {"rmse": rmse, "mae": mae, "r2": r2}
 
-    m_gbt = metrics(y_val, preds_gbt_val)
-    m_hgbt = metrics(y_val, preds_hgbt_val)
-    m_meta = metrics(y_val, preds_meta_val)
+  m_gbt = metrics(y_val, preds_gbt_val)
+  m_hgbt = metrics(y_val, preds_hgbt_val)
+  m_meta = metrics(y_val, preds_meta_val)
 
-    print(f"Fold {fold_idx} — GBT : RMSE={m_gbt['rmse']:.6f}, MAE={m_gbt['mae']:.6f}, R2={m_gbt['r2']:.6f}")
-    print(f"Fold {fold_idx} — HGBT: RMSE={m_hgbt['rmse']:.6f}, MAE={m_hgbt['mae']:.6f}, R2={m_hgbt['r2']:.6f}")
-    print(f"Fold {fold_idx} — META: RMSE={m_meta['rmse']:.6f}, MAE={m_meta['mae']:.6f}, R2={m_meta['r2']:.6f}")
+  print(f"Fold {fold_idx} — GBT : RMSE={m_gbt['rmse']:.6f}, MAE={m_gbt['mae']:.6f}, R2={m_gbt['r2']:.6f}")
+  print(f"Fold {fold_idx} — HGBT: RMSE={m_hgbt['rmse']:.6f}, MAE={m_hgbt['mae']:.6f}, R2={m_hgbt['r2']:.6f}")
+  print(f"Fold {fold_idx} — META: RMSE={m_meta['rmse']:.6f}, MAE={m_meta['mae']:.6f}, R2={m_meta['r2']:.6f}")
 
-    # Print meta coefficients
-    try:
-        print("Meta weights (coef):", getattr(meta, "coef_", None), " intercept:", getattr(meta, "intercept_", None))
-    except Exception:
-        pass
+  # Print meta coefficients
+  try:
+    print("Meta weights (coef):", getattr(meta, "coef_", None), " intercept:", getattr(meta, "intercept_", None))
+  except Exception:
+    pass
 
-    fold_results.append({
-        "fold": fold_idx,
-        "gbt": m_gbt,
-        "hgbt": m_hgbt,
-        "meta": m_meta,
-        "meta_coef": getattr(meta, "coef_", None).tolist() if getattr(meta, "coef_", None) is not None else None
-    })
+  fold_results.append({
+    "fold": fold_idx,
+    "gbt": m_gbt,
+    "hgbt": m_hgbt,
+    "meta": m_meta,
+    "meta_coef": getattr(meta, "coef_", None).tolist() if getattr(meta, "coef_", None) is not None else None
+  })
 
-    print(f"Time for fold {fold_idx}: {time.time() - t0:.1f}s")
+  print(f"Time for fold {fold_idx}: {time.time() - t0:.1f}s")
 
 # -------------------------
 # Aggregated metrics
 # -------------------------
 if y_test.size == 0:
-    raise RuntimeError("y_test is empty after outer CV — something went wrong in the loops.")
+  raise RuntimeError("y_test is empty after outer CV — something went wrong in the loops.")
 
 agg_mse = mean_squared_error(y_test, y_pred)
 agg_rmse = float(np.sqrt(agg_mse))
@@ -284,10 +284,10 @@ fig_path = os.path.join("models", "pred_vs_true.png")
 plt.savefig(fig_path, dpi=150)
 print(f"Saved figure -> {fig_path}")
 try:
-    plt.show()
+  plt.show()
 except Exception:
-    # headless environments may fail on plt.show()
-    pass
+  # headless environments may fail on plt.show()
+  pass
 
 # -------------------------
 # Optional final refit on full dataset & save tuned models
@@ -296,33 +296,33 @@ REFIT_FINAL = True
 FINAL_N_ITER = max(n_iter_bayes, 40)
 
 if REFIT_FINAL:
-    print("\nRefitting tuned models on full dataset (may be slow)...")
-    t_ref = time.time()
+  print("\nRefitting tuned models on full dataset (may be slow)...")
+  t_ref = time.time()
 
-    # Re-run BayesSearchCV on full data with possibly more iterations
-    bayes_gbt_full = make_bayes_gbt(n_iter=FINAL_N_ITER)
-    bayes_hgbt_full = make_bayes_hgbt(n_iter=FINAL_N_ITER)
+  # Re-run BayesSearchCV on full data with possibly more iterations
+  bayes_gbt_full = make_bayes_gbt(n_iter=FINAL_N_ITER)
+  bayes_hgbt_full = make_bayes_hgbt(n_iter=FINAL_N_ITER)
 
-    bayes_gbt_full.fit(X, y)
-    bayes_hgbt_full.fit(X, y)
+  bayes_gbt_full.fit(X, y)
+  bayes_hgbt_full.fit(X, y)
 
-    best_gbt_full = bayes_gbt_full.best_estimator_
-    best_hgbt_full = bayes_hgbt_full.best_estimator_
-    print("Final best GBT params:", bayes_gbt_full.best_params_)
-    print("Final best HGBT params:", bayes_hgbt_full.best_params_)
+  best_gbt_full = bayes_gbt_full.best_estimator_
+  best_hgbt_full = bayes_hgbt_full.best_estimator_
+  print("Final best GBT params:", bayes_gbt_full.best_params_)
+  print("Final best HGBT params:", bayes_hgbt_full.best_params_)
 
-    # OOF preds across full dataset (for meta training)
-    oof_gbt_full = cross_val_predict(best_gbt_full, X, y, cv=inner_k, method="predict", n_jobs=1)
-    oof_hgbt_full = cross_val_predict(best_hgbt_full, X, y, cv=inner_k, method="predict", n_jobs=1)
+  # OOF preds across full dataset (for meta training)
+  oof_gbt_full = cross_val_predict(best_gbt_full, X, y, cv=inner_k, method="predict", n_jobs=1)
+  oof_hgbt_full = cross_val_predict(best_hgbt_full, X, y, cv=inner_k, method="predict", n_jobs=1)
 
-    meta_X_full = np.vstack([oof_gbt_full, oof_hgbt_full]).T
-    meta_final = Ridge(alpha=1.0, random_state=RNG_SEED)
-    meta_final.fit(meta_X_full, y)
+  meta_X_full = np.vstack([oof_gbt_full, oof_hgbt_full]).T
+  meta_final = Ridge(alpha=1.0, random_state=RNG_SEED)
+  meta_final.fit(meta_X_full, y)
 
-    # Save final artifacts
-    joblib.dump(best_gbt_full, os.path.join("models", "best_gbt_full.joblib"))
-    joblib.dump(best_hgbt_full, os.path.join("models", "best_hgbt_full.joblib"))
-    joblib.dump(meta_final, os.path.join("models", "meta_final.joblib"))
-    print(f"Saved final models to models/ (time: {time.time()-t_ref:.1f}s)")
+  # Save final artifacts
+  joblib.dump(best_gbt_full, os.path.join("models", "best_gbt_full.joblib"))
+  joblib.dump(best_hgbt_full, os.path.join("models", "best_hgbt_full.joblib"))
+  joblib.dump(meta_final, os.path.join("models", "meta_final.joblib"))
+  print(f"Saved final models to models/ (time: {time.time()-t_ref:.1f}s)")
 
 print("Script finished.")

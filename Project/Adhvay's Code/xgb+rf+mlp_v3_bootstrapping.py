@@ -21,9 +21,9 @@ df.drop(columns=drop_cols, inplace=True, errors='ignore')
 cat_cols = df.select_dtypes(include='object').columns
 label_encoders = {}
 for col in cat_cols:
-    le = LabelEncoder()
-    df[col] = le.fit_transform(df[col].astype(str))
-    label_encoders[col] = le
+  le = LabelEncoder()
+  df[col] = le.fit_transform(df[col].astype(str))
+  label_encoders[col] = le
 
 # Fill missing numerical values
 df.fillna(df.mean(numeric_only=True), inplace=True)
@@ -48,25 +48,25 @@ rng = np.random.default_rng(42)
 n_samples = len(X_train_full)
 
 for _ in range(n_bootstrap):
-    # Generate bootstrap sample (with replacement)
-    indices = rng.choice(n_samples, size=n_samples, replace=True)
-    X_train = X_train_full[indices]
-    y_train = y_train_full.iloc[indices]
+  # Generate bootstrap sample (with replacement)
+  indices = rng.choice(n_samples, size=n_samples, replace=True)
+  X_train = X_train_full[indices]
+  y_train = y_train_full.iloc[indices]
 
-    # Define models
-    xgb = XGBRegressor(n_estimators=50, learning_rate=0.1, max_depth=3, random_state=42)
-    rf = RandomForestRegressor(n_estimators=100, random_state=42)
-    mlp = MLPRegressor(hidden_layer_sizes=(32, 16), max_iter=500, random_state=42)
+  # Define models
+  xgb = XGBRegressor(n_estimators=50, learning_rate=0.1, max_depth=3, random_state=42)
+  rf = RandomForestRegressor(n_estimators=100, random_state=42)
+  mlp = MLPRegressor(hidden_layer_sizes=(32, 16), max_iter=500, random_state=42)
 
-    # Train
-    xgb.fit(X_train, y_train)
-    rf.fit(X_train, y_train)
-    mlp.fit(X_train, y_train)
+  # Train
+  xgb.fit(X_train, y_train)
+  rf.fit(X_train, y_train)
+  mlp.fit(X_train, y_train)
 
-    # Predict on the fixed test set
-    xgb_preds.append(xgb.predict(X_test))
-    rf_preds.append(rf.predict(X_test))
-    mlp_preds.append(mlp.predict(X_test))
+  # Predict on the fixed test set
+  xgb_preds.append(xgb.predict(X_test))
+  rf_preds.append(rf.predict(X_test))
+  mlp_preds.append(mlp.predict(X_test))
 
 # Average predictions over all bootstraps
 xgb_mean = np.mean(xgb_preds, axis=0)
@@ -78,8 +78,8 @@ pred_matrix = np.vstack([xgb_mean, rf_mean, mlp_mean]).T
 
 # Optimize weights to minimize MAE
 def loss_fn(weights):
-    blended = np.dot(pred_matrix, weights)
-    return mean_absolute_error(y_test, blended)
+  blended = np.dot(pred_matrix, weights)
+  return mean_absolute_error(y_test, blended)
 
 init_weights = [1/3, 1/3, 1/3]
 bounds = [(0, 1)] * 3

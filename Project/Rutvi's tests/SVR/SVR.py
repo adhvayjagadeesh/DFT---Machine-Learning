@@ -12,11 +12,11 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
 df = df.drop(columns=[
-    'Direct band gap (PBE) [eV]', 'Direct band gap (PBE) [eV].1',
-    'Band gap (PBE) [eV]', 'Band gap (G₀W₀) [eV]',
-    'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]',
-    'Direct band gap (HSE06) [eV].1', 'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]'
+  'Direct band gap (PBE) [eV]', 'Direct band gap (PBE) [eV].1',
+  'Band gap (PBE) [eV]', 'Band gap (G₀W₀) [eV]',
+  'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]',
+  'Direct band gap (HSE06) [eV].1', 'CBM wrt. vacuum (PBE) [eV]',
+  'VBM wrt. vacuum (PBE) [eV]'
 ])
 
 # Separate features and target
@@ -30,25 +30,25 @@ categorical_cols = X.select_dtypes(include=['object', 'category']).columns.tolis
 
 # Preprocessing for numeric and categorical columns
 numeric_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='mean')),
-    ('scaler', StandardScaler())
+  ('imputer', SimpleImputer(strategy='mean')),
+  ('scaler', StandardScaler())
 ])
 
 categorical_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='most_frequent')),
-    ('encoder', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+  ('imputer', SimpleImputer(strategy='most_frequent')),
+  ('encoder', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
 ])
 
 # Combine preprocessing steps
 preprocessor = ColumnTransformer(transformers=[
-    ('num', numeric_transformer, numeric_cols),
-    ('cat', categorical_transformer, categorical_cols)
+  ('num', numeric_transformer, numeric_cols),
+  ('cat', categorical_transformer, categorical_cols)
 ])
 
 # Full pipeline: preprocessing + SVR model
 model_pipeline = Pipeline(steps=[
-    ('preprocessor', preprocessor),
-    ('regressor', SVR(kernel='rbf'))
+  ('preprocessor', preprocessor),
+  ('regressor', SVR(kernel='rbf'))
 ])
 
 # Train-test split

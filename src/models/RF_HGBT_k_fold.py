@@ -1,4 +1,4 @@
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, VotingRegressor
+from sklearn.ensemble import RandomForestRegressor, HistGradientBoostingRegressor, VotingRegressor
 from data.final import k_fold
 import numpy as np
 
@@ -8,7 +8,7 @@ y_test = np.array([])
 
 hybrid = VotingRegressor([
   ("rf", RandomForestRegressor()),
-  ("gbt", GradientBoostingRegressor())
+  ("hgbt", HistGradientBoostingRegressor())
 ])
 
 for x_train, y_train, x_test_f, y_test_f in k_fold():

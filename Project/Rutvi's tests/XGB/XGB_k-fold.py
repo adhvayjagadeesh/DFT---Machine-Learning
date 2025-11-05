@@ -9,14 +9,14 @@ from sklearn.model_selection import KFold
 # Load the dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
 df = df.drop(columns=['Direct band gap (PBE) [eV]',
-    'Direct band gap (PBE) [eV].1',
-    'Band gap (PBE) [eV]',
-    'Band gap (G₀W₀) [eV]',
-    'Direct band gap (G₀W₀) [eV]',
-    'Direct band gap (HSE06) [eV]',
-    'Direct band gap (HSE06) [eV].1',
-    'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]'])
+  'Direct band gap (PBE) [eV].1',
+  'Band gap (PBE) [eV]',
+  'Band gap (G₀W₀) [eV]',
+  'Direct band gap (G₀W₀) [eV]',
+  'Direct band gap (HSE06) [eV]',
+  'Direct band gap (HSE06) [eV].1',
+  'CBM wrt. vacuum (PBE) [eV]',
+  'VBM wrt. vacuum (PBE) [eV]'])
 
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
 df.drop(columns=["Formula"], inplace=True)
@@ -26,9 +26,9 @@ df.drop(columns=drop_cols, inplace=True, errors='ignore')
 cat_cols = df.select_dtypes(include='object').columns
 label_encoders = {}
 for col in cat_cols:
-    le = LabelEncoder()
-    df[col] = le.fit_transform(df[col].astype(str))
-    label_encoders[col] = le
+  le = LabelEncoder()
+  df[col] = le.fit_transform(df[col].astype(str))
+  label_encoders[col] = le
 
 # Fill missing values with mean
 df.fillna(df.mean(numeric_only=True), inplace=True)
@@ -49,23 +49,23 @@ rmse_list = []
 
 fold = 1
 for train_index, test_index in kf.split(X_scaled):
-    X_train, X_test = X_scaled[train_index], X_scaled[test_index]
-    y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+  X_train, X_test = X_scaled[train_index], X_scaled[test_index]
+  y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
-    model = XGBRegressor(n_estimators=50, learning_rate=0.1, max_depth=3, random_state=42)
-    model.fit(X_train, y_train)
+  model = XGBRegressor(n_estimators=50, learning_rate=0.1, max_depth=3, random_state=42)
+  model.fit(X_train, y_train)
 
-    y_pred = model.predict(X_test)
-    mae = mean_absolute_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
-    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+  y_pred = model.predict(X_test)
+  mae = mean_absolute_error(y_test, y_pred)
+  r2 = r2_score(y_test, y_pred)
+  rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 
-    mae_list.append(mae)
-    r2_list.append(r2)
-    rmse_list.append(rmse)
+  mae_list.append(mae)
+  r2_list.append(r2)
+  rmse_list.append(rmse)
 
-    print(f"Fold {fold}: MAE = {mae:.4f}, RMSE = {rmse:.4f}, R² = {r2:.4f}")
-    fold += 1
+  print(f"Fold {fold}: MAE = {mae:.4f}, RMSE = {rmse:.4f}, R² = {r2:.4f}")
+  fold += 1
 
 print(f"\nAverage MAE: {np.mean(mae_list):.4f} ± {np.std(mae_list):.4f}")
 print(f"Average RMSE: {np.mean(rmse_list):.4f} ± {np.std(rmse_list):.4f}")

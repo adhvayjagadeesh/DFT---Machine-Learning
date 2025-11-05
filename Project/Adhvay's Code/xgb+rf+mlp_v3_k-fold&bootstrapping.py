@@ -21,9 +21,9 @@ df.drop(columns=drop_cols, inplace=True, errors='ignore')
 cat_cols = df.select_dtypes(include='object').columns
 label_encoders = {}
 for col in cat_cols:
-    le = LabelEncoder()
-    df[col] = le.fit_transform(df[col].astype(str))
-    label_encoders[col] = le
+  le = LabelEncoder()
+  df[col] = le.fit_transform(df[col].astype(str))
+  label_encoders[col] = le
 
 # Fill missing numerical values
 df.fillna(df.mean(numeric_only=True), inplace=True)
@@ -46,59 +46,59 @@ all_hybrid_pred = []
 
 # Loop over K-Folds
 for train_index, test_index in kf.split(X_scaled):
-    X_train_full, X_test = X_scaled[train_index], X_scaled[test_index]
-    y_train_full, y_test_fold = y.iloc[train_index], y.iloc[test_index]
+  X_train_full, X_test = X_scaled[train_index], X_scaled[test_index]
+  y_train_full, y_test_fold = y.iloc[train_index], y.iloc[test_index]
 
-    xgb_preds, rf_preds, mlp_preds = [], [], []
+  xgb_preds, rf_preds, mlp_preds = [], [], []
 
-    # Bootstrapping within the fold
-    rng = np.random.default_rng(42)
-    n_samples = len(X_train_full)
+  # Bootstrapping within the fold
+  rng = np.random.default_rng(42)
+  n_samples = len(X_train_full)
 
-    for _ in range(n_bootstrap):
-        indices = rng.choice(n_samples, size=n_samples, replace=True)
-        X_train = X_train_full[indices]
-        y_train = y_train_full.iloc[indices]
+  for _ in range(n_bootstrap):
+    indices = rng.choice(n_samples, size=n_samples, replace=True)
+    X_train = X_train_full[indices]
+    y_train = y_train_full.iloc[indices]
 
-        # Define models
-        xgb = XGBRegressor(n_estimators=50, learning_rate=0.1, max_depth=3, random_state=42)
-        rf = RandomForestRegressor(n_estimators=100, random_state=42)
-        mlp = MLPRegressor(hidden_layer_sizes=(32, 16), max_iter=500, random_state=42)
+    # Define models
+    xgb = XGBRegressor(n_estimators=50, learning_rate=0.1, max_depth=3, random_state=42)
+    rf = RandomForestRegressor(n_estimators=100, random_state=42)
+    mlp = MLPRegressor(hidden_layer_sizes=(32, 16), max_iter=500, random_state=42)
 
-        # Train
-        xgb.fit(X_train, y_train)
-        rf.fit(X_train, y_train)
-        mlp.fit(X_train, y_train)
+    # Train
+    xgb.fit(X_train, y_train)
+    rf.fit(X_train, y_train)
+    mlp.fit(X_train, y_train)
 
-        # Predict on this fold's test set
-        xgb_preds.append(xgb.predict(X_test))
-        rf_preds.append(rf.predict(X_test))
-        mlp_preds.append(mlp.predict(X_test))
+    # Predict on this fold's test set
+    xgb_preds.append(xgb.predict(X_test))
+    rf_preds.append(rf.predict(X_test))
+    mlp_preds.append(mlp.predict(X_test))
 
-    # Average predictions over bootstraps
-    xgb_mean = np.mean(xgb_preds, axis=0)
-    rf_mean = np.mean(rf_preds, axis=0)
-    mlp_mean = np.mean(mlp_preds, axis=0)
+  # Average predictions over bootstraps
+  xgb_mean = np.mean(xgb_preds, axis=0)
+  rf_mean = np.mean(rf_preds, axis=0)
+  mlp_mean = np.mean(mlp_preds, axis=0)
 
-    # Combine predictions
-    pred_matrix = np.vstack([xgb_mean, rf_mean, mlp_mean]).T
+  # Combine predictions
+  pred_matrix = np.vstack([xgb_mean, rf_mean, mlp_mean]).T
 
-    # Optimize weights to minimize MAE
-    def loss_fn(weights):
-        blended = np.dot(pred_matrix, weights)
-        return mean_absolute_error(y_test_fold, blended)
+  # Optimize weights to minimize MAE
+  def loss_fn(weights):
+    blended = np.dot(pred_matrix, weights)
+    return mean_absolute_error(y_test_fold, blended)
 
-    init_weights = [1/3, 1/3, 1/3]
-    bounds = [(0, 1)] * 3
-    constraints = {'type': 'eq', 'fun': lambda w: sum(w) - 1}
+  init_weights = [1/3, 1/3, 1/3]
+  bounds = [(0, 1)] * 3
+  constraints = {'type': 'eq', 'fun': lambda w: sum(w) - 1}
 
-    result = minimize(loss_fn, init_weights, method='SLSQP', bounds=bounds, constraints=constraints)
-    optimal_weights = result.x
-    hybrid_pred = np.dot(pred_matrix, optimal_weights)
+  result = minimize(loss_fn, init_weights, method='SLSQP', bounds=bounds, constraints=constraints)
+  optimal_weights = result.x
+  hybrid_pred = np.dot(pred_matrix, optimal_weights)
 
-    # Collect predictions and true values
-    all_hybrid_pred.extend(hybrid_pred)
-    all_y_true.extend(y_test_fold)
+  # Collect predictions and true values
+  all_hybrid_pred.extend(hybrid_pred)
+  all_y_true.extend(y_test_fold)
 
 # Final evaluation across all folds
 mae = mean_absolute_error(all_y_true, all_hybrid_pred)

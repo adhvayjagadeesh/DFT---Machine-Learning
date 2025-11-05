@@ -10,21 +10,21 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 # Load dataset
 df = pd.read_csv("/workspaces/DFT---Machine-Learning/Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
 df = df.drop(columns=[
-    'Direct band gap (PBE) [eV]',
-    'Direct band gap (PBE) [eV].1',
-    'Band gap (PBE) [eV]',
-    'Band gap (G₀W₀) [eV]',
-    'Direct band gap (G₀W₀) [eV]',
-    'Direct band gap (HSE06) [eV]',
-    'Direct band gap (HSE06) [eV].1',
-    'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]',
+  'Direct band gap (PBE) [eV]',
+  'Direct band gap (PBE) [eV].1',
+  'Band gap (PBE) [eV]',
+  'Band gap (G₀W₀) [eV]',
+  'Direct band gap (G₀W₀) [eV]',
+  'Direct band gap (HSE06) [eV]',
+  'Direct band gap (HSE06) [eV].1',
+  'CBM wrt. vacuum (PBE) [eV]',
+  'VBM wrt. vacuum (PBE) [eV]',
 ])
 
 # Set the target column name
 target_col = 'Band gap (HSE06) [eV]'
 if target_col not in df.columns:
-    raise ValueError(f"Target column '{target_col}' not found in dataset.")
+  raise ValueError(f"Target column '{target_col}' not found in dataset.")
 
 # Separate features and target
 X = df.drop(columns=[target_col])
@@ -43,7 +43,7 @@ X = pd.DataFrame(X_imputed, columns=feature_names)
 
 # Split into training and test sets
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
+  X, y, test_size=0.2, random_state=42
 )
 
 # Scale features
@@ -64,8 +64,8 @@ r2 = r2_score(y_test, y_pred)
 # Output metrics
 print(f"\nOptimal alpha selected by LASSO CV: {lasso.alpha_:.6f}")
 print(f"R² Score : {r2:.4f}")
-print(f"MAE      : {mae:.4f}")
-print(f"RMSE     : {rmse:.4f}")
+print(f"MAE    : {mae:.4f}")
+print(f"RMSE   : {rmse:.4f}")
 
 # Plot actual vs predicted
 plt.figure(figsize=(6, 6))
@@ -91,8 +91,8 @@ plt.show()
 
 # Feature importance
 coef_df = pd.DataFrame({
-    'Feature': feature_names,
-    'Coefficient': lasso.coef_
+  'Feature': feature_names,
+  'Coefficient': lasso.coef_
 }).sort_values(by='Coefficient', key=abs, ascending=False)
 
 print("\nTop 10 most influential features:")

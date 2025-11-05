@@ -18,9 +18,9 @@ df.drop(columns=drop_cols, inplace=True, errors='ignore')
 cat_cols = df.select_dtypes(include='object').columns
 label_encoders = {}
 for col in cat_cols:
-    le = LabelEncoder()
-    df[col] = le.fit_transform(df[col].astype(str))
-    label_encoders[col] = le
+  le = LabelEncoder()
+  df[col] = le.fit_transform(df[col].astype(str))
+  label_encoders[col] = le
 
 # Fill remaining missing values
 df.fillna(df.mean(numeric_only=True), inplace=True)
@@ -43,23 +43,23 @@ r2_scores = []
 
 # Bootstrapping loop
 for i in range(n_bootstrap):
-    indices = np.random.choice(len(X_train), size=len(X_train), replace=True)
-    X_boot = X_train[indices]
-    y_boot = y_train.iloc[indices]
+  indices = np.random.choice(len(X_train), size=len(X_train), replace=True)
+  X_boot = X_train[indices]
+  y_boot = y_train.iloc[indices]
 
-    model = XGBRegressor(n_estimators=50, learning_rate=0.1, max_depth=3, random_state=i)
-    model.fit(X_boot, y_boot)
-    
-    y_pred = model.predict(X_test)
-    mae = mean_absolute_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
+  model = XGBRegressor(n_estimators=50, learning_rate=0.1, max_depth=3, random_state=i)
+  model.fit(X_boot, y_boot)
+  
+  y_pred = model.predict(X_test)
+  mae = mean_absolute_error(y_test, y_pred)
+  r2 = r2_score(y_test, y_pred)
 
-    mae_scores.append(mae)
-    r2_scores.append(r2)
+  mae_scores.append(mae)
+  r2_scores.append(r2)
 
-    # Save predictions from the last model for plotting
-    if i == n_bootstrap - 1:
-        final_y_pred = y_pred
+  # Save predictions from the last model for plotting
+  if i == n_bootstrap - 1:
+    final_y_pred = y_pred
 
 # Results summary
 print(f"\nBootstrapped MAE: {np.mean(mae_scores):.4f} ± {np.std(mae_scores):.4f}")

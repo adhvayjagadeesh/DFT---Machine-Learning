@@ -13,11 +13,11 @@ from sklearn.model_selection import KFold
 # Load dataset
 df = pd.read_csv("Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
 df = df.drop(columns=[
-    'Direct band gap (PBE) [eV]', 'Direct band gap (PBE) [eV].1',
-    'Band gap (PBE) [eV]', 'Band gap (G₀W₀) [eV]',
-    'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]',
-    'Direct band gap (HSE06) [eV].1', 'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]'
+  'Direct band gap (PBE) [eV]', 'Direct band gap (PBE) [eV].1',
+  'Band gap (PBE) [eV]', 'Band gap (G₀W₀) [eV]',
+  'Direct band gap (G₀W₀) [eV]', 'Direct band gap (HSE06) [eV]',
+  'Direct band gap (HSE06) [eV].1', 'CBM wrt. vacuum (PBE) [eV]',
+  'VBM wrt. vacuum (PBE) [eV]'
 ])
 
 target = 'Band gap (HSE06) [eV]'
@@ -28,18 +28,18 @@ numeric_cols = X.select_dtypes(include=[np.number]).columns.tolist()
 categorical_cols = X.select_dtypes(include=['object', 'category']).columns.tolist()
 
 numeric_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='mean')),
-    ('scaler', StandardScaler())
+  ('imputer', SimpleImputer(strategy='mean')),
+  ('scaler', StandardScaler())
 ])
 
 categorical_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='most_frequent')),
-    ('encoder', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+  ('imputer', SimpleImputer(strategy='most_frequent')),
+  ('encoder', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
 ])
 
 preprocessor = ColumnTransformer(transformers=[
-    ('num', numeric_transformer, numeric_cols),
-    ('cat', categorical_transformer, categorical_cols)
+  ('num', numeric_transformer, numeric_cols),
+  ('cat', categorical_transformer, categorical_cols)
 ])
 
 kf = KFold(n_splits=5, shuffle=True, random_state=42)
@@ -52,33 +52,33 @@ all_y_test = []
 all_y_pred = []
 
 for fold_idx, (train_idx, test_idx) in enumerate(kf.split(X)):
-    print(f"\nFold {fold_idx+1}")
+  print(f"\nFold {fold_idx+1}")
 
-    X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
-    y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+  X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
+  y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
 
-    model_pipeline = Pipeline(steps=[
-        ('preprocessor', preprocessor),
-        ('regressor', SVR(kernel='rbf'))
-    ])
+  model_pipeline = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('regressor', SVR(kernel='rbf'))
+  ])
 
-    model_pipeline.fit(X_train, y_train)
-    y_pred = model_pipeline.predict(X_test)
+  model_pipeline.fit(X_train, y_train)
+  y_pred = model_pipeline.predict(X_test)
 
-    r2 = r2_score(y_test, y_pred)
-    mae = mean_absolute_error(y_test, y_pred)
-    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+  r2 = r2_score(y_test, y_pred)
+  mae = mean_absolute_error(y_test, y_pred)
+  rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 
-    print(f"  R²  : {r2:.4f}")
-    print(f"  MAE : {mae:.4f}")
-    print(f"  RMSE: {rmse:.4f}")
+  print(f"  R²  : {r2:.4f}")
+  print(f"  MAE : {mae:.4f}")
+  print(f"  RMSE: {rmse:.4f}")
 
-    r2_scores.append(r2)
-    mae_scores.append(mae)
-    rmse_scores.append(rmse)
+  r2_scores.append(r2)
+  mae_scores.append(mae)
+  rmse_scores.append(rmse)
 
-    all_y_test.extend(y_test)
-    all_y_pred.extend(y_pred)
+  all_y_test.extend(y_test)
+  all_y_pred.extend(y_pred)
 
 print("\nAverage CV scores:")
 print(f"Mean R²  : {np.mean(r2_scores):.4f} ± {np.std(r2_scores):.4f}")
@@ -111,21 +111,21 @@ all_y_test_arr = np.array(all_y_test)
 all_y_pred_arr = np.array(all_y_pred)
 
 if all_y_test_arr.size == 0:
-    print("No aggregated predictions found; skipping ROC computation.")
+  print("No aggregated predictions found; skipping ROC computation.")
 else:
-    y_bin = (all_y_test_arr > T).astype(int)
-    if np.unique(y_bin).size < 2:
-        print(f"ROC skipped: need both classes present for threshold T={T}. Found classes: {np.unique(y_bin)}")
-    else:
-        fpr, tpr, _ = roc_curve(y_bin, all_y_pred_arr)
-        roc_auc = auc(fpr, tpr)
+  y_bin = (all_y_test_arr > T).astype(int)
+  if np.unique(y_bin).size < 2:
+    print(f"ROC skipped: need both classes present for threshold T={T}. Found classes: {np.unique(y_bin)}")
+  else:
+    fpr, tpr, _ = roc_curve(y_bin, all_y_pred_arr)
+    roc_auc = auc(fpr, tpr)
 
-        disp = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc)
-        fig, ax = plt.subplots(figsize=(7, 6))
-        disp.plot(ax=ax)
-        ax.plot([0, 1], [0, 1], '--', color='gray')
-        ax.set_title(f'SVR 5-Fold CV ROC (T={T} eV) AUC={roc_auc:.3f}')
-        fig.tight_layout()
-        fig.savefig('svr_kfold_roc.png', dpi=200)
-        print(f"ROC AUC: {roc_auc:.4f} - plot saved to svr_kfold_roc.png")
-        plt.show()
+    disp = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc)
+    fig, ax = plt.subplots(figsize=(7, 6))
+    disp.plot(ax=ax)
+    ax.plot([0, 1], [0, 1], '--', color='gray')
+    ax.set_title(f'SVR 5-Fold CV ROC (T={T} eV) AUC={roc_auc:.3f}')
+    fig.tight_layout()
+    fig.savefig('svr_kfold_roc.png', dpi=200)
+    print(f"ROC AUC: {roc_auc:.4f} - plot saved to svr_kfold_roc.png")
+    plt.show()

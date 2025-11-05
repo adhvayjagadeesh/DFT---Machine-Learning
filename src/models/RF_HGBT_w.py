@@ -1,4 +1,4 @@
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.ensemble import RandomForestRegressor, HistGradientBoostingRegressor
 from utils.hybrid import WeightedRegressor, derive_optimal_weights
 from data.final import k_fold, split
 import numpy as np
@@ -9,7 +9,7 @@ y_test = np.array([])
 
 hybrid = WeightedRegressor([
   ("rf", RandomForestRegressor()),
-  ("gbt", GradientBoostingRegressor())
+  ("hgbt", HistGradientBoostingRegressor())
 ])
 
 for x_train, y_train, x_test_f, y_test_f in k_fold():

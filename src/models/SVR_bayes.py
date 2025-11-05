@@ -11,28 +11,28 @@ y_pred = np.array([])
 y_test = np.array([])
 
 pipe = Pipeline([
-    ("scaler", StandardScaler()),
-    ("svr", SVR(max_iter = 1000000)) # Some of the cv is taking too long
+  ("scaler", StandardScaler()),
+  ("svr", SVR(max_iter = 1000000)) # Some of the cv is taking too long
 ])
 
 hyperparams = {
-    "svr__C": Real(1e-3, 1e+6, prior="log-uniform"),
-    "svr__gamma": Real(1e-6, 1e+1, prior="log-uniform"),
-    "svr__degree": Integer(1, 9),
-    "svr__epsilon": Real(1e-4, 1e-1, prior="log-uniform"),
-    "svr__kernel": Categorical(["linear", "poly", "rbf"]),
+  "svr__C": Real(1e-3, 1e+6, prior="log-uniform"),
+  "svr__gamma": Real(1e-6, 1e+1, prior="log-uniform"),
+  "svr__degree": Integer(1, 9),
+  "svr__epsilon": Real(1e-4, 1e-1, prior="log-uniform"),
+  "svr__kernel": Categorical(["linear", "poly", "rbf"]),
 }
 
 # By _f I mean fold, no scaling cuz pipeline is gonna handle that
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
-    bayes_svr = BayesSearchCV(pipe,
-                            hyperparams, 
-                            cv = k_,
-                            n_jobs = -1,
-                            n_iter = 20,
-                            verbose = 4)
-    bayes_svr.fit(x_train, y_train)
+  bayes_svr = BayesSearchCV(pipe,
+              hyperparams, 
+              cv = k_,
+              n_jobs = -1,
+              n_iter = 20,
+              verbose = 4)
+  bayes_svr.fit(x_train, y_train)
 
-    # Predict and evaluate
-    y_test = np.concatenate([y_test, y_test_f])
-    y_pred = np.concatenate([y_pred, bayes_svr.predict(x_test_f)])
+  # Predict and evaluate
+  y_test = np.concatenate([y_test, y_test_f])
+  y_pred = np.concatenate([y_pred, bayes_svr.predict(x_test_f)])

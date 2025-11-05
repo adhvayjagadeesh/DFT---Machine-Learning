@@ -9,15 +9,15 @@ from sklearn.impute import SimpleImputer
 # Load dataset
 df = pd.read_csv("Project/c2db_data/Final_rect_materials_filled_in_correctly.csv")
 df = df.drop(columns=[
-    'Direct band gap (PBE) [eV]',
-    'Direct band gap (PBE) [eV].1',
-    'Band gap (PBE) [eV]',
-    'Band gap (G₀W₀) [eV]',
-    'Direct band gap (G₀W₀) [eV]',
-    'Direct band gap (HSE06) [eV]',
-    'Direct band gap (HSE06) [eV].1',
-    'CBM wrt. vacuum (PBE) [eV]',
-    'VBM wrt. vacuum (PBE) [eV]'
+  'Direct band gap (PBE) [eV]',
+  'Direct band gap (PBE) [eV].1',
+  'Band gap (PBE) [eV]',
+  'Band gap (G₀W₀) [eV]',
+  'Direct band gap (G₀W₀) [eV]',
+  'Direct band gap (HSE06) [eV]',
+  'Direct band gap (HSE06) [eV].1',
+  'CBM wrt. vacuum (PBE) [eV]',
+  'VBM wrt. vacuum (PBE) [eV]'
 ])
 
 # Separate features and target
@@ -40,13 +40,13 @@ bootstrap_preds = np.zeros((n_bootstrap, n_samples))
 
 np.random.seed(42)
 for i in range(n_bootstrap):
-    bootstrap_idx = np.random.choice(n_samples, n_samples, replace=True)
-    X_bootstrap = X_imputed[bootstrap_idx]
-    y_bootstrap = y.iloc[bootstrap_idx]
+  bootstrap_idx = np.random.choice(n_samples, n_samples, replace=True)
+  X_bootstrap = X_imputed[bootstrap_idx]
+  y_bootstrap = y.iloc[bootstrap_idx]
 
-    model.fit(X_bootstrap, y_bootstrap)
-    preds = model.predict(X_imputed)
-    bootstrap_preds[i] = preds
+  model.fit(X_bootstrap, y_bootstrap)
+  preds = model.predict(X_imputed)
+  bootstrap_preds[i] = preds
 
 # Aggregate predictions by mean
 y_pred_bootstrap = bootstrap_preds.mean(axis=0)
@@ -82,17 +82,17 @@ T = 1.0  # threshold in eV to define positive class (change as needed)
 y_bin = (y > T).astype(int)
 
 if y_bin.nunique() < 2:
-    print(f"ROC skipped: need both classes present for threshold T={T}. Found classes: {y_bin.unique()}")
+  print(f"ROC skipped: need both classes present for threshold T={T}. Found classes: {y_bin.unique()}")
 else:
-    y_scores = y_pred_bootstrap
-    fpr, tpr, _ = roc_curve(y_bin, y_scores)
-    roc_auc = auc(fpr, tpr)
+  y_scores = y_pred_bootstrap
+  fpr, tpr, _ = roc_curve(y_bin, y_scores)
+  roc_auc = auc(fpr, tpr)
 
-    disp = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc)
-    fig, ax = plt.subplots(figsize=(7, 6))
-    disp.plot(ax=ax)
-    ax.plot([0, 1], [0, 1], '--', color='gray')
-    ax.set_title(f'ROC Curve (regressor scores, T={T} eV) AUC={roc_auc:.3f}')
-    fig.tight_layout()
-    fig.savefig('gbdt_bootstrap_roc.png', dpi=200)
-    plt.show()
+  disp = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc)
+  fig, ax = plt.subplots(figsize=(7, 6))
+  disp.plot(ax=ax)
+  ax.plot([0, 1], [0, 1], '--', color='gray')
+  ax.set_title(f'ROC Curve (regressor scores, T={T} eV) AUC={roc_auc:.3f}')
+  fig.tight_layout()
+  fig.savefig('gbdt_bootstrap_roc.png', dpi=200)
+  plt.show()
