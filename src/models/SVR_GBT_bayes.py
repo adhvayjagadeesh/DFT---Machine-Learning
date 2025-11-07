@@ -1,36 +1,23 @@
-from skopt import BayesSearchCV
-from xgboost import XGBRegressor
 from sklearn.ensemble import GradientBoostingRegressor, VotingRegressor
+from skopt import BayesSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from data.final import k_fold, k_
 import numpy as np
 from skopt.space import Real, Integer, Categorical
+from sklearn.svm import SVR
 
 # For combining predictions from all folds
 y_pred = np.array([])
 y_test = np.array([])
 
+# GBT pipeline and hyperparams (exactly as in GBT_bayes.py)
 pipe = Pipeline([
   ("scaler", StandardScaler()),
-  ("", VotingRegressor([
-    ("xgb", XGBRegressor()),
-    ("gbt", GradientBoostingRegressor())
-  ]))
+  ("gbt", GradientBoostingRegressor())
 ])
 
 hyperparams = {
-  "__xgb__max_depth": Integer(3, 10),
-  "__xgb__min_child_weight": Integer(1, 8),
-  "__xgb__learning_rate": Real(1e-2, 0.2, prior="log-uniform"),
-  "__xgb__n_estimators": Integer(100, 800),
-  "__xgb__subsample": Real(0.7, 1.0),
-  "__xgb__colsample_bytree": Real(0.6, 1.0),
-  "__xgb__reg_alpha": Real(1e-5, 0.5, prior="log-uniform"),
-  "__xgb__reg_lambda": Real(0.5, 2.0, prior="log-uniform"),
-  "__xgb__gamma": Real(0.0, 2.0),
-  "__xgb__tree_method": Categorical(["hist", "approx"]),
-  
   "__gbt__n_estimators": Integer(200, 800),
   "__gbt__learning_rate": Real(1e-3, 0.2, prior="log-uniform"),
   "__gbt__max_depth": Integer(3, 10),
@@ -38,7 +25,21 @@ hyperparams = {
   "__gbt__min_samples_leaf": Integer(1, 10),
   "__gbt__subsample": Real(0.7, 1),
   "__gbt__max_features": Categorical(["sqrt", 0.7, None]),
+
+  "__svr__C": Real(1e-3, 1e+6, prior="log-uniform"),
+  "__svr__gamma": Real(1e-6, 1e+1, prior="log-uniform"),
+  "__svr__degree": Integer(1, 9),
+  "__svr__epsilon": Real(1e-4, 1e-1, prior="log-uniform"),
+  "__svr__kernel": Categorical(["linear", "poly", "rbf"]),
 }
+
+pipe_svr = Pipeline([
+  ("scaler", StandardScaler()),
+  VotingRegressor([
+    ("svr", SVR()),
+    ("gbt", GradientBoostingRegressor())
+  ])
+])
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
   bayes_hybrid = BayesSearchCV(
@@ -46,11 +47,11 @@ for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
     hyperparams,
     cv = k_,
     n_iter = 20,
-    n_jobs = 1, # This default to all threads, which conflict with XGB, worsening performance
+    n_jobs = 1,   # kept exactly as in GBT_bayes.py
     verbose = 4
   )
   bayes_hybrid.fit(x_train, y_train)
 
-  # Predict and evaluate (simple average blend of the two models)
+  # Combine fold results into global arrays
   y_test = np.concatenate([y_test, y_test_f])
   y_pred = np.concatenate([y_pred, bayes_hybrid.predict(x_test_f)])

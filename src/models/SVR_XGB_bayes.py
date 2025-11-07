@@ -1,7 +1,6 @@
 from sklearn.ensemble import RandomForestRegressor, VotingRegressor
+from sklearn.svm import SVR
 from skopt import BayesSearchCV
-from xgboost import XGBRegressor
-from sklearn.neural_network import MLPRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from data.final import k_fold, k_
@@ -17,7 +16,7 @@ pipe = Pipeline([
   ("scaler", StandardScaler()),
   VotingRegressor([
     ("xgb", RandomForestRegressor()),
-    ("mlp", MLPRegressor())
+    ("svr", SVR())
   ])
 ])
 
@@ -33,10 +32,11 @@ hyperparams = {
   "xgb__gamma": Real(0.0, 2.0),
   "xgb__tree_method": Categorical(["hist", "approx"]),
 
-  "mlp__hidden_layer_sizes": Integer(100, 500),
-  "mlp__solver": Categorical(["adam", "sgd"]),
-  "mlp__learning_rate_init": Real(1e-4, 1e-1, prior="log-uniform"),
-  "mlp__max_iter": Integer(150, 500),
+  "svr__C": Real(1e-3, 1e+6, prior="log-uniform"),
+  "svr__gamma": Real(1e-6, 1e+1, prior="log-uniform"),
+  "svr__degree": Integer(1, 9),
+  "svr__epsilon": Real(1e-4, 1e-1, prior="log-uniform"),
+  "svr__kernel": Categorical(["linear", "poly", "rbf"]),
 }
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):

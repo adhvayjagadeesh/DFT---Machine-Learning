@@ -1,6 +1,5 @@
-from xgboost import XGBRegressor
-from sklearn.ensemble import  VotingRegressor
-from sklearn.neural_network import MLPRegressor
+from sklearn.ensemble import VotingRegressor, RandomForestRegressor
+from sklearn.svm import SVR
 from data.final import k_fold
 import numpy as np
 
@@ -9,8 +8,8 @@ y_pred = np.array([])
 y_test = np.array([])
 
 hybrid = VotingRegressor([
-  ("mlp", MLPRegressor()),
-  ("xgb", XGBRegressor())
+  ("rf",RandomForestRegressor()),
+  ("svr", SVR())
 ])
 
 for x_train, y_train, x_test_f, y_test_f in k_fold():

@@ -48,12 +48,15 @@ python -m stats.single [name]
 - We are only reporting performance of model types, not creating a super good model, so use k-fold for base performance
 - For XGB, using "dart" booster takes way too long, if u got time, try it
 - Small compromise: To avoid the deadly triply-nested loop on hybrid models with weights & hyperparam tuned, we are going to use `train_test_split` to split 80% into hyperparam tuning, and 20% to weighting.
-- Four hybrid cases: K-fold (k_fold), weighting (w), bayesian (bayes), and both (both)
+- Four hybrid cases: K-fold (k_fold), weighting (w), bayesian (bayes), and both (both), although there's no both now
 - 2-model hybrid matrix (empty = unimplemented, :no_entry_sign: = NOPE, :white_check_mark: = implemented, filename = \[row]_\[col]):
 
-|      | RF                 | XGB                | GBT                | HGBT            |
-|------|--------------------|--------------------|--------------------|-----------------|
-| RF   | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign: |
-| XGB  | :white_check_mark: | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign: |
-| GBT  | :white_check_mark: | :white_check_mark: | :no_entry_sign:    | :no_entry_sign: |
-| HGBT | :white_check_mark: | :white_check_mark: | :white_check_mark: | :no_entry_sign: |
+|      | RF                 | XGB                | GBT                | HGBT               | MLP                | SVR             |
+|------|--------------------|--------------------|--------------------|--------------------|--------------------|-----------------|
+| RF   | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign: |
+| XGB  | :white_check_mark: | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign: |
+| GBT  | :white_check_mark: | :white_check_mark: | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign: |
+| HGBT | :white_check_mark: | :white_check_mark: | :white_check_mark: | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign: |
+| MLP  | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :no_entry_sign:    | :no_entry_sign: |
+| SVR  | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :no_entry_sign: |
+

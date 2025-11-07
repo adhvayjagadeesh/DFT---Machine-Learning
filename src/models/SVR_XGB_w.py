@@ -1,5 +1,5 @@
-from sklearn.neural_network import MLPRegressor
 from xgboost import XGBRegressor
+from sklearn.svm import SVR
 from utils.hybrid import WeightedRegressor, derive_optimal_weights
 from data.final import k_fold, split
 import numpy as np
@@ -9,9 +9,8 @@ y_pred = np.array([])
 y_test = np.array([])
 
 hybrid = WeightedRegressor([
-  ("mlp", MLPRegressor()),
-  ("xgb", XGBRegressor()),
-  
+  ("svr", SVR()),
+  ("xgb", XGBRegressor())
 ])
 
 for x_train, y_train, x_test_f, y_test_f in k_fold():
