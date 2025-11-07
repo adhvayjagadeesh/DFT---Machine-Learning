@@ -6,7 +6,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 
 # Fixed random seed for reproducibility, in practice use None, NOT A HYPERPARAM
-rng_seed = 67 # SIX SEVEN
+rng_seed = None # SIX SEVEN
 np.random.seed(rng_seed)
 
 # Load c2db
@@ -30,7 +30,7 @@ drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
 df.drop(columns=drop_cols, inplace=True, errors='ignore')
 
 # Fill missing numerical values with the mean
-df.fillna(df.mean(numeric_only=True), inplace=True)
+df.fillna(df.mean(numeric_only = True), inplace = True)
 
 # Encode categorical columns, should only be the formula column for now
 cat_cols = df.select_dtypes(include='object').columns
@@ -47,7 +47,7 @@ feat_cnt = df.shape[1]
 x_ = df.drop(columns=["Band gap (HSE06) [eV]"])
 y_ = df["Band gap (HSE06) [eV]"]
 
-def split(x = x_, y = y_, second_size = 0.2):
+def split(x = x_, y = y_, second_size = 0.15):
   x_train, x_test, y_train, y_test = tts(x, y, test_size = second_size)
   return x_train, y_train, x_test, y_test
 

@@ -25,8 +25,8 @@ class WeightedRegressor:
 
 
 def derive_optimal_weights(weighted_regressor: WeightedRegressor, x_train_w, y_train_w):
-  preds = weighted_regressor.predict_stacked(x_train_w)
   model_cnt = len(weighted_regressor.estimators)
+  preds = weighted_regressor.predict_stacked(x_train_w)
   def loss_fn(w):
     return mean_squared_error(y_train_w, preds @ w)
   res = minimize(loss_fn, [1 / model_cnt] * model_cnt,
