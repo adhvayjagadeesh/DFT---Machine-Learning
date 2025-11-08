@@ -9,7 +9,7 @@ y_pred = np.array([])
 y_test = np.array([])
 
 hybrid = WeightedRegressor([
-  ("svr", SVR()),
+  ("svr", SVR(max_iter = 1000000)),
   ("xgb", XGBRegressor())
 ])
 

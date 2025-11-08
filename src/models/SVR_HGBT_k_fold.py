@@ -9,7 +9,7 @@ y_test = np.array([])
 
 hybrid = VotingRegressor([
   ("gbt", HistGradientBoostingRegressor()),
-  ("svr", SVR())
+  ("svr", SVR(max_iter = 1000000))
 ])
 
 for x_train, y_train, x_test_f, y_test_f in k_fold():

@@ -35,7 +35,7 @@ hyperparams = {
 pipe_svr = Pipeline([
   ("scaler", StandardScaler()),
   VotingRegressor([
-    ("svr", SVR()),
+    ("svr", SVR(max_iter = 1000000)),
     ("hgbt", HistGradientBoostingRegressor())
   ])
 ])

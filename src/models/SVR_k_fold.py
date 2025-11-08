@@ -9,7 +9,7 @@ y_test = np.array([])
 # By _f I mean fold
 for x_train, y_train, x_test_f, y_test_f in k_fold():
   # Train SVR
-  svr = SVR()
+  svr = SVR(max_iter = 1000000)
   svr.fit(x_train, y_train)
 
   # Predict and evaluate
