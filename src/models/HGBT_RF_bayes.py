@@ -13,7 +13,7 @@ y_test = np.array([])
 pipe = Pipeline([
   ("scaler", StandardScaler()),
   ("", VotingRegressor([
-    ("gbt", RandomForestRegressor()),
+    ("rf", RandomForestRegressor()),
     ("hgbt", HistGradientBoostingRegressor())
   ]))
 ])

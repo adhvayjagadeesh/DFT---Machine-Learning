@@ -2,7 +2,6 @@ from sklearn.ensemble import GradientBoostingRegressor, HistGradientBoostingRegr
 from skopt import BayesSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from xgboost import XGBRegressor
 from data.final import k_fold, k_
 import numpy as np
 from skopt.space import Real, Integer, Categorical

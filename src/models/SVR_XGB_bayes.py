@@ -14,10 +14,10 @@ y_test = np.array([])
 # XGB pipeline and hyperparams (exactly as XGB_bayes.py)
 pipe = Pipeline([
   ("scaler", StandardScaler()),
-  VotingRegressor([
+  ("", VotingRegressor([
     ("xgb", RandomForestRegressor()),
     ("svr", SVR(max_iter = 1000000))
-  ])
+  ]))
 ])
 
 hyperparams = {

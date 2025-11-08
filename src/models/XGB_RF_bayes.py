@@ -1,6 +1,6 @@
 from skopt import BayesSearchCV
 from xgboost import XGBRegressor
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, VotingRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from data.final import k_fold, k_
@@ -14,43 +14,38 @@ y_test = np.array([])
 
 pipe_xgb = Pipeline([
   ("scaler", StandardScaler()),
-  ("xgb", XGBRegressor())
+  ("", VotingRegressor([
+    ("rf", RandomForestRegressor()),
+    ("xgb", XGBRegressor())
+  ]))
 ])
 
-pipe_rf = Pipeline([
-  ("scaler", StandardScaler()),
-  ("rf", RandomForestRegressor())
-])
 
-# XGBoost hyperparameters (unchanged)
-hyperparams_xgb = {
-  "xgb__max_depth": Integer(3, 10),
-  "xgb__min_child_weight": Integer(1, 8),
-  "xgb__learning_rate": Real(1e-2, 0.2, prior="log-uniform"),
-  "xgb__n_estimators": Integer(100, 800),
-  "xgb__subsample": Real(0.7, 1.0),
-  "xgb__colsample_bytree": Real(0.6, 1.0),
-  "xgb__reg_alpha": Real(1e-5, 0.5, prior="log-uniform"),
-  "xgb__reg_lambda": Real(0.5, 2.0, prior="log-uniform"),
-  "xgb__gamma": Real(0.0, 2.0),
-  "xgb__tree_method": Categorical(["hist", "approx"]),
-}
+hyperparams = {
+  "__xgb__max_depth": Integer(3, 10),
+  "__xgb__min_child_weight": Integer(1, 8),
+  "__xgb__learning_rate": Real(1e-2, 0.2, prior="log-uniform"),
+  "__xgb__n_estimators": Integer(100, 800),
+  "__xgb__subsample": Real(0.7, 1.0),
+  "__xgb__colsample_bytree": Real(0.6, 1.0),
+  "__xgb__reg_alpha": Real(1e-5, 0.5, prior="log-uniform"),
+  "__xgb__reg_lambda": Real(0.5, 2.0, prior="log-uniform"),
+  "__xgb__gamma": Real(0.0, 2.0),
+  "__xgb__tree_method": Categorical(["hist", "approx"]),
 
-# RandomForest hyperparameters (unchanged)
-hyperparams_rf = {
-  "rf__n_estimators": Integer(100, 1000),
-  "rf__max_depth": Categorical([None, 10, 25, 50, 75, 100]),
-  "rf__min_samples_split": Integer(2, 20),
-  "rf__min_samples_leaf": Integer(1, 10),
-  "rf__max_features": [1, "sqrt", "log2"],
-  "rf__bootstrap": Categorical([True, False]),
+  "__rf__n_estimators": Integer(100, 1000),
+  "__rf__max_depth": Categorical([None, 10, 25, 50, 75, 100]),
+  "__rf__min_samples_split": Integer(2, 20),
+  "__rf__min_samples_leaf": Integer(1, 10),
+  "__rf__max_features": [1, "sqrt", "log2"],
+  "__rf__bootstrap": Categorical([True, False]),
 }
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
   # Tune XGB (same as your XGB_bayes.py)
-  bayes_xgb = BayesSearchCV(
-    pipe_xgb,
-    hyperparams_xgb,
+  bayes = BayesSearchCV(
+    pipe,
+    hyperparams,
     cv = k_,
     n_iter = 20,
     n_jobs = 1, # This default to all threads, which conflict with XGB, worsening performance
