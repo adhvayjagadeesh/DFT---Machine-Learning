@@ -8,7 +8,7 @@ y_pred = np.array([])
 y_test = np.array([])
 
 hybrid = VotingRegressor([
-  ("mlp", MLPRegressor())
+  ("mlp", MLPRegressor()),
   ("hgbt", HistGradientBoostingRegressor())
 ])
 

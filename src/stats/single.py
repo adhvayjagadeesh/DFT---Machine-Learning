@@ -79,7 +79,7 @@ def run_model(name, save_loc):
   else:
     plt.show()
   
-  return (r2, adj_r2, mae, rmse, spearman)
+  return name, r2, adj_r2, mae, rmse, spearman
 
 if __name__ == '__main__':
   parser = ArgumentParser("1-model stat", description = "Prediction and error for 1 model")
