@@ -6,3 +6,5 @@ matplotlib
 importlib
 argparse
 xgboost
+python-dotenv
+fabric

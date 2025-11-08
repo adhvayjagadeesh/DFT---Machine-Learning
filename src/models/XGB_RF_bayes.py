@@ -12,7 +12,7 @@ y_pred = np.array([])
 y_test = np.array([])
 
 
-pipe_xgb = Pipeline([
+pipe = Pipeline([
   ("scaler", StandardScaler()),
   ("", VotingRegressor([
     ("rf", RandomForestRegressor()),
@@ -42,31 +42,16 @@ hyperparams = {
 }
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
-  # Tune XGB (same as your XGB_bayes.py)
-  bayes = BayesSearchCV(
+
+  bayes_hybrid = BayesSearchCV(
     pipe,
     hyperparams,
     cv = k_,
     n_iter = 20,
     n_jobs = 1, # This default to all threads, which conflict with XGB, worsening performance
-    verbose = 4
   )
-  bayes_xgb.fit(x_train, y_train)
-
-  # Tune RF (same as your RF_bayes.py)
-  bayes_rf = BayesSearchCV(
-    pipe_rf,
-    hyperparams_rf,
-    cv = k_,
-    n_iter = 20,
-    n_jobs = -1,
-    verbose = 4
-  )
-  bayes_rf.fit(x_train, y_train)
+  bayes_hybrid.fit(x_train, y_train)
 
   # Predict and evaluate (simple average blend of the two models)
   y_test = np.concatenate([y_test, y_test_f])
-  preds_xgb = bayes_xgb.predict(x_test_f)
-  preds_rf = bayes_rf.predict(x_test_f)
-  preds_blend = (preds_xgb + preds_rf) / 2.0
-  y_pred = np.concatenate([y_pred, preds_blend])
+  y_pred = np.concatenate([y_pred, bayes_hybrid.predict(x_test_f)])

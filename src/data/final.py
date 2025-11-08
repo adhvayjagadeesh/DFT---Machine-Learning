@@ -1,12 +1,11 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split as tts, KFold
-from sklearn.utils import resample
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 
 # Fixed random seed for reproducibility, in practice use None, NOT A HYPERPARAM
-rng_seed = None # SIX SEVEN
+rng_seed = 67 # SIX SEVEN
 np.random.seed(rng_seed)
 
 # Load c2db
