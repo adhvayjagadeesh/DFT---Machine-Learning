@@ -36,7 +36,7 @@ cd dftml
 git pull
 
 # Make venv called ".venv" (1st time only)
-python3 -m venv .venv
+python -m venv .venv
 
 # Activate venv
 source .venv/bin/activate
@@ -45,16 +45,22 @@ source .venv/bin/activate
 cd src
 
 # Install dependencies (1st time only)
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 Run code asynchronously
 
 ```bash
-# Create tmux session called "dftml"
+# Create tmux session called "dftml" (1st time only)
 tmux new-session -t dftml
 
-# Attach that session
+# Activate venv (inside the tmux this time)
+source .venv/bin/activate
+
+# Install dependencies (1st time only)
+python -m pip install -r requirements.txt
+
+# Attach that session (to check logs)
 tmux a -t dftml
 
 # Run code here

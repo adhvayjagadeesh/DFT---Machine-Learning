@@ -17,6 +17,6 @@ with open(join(res_dir, "result.csv"), 'w', newline = '') as res_csv:
   writer = csv_writer(res_csv)
   writer.writerow(("Name", "R^2", "Adj R^2", "MAE (eV)", "RMSE (eV)", "Spearman"))
   for i, model in enumerate(models, 1):
-    print(f"Running {model} ({i}/{model_cnt}")
+    print(f"Running {model} ({i}/{model_cnt})")
     writer.writerow(run_model(model, res_dir))
     res_csv.flush()
