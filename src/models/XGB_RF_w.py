@@ -21,7 +21,7 @@ for x_train, y_train, x_test_f, y_test_f in k_fold():
   optimal_weights = derive_optimal_weights(hybrid, x_train_w, y_train_w)
 
   # Retrain on full training set
-  hybrid.fit(x_train)
+  hybrid.fit(x_train, y_train)
   print(optimal_weights)
 
   # Final prediction and evaluate
