@@ -4,8 +4,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from data.final import k_fold, k_
 import numpy as np
-from skopt.space import Real, Integer, Categorical
 from sklearn.svm import SVR
+from utils.hybrid import make_hyperparams
 
 # For combining predictions from all folds
 y_pred = np.array([])
@@ -20,21 +20,7 @@ pipe = Pipeline([
   ])
 ])
 
-hyperparams = {
-  "__gbt__n_estimators": Integer(200, 800),
-  "__gbt__learning_rate": Real(1e-3, 0.2, prior="log-uniform"),
-  "__gbt__max_depth": Integer(3, 10),
-  "__gbt__min_samples_split": Integer(2, 15),
-  "__gbt__min_samples_leaf": Integer(1, 10),
-  "__gbt__subsample": Real(0.7, 1),
-  "__gbt__max_features": Categorical(["sqrt", 0.7, None]),
-
-  "__svr__C": Real(1e-3, 1e+6, prior="log-uniform"),
-  "__svr__gamma": Real(1e-6, 1e+1, prior="log-uniform"),
-  "__svr__degree": Integer(1, 9),
-  "__svr__epsilon": Real(1e-4, 1e-1, prior="log-uniform"),
-  "__svr__kernel": Categorical(["linear", "poly", "rbf"]),
-}
+hyperparams = make_hyperparams(("svr", "gbt"))
 
 pipe_svr = Pipeline([
   ("scaler", StandardScaler()),

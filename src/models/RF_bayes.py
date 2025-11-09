@@ -4,7 +4,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from data.final import k_fold, k_
 import numpy as np
-from skopt.space import Integer, Categorical
+from utils.hybrid import make_hyperparam
 
 # For combining predictions from all folds
 y_pred = np.array([])
@@ -15,14 +15,7 @@ pipe = Pipeline([
   ("rf", RandomForestRegressor())
 ])
 
-hyperparams = {
-  "rf__n_estimators": Integer(100, 1000),
-  "rf__max_depth": Categorical([None, 10, 25, 50, 75, 100]),
-  "rf__min_samples_split": Integer(2, 20),
-  "rf__min_samples_leaf": Integer(1, 10),
-  "rf__max_features": [1, "sqrt", "log2"],
-  "rf__bootstrap": Categorical([True, False]),
-}
+hyperparams = make_hyperparam("rf")
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
   bayes_rf = BayesSearchCV(

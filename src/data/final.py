@@ -47,8 +47,8 @@ x_ = df.drop(columns=["Band gap (HSE06) [eV]"])
 y_ = df["Band gap (HSE06) [eV]"]
 
 def split(x = x_, y = y_, second_size = 0.15):
-  x_train, x_test, y_train, y_test = tts(x, y, test_size = second_size)
-  return x_train, y_train, x_test, y_test
+  x1, x2, y1, y2 = tts(x, y, test_size = second_size)
+  return x1, y1, x2, y2
 
 # Default k for k-fold
 k_ = 4

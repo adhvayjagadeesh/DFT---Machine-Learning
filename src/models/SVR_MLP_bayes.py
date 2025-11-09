@@ -5,15 +5,14 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR
 from data.final import k_fold, k_
-from skopt.space import Real, Integer, Categorical
 import numpy as np
+from utils.hybrid import make_hyperparams
 
 # For combining predictions from all folds
 y_pred = np.array([])
 y_test = np.array([])
 
-# MLP pipeline and hyperparams (exactly as provided)
-pipe_mlp = Pipeline([
+pipe = Pipeline([
   ("scaler", StandardScaler()),
   VotingRegressor([
     ("mlp", MLPRegressor()),
@@ -21,26 +20,15 @@ pipe_mlp = Pipeline([
   ])
 ])
 
-hyperparams_mlp = {
-  "__mlp__hidden_layer_sizes": Integer(100, 500),
-  "__mlp__solver": Categorical(["adam", "sgd"]),
-  "__mlp__learning_rate_init": Real(1e-4, 1e-1, prior="log-uniform"),
-  "__mlp__max_iter": Integer(150, 500),
-  
-  "__svr__C": Real(1e-3, 1e+6, prior="log-uniform"),
-  "__svr__gamma": Real(1e-6, 1e+1, prior="log-uniform"),
-  "__svr__degree": Integer(1, 9),
-  "__svr__epsilon": Real(1e-4, 1e-1, prior="log-uniform"),
-  "__svr__kernel": Categorical(["linear", "poly", "rbf"]),
-}
+hyperparams = make_hyperparams(("svr", "mlp"))
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
   bayes_hybrid = BayesSearchCV(
-    pipe_mlp,
-    hyperparams_mlp,
+    pipe,
+    hyperparams,
     cv = k_,
     n_iter = 20,
-    n_jobs = 1,   # kept exactly as in MLP_bayes.py
+    n_jobs = 1,
   )
   bayes_hybrid.fit(x_train, y_train)
 

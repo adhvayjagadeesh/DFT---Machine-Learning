@@ -3,8 +3,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.svm import SVR
 from data.final import k_fold, k_
 from sklearn.preprocessing import StandardScaler
-from skopt.space import Real, Integer, Categorical
 import numpy as np
+from utils.hybrid import make_hyperparam
 
 # For combining predictions from all folds
 y_pred = np.array([])
@@ -15,13 +15,7 @@ pipe = Pipeline([
   ("svr", SVR(max_iter = 1000000)) # Some of the cv is taking too long
 ])
 
-hyperparams = {
-  "svr__C": Real(1e-3, 1e+6, prior="log-uniform"),
-  "svr__gamma": Real(1e-6, 1e+1, prior="log-uniform"),
-  "svr__degree": Integer(1, 9),
-  "svr__epsilon": Real(1e-4, 1e-1, prior="log-uniform"),
-  "svr__kernel": Categorical(["linear", "poly", "rbf"]),
-}
+hyperparams = make_hyperparam("svr")
 
 # By _f I mean fold, no scaling cuz pipeline is gonna handle that
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):

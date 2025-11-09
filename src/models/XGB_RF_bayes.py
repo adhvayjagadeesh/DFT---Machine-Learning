@@ -5,7 +5,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from data.final import k_fold, k_
 import numpy as np
-from skopt.space import Real, Integer, Categorical
+from utils.hybrid import make_hyperparams
 
 # For combining predictions from all folds
 y_pred = np.array([])
@@ -21,26 +21,7 @@ pipe = Pipeline([
 ])
 
 
-hyperparams = {
-  "__xgb__max_depth": Integer(3, 10),
-  "__xgb__min_child_weight": Integer(1, 8),
-  "__xgb__learning_rate": Real(1e-2, 0.2, prior="log-uniform"),
-  "__xgb__n_estimators": Integer(100, 800),
-  "__xgb__subsample": Real(0.7, 1.0),
-  "__xgb__colsample_bytree": Real(0.6, 1.0),
-  "__xgb__reg_alpha": Real(1e-5, 0.5, prior="log-uniform"),
-  "__xgb__reg_lambda": Real(0.5, 2.0, prior="log-uniform"),
-  "__xgb__gamma": Real(0.0, 2.0),
-  "__xgb__tree_method": Categorical(["hist", "approx"]),
-
-  "__rf__n_estimators": Integer(100, 1000),
-  "__rf__max_depth": Categorical([None, 10, 25, 50, 75, 100]),
-  "__rf__min_samples_split": Integer(2, 20),
-  "__rf__min_samples_leaf": Integer(1, 10),
-  "__rf__max_features": [1, "sqrt", "log2"],
-  "__rf__bootstrap": Categorical([True, False]),
-}
-
+hyperparams = make_hyperparams(("xgb", "rf"))
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
 
   bayes_hybrid = BayesSearchCV(

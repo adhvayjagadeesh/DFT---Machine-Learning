@@ -3,8 +3,8 @@ from skopt import BayesSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from data.final import k_fold, k_
+from utils.hybrid import make_hyperparams
 import numpy as np
-from skopt.space import Real, Integer, Categorical
 
 # For combining predictions from all folds
 y_pred = np.array([])
@@ -18,22 +18,7 @@ pipe = Pipeline([
   ]))
 ])
 
-hyperparams = {
-  "__gbt__n_estimators": Integer(200, 800),
-  "__gbt__learning_rate": Real(1e-3, 0.2, prior="log-uniform"),
-  "__gbt__max_depth": Integer(3, 10),
-  "__gbt__min_samples_split": Integer(2, 15),
-  "__gbt__min_samples_leaf": Integer(1, 10),
-  "__gbt__subsample": Real(0.7, 1),
-  "__gbt__max_features": Categorical(["sqrt", 0.7, None]),
-
-  "__hgbt__learning_rate": Real(1e-3, 0.2, prior="log-uniform"),
-  "__hgbt__max_iter": Integer(150, 800),
-  "__hgbt__max_leaf_nodes": Integer(20, 50),
-  "__hgbt__min_samples_leaf": Integer(10, 40),
-  "__hgbt__l2_regularization": Real(1e-6, 1.0, prior="log-uniform"),
-  "__hgbt__max_bins": Integer(127, 255),
-}
+hyperparams = make_hyperparams(("gbt", "hgbt"))
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale=False):
   bayes_hybrid = BayesSearchCV(

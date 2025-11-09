@@ -3,6 +3,7 @@ from sklearn import clone
 import numpy as np
 from sklearn.metrics import mean_squared_error
 from scipy.optimize import minimize
+from skopt.space import Real, Integer, Categorical
 
 class WeightedRegressor:
   def __init__(self, estimators):
@@ -23,7 +24,6 @@ class WeightedRegressor:
       weights = [1 / len(self.estimators)] * len(self.estimators)
     return np.average(self.predict_stacked(x), 1, weights)
 
-
 def derive_optimal_weights(weighted_regressor: WeightedRegressor, x_train_w, y_train_w):
   model_cnt = len(weighted_regressor.estimators)
   preds = weighted_regressor.predict_stacked(x_train_w)
@@ -37,3 +37,71 @@ def derive_optimal_weights(weighted_regressor: WeightedRegressor, x_train_w, y_t
     }
   )
   return res.x
+
+def make_hyperparam(model):
+  match model:
+    case "gbt":
+      hyperparam = {
+        "n_estimators": Integer(200, 800),
+        "learning_rate": Real(1e-3, 0.2, prior="log-uniform"),
+        "max_depth": Integer(3, 10),
+        "min_samples_split": Integer(2, 15),
+        "min_samples_leaf": Integer(1, 10),
+        "subsample": Real(0.7, 1), 
+        "max_features": Categorical(["sqrt", 0.7, None]),
+      }
+    case "hgbt":
+      hyperparam = {
+        "learning_rate": Real(1e-3, 0.2, prior="log-uniform"),
+        "max_iter": Integer(150, 800),
+        "max_leaf_nodes": Integer(20, 50),
+        "min_samples_leaf": Integer(10, 40),
+        "l2_regularization": Real(1e-6, 1.0, prior="log-uniform"),
+        "max_bins": Integer(127, 255),
+      }
+    case "mlp":
+      hyperparam = {
+        "hidden_layer_sizes": Integer(100, 500),
+        "solver": Categorical(["adam", "sgd"]),
+        "learning_rate_init": Real(1e-4, 1e-1, prior="log-uniform"),
+        "max_iter": Integer(150, 500),
+      }
+    case "rf":
+      hyperparam = {
+        "n_estimators": Integer(100, 1000),
+        "max_depth": Categorical([None, 10, 25, 50, 75, 100]),
+        "min_samples_split": Integer(2, 20),
+        "min_samples_leaf": Integer(1, 10),
+        "max_features": [1, "sqrt", "log2"],
+        "bootstrap": Categorical([True, False]),
+      }
+    case "svr":
+      hyperparam = {
+        "C": Real(1e-3, 1e+6, prior="log-uniform"),
+        "gamma": Real(1e-6, 1e+1, prior="log-uniform"),
+        "degree": Integer(1, 9),
+        "epsilon": Real(1e-4, 1e-1, prior="log-uniform"),
+        "kernel": Categorical(["linear", "poly", "rbf"]),
+      }
+    case "xgb":
+      # I tried the "dart" booster but it takes years...
+      hyperparam = {
+        "max_depth": Integer(3, 10),
+        "min_child_weight": Integer(1, 8),
+        "learning_rate": Real(1e-2, 0.2, prior="log-uniform"),
+        "n_estimators": Integer(100, 800),
+        "subsample": Real(0.7, 1.0),
+        "colsample_bytree": Real(0.6, 1.0),
+        "reg_alpha": Real(1e-5, 0.5, prior="log-uniform"),
+        "reg_lambda": Real(0.5, 2.0, prior="log-uniform"),
+        "gamma": Real(0.0, 2.0),
+        "tree_method": Categorical(["hist", "approx"]),
+      }
+  prefix = f"{model}__"
+  return {prefix + k: v for k, v in hyperparam.items()}
+
+def make_hyperparams(models):
+  hyperparams = {}
+  for model in models:
+    hyperparams.update(make_hyperparam(model))
+  return {"__" + k: v for k, v in hyperparams.items()}

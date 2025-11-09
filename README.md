@@ -44,10 +44,11 @@ python -m stats.single [name]
 
 ## Model notes
 
-- Define `y_pred` and `y_test` to support stats display. Optional definitions: `weights` (for hybrid models)
+- Define `y_pred` and `y_test` to support stats display.
 - We are only reporting performance of model types, not creating a super good model, so use k-fold for base performance
 - For XGB, using "dart" booster takes way too long, if u got time, try it
-- Small compromise: To avoid the deadly triply-nested loop on hybrid models with weights & hyperparam tuned, we are going to use `train_test_split` to split 80% into hyperparam tuning, and 20% to weighting.
+- Small compromise: To avoid the deadly triply-nested loop on hybrid models with weighting, we are going to use `split` to split 80% into hyperparam tuning or regular training, and 20% to weighting.
+- When using `VotingRegressor` or `WeightedRegressor`, make sure to set the pipeline name to `""`, and name the models like the table below
 - Four hybrid cases: K-fold (k_fold), weighting (w), bayesian (bayes), and both (both), although there's no both now
 - 2-model hybrid matrix (empty = unimplemented, :no_entry_sign: = NOPE, :white_check_mark: = implemented, filename = \[row]_\[col]):
 

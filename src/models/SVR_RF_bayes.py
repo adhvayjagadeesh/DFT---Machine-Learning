@@ -6,7 +6,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from data.final import k_fold, k_
 import numpy as np
-from skopt.space import Integer, Real, Categorical
+from utils.hybrid import make_hyperparams
 
 # For combining predictions from all folds
 y_pred = np.array([])
@@ -21,20 +21,7 @@ pipe_rf = Pipeline([
   ])
 ])
 
-hyperparams = {
-  "__rf__n_estimators": Integer(100, 1000),
-  "__rf__max_depth": Categorical([None, 10, 25, 50, 75, 100]),
-  "__rf__min_samples_split": Integer(2, 20),
-  "__rf__min_samples_leaf": Integer(1, 10),
-  "__rf__max_features": [1, "sqrt", "log2"],
-  "__rf__bootstrap": Categorical([True, False]),
-  
-  "__svr__C": Real(1e-3, 1e+6, prior="log-uniform"),
-  "__svr__gamma": Real(1e-6, 1e+1, prior="log-uniform"),
-  "__svr__degree": Integer(1, 9),
-  "__svr__epsilon": Real(1e-4, 1e-1, prior="log-uniform"),
-  "__svr__kernel": Categorical(["linear", "poly", "rbf"]),
-}
+hyperparams = make_hyperparams(("svr", "rf"))
 
 # Iterate over the same k_fold generator (no scaling here because pipelines handle scaling)
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
