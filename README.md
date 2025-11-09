@@ -2,48 +2,75 @@
 
 Benchmarking ML models for predicting band gap of 2D material without DFT
 
-## 1st time setup
+## Local setup
 
 ```bash
 # Make venv called ".venv"
 python -m venv .venv
-```
 
-### Activate venv
-
-Linux/WSL
-
-```bash
+# Activate venv (Linux/WSL)
 source .venv/bin/activate
-```
-
-Windows
-
-```bash
+`
+# Activate venv (Windows)
 .venv\Scripts\activate
-```
 
-### Finally
-
-```bash
 # Go to src directory
 cd src
 
-# Install dependencies
+# Install dependencies (1st time only)
 pip install -r requirements.txt
 ```
 
-## Run + visualize 1 model
+## ASDRP remote setup
 
-From `src`, run:
+Assuming you ssh to ASDRP server already
+
+```bash
+# Exit out of slave session into the master
+exit
+
+# Clone the repo (1st time only)
+git clone https://github.com/adhvayjagadeesh/DFT---Machine-Learning dftml
+
+# Go to the repo
+cd dftml
+
+# Update it
+git pull
+
+# Make venv called ".venv" (1st time only)
+python3 -m virtualenv .venv
+
+# Activate venv
+source .venv/bin/activate
+
+# Go to src directory
+cd src
+
+# Install dependencies (1st time only)
+pip install -r requirements.txt
+```
+
+## Run 1 model
 
 ```bash
 # Replace [name] with a filename in the models folder, without the .py
 python -m stats.single [name]
 ```
 
-## Model notes
+## Run all models
 
+```bash
+# Replace [result_dir] with output directory relative to src
+python -m stats.all [result_dir]
+
+# But usually, you will run it on a remote machine, so do this to run it and do something else
+nohup python -m stats.all results &
+```
+
+## Developer notes
+
+- A Python venv requires Python version >3.5, but ASDRP only have <3.8, so all code must be written for 3.5 < Python version < 3.8
 - Define `y_pred` and `y_test` to support stats display.
 - We are only reporting performance of model types, not creating a super good model, so use k-fold for base performance
 - For XGB, using "dart" booster takes way too long, if u got time, try it
