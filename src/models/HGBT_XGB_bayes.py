@@ -11,7 +11,7 @@ import numpy as np
 y_pred = np.array([])
 y_test = np.array([])
 
-pipe_xgb = Pipeline([
+pipe = Pipeline([
   ("scaler", StandardScaler()),
   ("", VotingRegressor([
     ("xgb", XGBRegressor()),
@@ -23,7 +23,7 @@ hyperparams = make_hyperparams(("xgb", "hgbt"))
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
   bayes_hybrid = BayesSearchCV(
-    pipe_xgb,
+    pipe,
     hyperparams,
     cv = k_,
     n_iter = 20,

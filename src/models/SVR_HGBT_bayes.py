@@ -14,15 +14,15 @@ y_test = np.array([])
 # GBT pipeline and hyperparams (exactly as in GBT_bayes.py)
 pipe = Pipeline([
   ("scaler", StandardScaler()),
-  VotingRegressor([
+  ("", VotingRegressor([
     ("hgbt", HistGradientBoostingRegressor()),
     ("svr", SVR(max_iter = 1000000))
-  ])
+  ]))
 ])
 
 hyperparams = make_hyperparams(("svr", "hgbt"))
 
-pipe_svr = Pipeline([
+pipe = Pipeline([
   ("scaler", StandardScaler()),
   VotingRegressor([
     ("svr", SVR(max_iter = 1000000)),

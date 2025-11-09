@@ -15,10 +15,10 @@ y_test = np.array([])
 # XGB pipeline and hyperparams (exactly as XGB_bayes.py)
 pipe = Pipeline([
   ("scaler", StandardScaler()),
-  VotingRegressor([
+  ("", VotingRegressor([
     ("xgb", XGBRegressor()),
     ("mlp", MLPRegressor())
-  ])
+  ]))
 ])
 
 hyperparams = make_hyperparams(("xgb", "mlp"))

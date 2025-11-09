@@ -14,10 +14,10 @@ y_test = np.array([])
 
 pipe = Pipeline([
   ("scaler", StandardScaler()),
-  VotingRegressor([
+  ("", VotingRegressor([
     ("mlp", MLPRegressor()),
     ("svr", SVR(max_iter = 1000000))
-  ])
+  ]))
 ])
 
 hyperparams = make_hyperparams(("svr", "mlp"))

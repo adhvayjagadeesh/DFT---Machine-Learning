@@ -14,10 +14,10 @@ y_test = np.array([])
 # Random Forest pipeline and hyperparams (exactly as RF_bayes.py)
 pipe = Pipeline([
   ("scaler", StandardScaler()),
-  VotingRegressor([
+  ("", VotingRegressor([
     ("rf", RandomForestRegressor()),
     ("mlp", MLPRegressor())
-  ])
+  ]))
 ])
 
 hyperparams = make_hyperparams(("rf", "mlp"))

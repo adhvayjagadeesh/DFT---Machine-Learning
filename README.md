@@ -26,9 +26,6 @@ pip install -r requirements.txt
 Assuming you ssh to ASDRP server already
 
 ```bash
-# Exit out of slave session into the master
-exit
-
 # Clone the repo (1st time only)
 git clone https://github.com/adhvayjagadeesh/DFT---Machine-Learning dftml
 
@@ -39,7 +36,7 @@ cd dftml
 git pull
 
 # Make venv called ".venv" (1st time only)
-python3 -m virtualenv .venv
+python3 -m venv .venv
 
 # Activate venv
 source .venv/bin/activate
@@ -70,7 +67,7 @@ nohup python -m stats.all results &
 
 ## Developer notes
 
-- A Python venv requires Python version >3.5, but ASDRP only have <3.8, so all code must be written for 3.5 < Python version < 3.8
+- A Python venv requires Python version >3.5, but ASDRP only have <3.12, so all code must be written for 3.5 < Python version < 3.12
 - Define `y_pred` and `y_test` to support stats display.
 - We are only reporting performance of model types, not creating a super good model, so use k-fold for base performance
 - For XGB, using "dart" booster takes way too long, if u got time, try it

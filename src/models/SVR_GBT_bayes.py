@@ -14,21 +14,13 @@ y_test = np.array([])
 # GBT pipeline and hyperparams (exactly as in GBT_bayes.py)
 pipe = Pipeline([
   ("scaler", StandardScaler()),
-  VotingRegressor([
+  ("", VotingRegressor([
     ("gbt", GradientBoostingRegressor()),
     ("svr", SVR(max_iter = 1000000))
-  ])
+  ]))
 ])
 
 hyperparams = make_hyperparams(("svr", "gbt"))
-
-pipe_svr = Pipeline([
-  ("scaler", StandardScaler()),
-  VotingRegressor([
-    ("svr", SVR(max_iter = 1000000)),
-    ("gbt", GradientBoostingRegressor())
-  ])
-])
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
   bayes_hybrid = BayesSearchCV(
@@ -36,7 +28,7 @@ for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
     hyperparams,
     cv = k_,
     n_iter = 20,
-    n_jobs = 1,   # kept exactly as in GBT_bayes.py
+    n_jobs = 1,
   )
   bayes_hybrid.fit(x_train, y_train)
 

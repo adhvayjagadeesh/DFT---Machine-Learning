@@ -15,5 +15,6 @@ with open(join(res_dir, "result.csv"), 'w', newline = '') as res_csv:
   writer = csv_writer(res_csv)
   writer.writerow(("Name", "R^2", "Adj R^2", "MAE", "RMSE", "Spearman"))
   for model in models:
+    print(f"Running {model}")
     writer.writerow(run_model(model, res_dir))
     res_csv.flush()
