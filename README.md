@@ -48,6 +48,21 @@ cd src
 pip install -r requirements.txt
 ```
 
+Run code asynchronously
+
+```bash
+# Create tmux session called "dftml"
+tmux new-session -t dftml
+
+# Attach that session
+tmux a -t dftml
+
+# Run code here
+# Press "Ctrl-B" THEN "d" to detach session
+
+# You can now turn of your local machine and disconnect
+```
+
 ## Run 1 model
 
 ```bash
@@ -60,9 +75,6 @@ python -m stats.single [name]
 ```bash
 # Replace [result_dir] with output directory relative to src
 python -m stats.all [result_dir]
-
-# But usually, you will run it on a remote machine, so do this to run it and do something else
-nohup python -m stats.all results &
 ```
 
 ## Developer notes
