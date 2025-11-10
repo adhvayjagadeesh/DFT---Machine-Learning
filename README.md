@@ -76,11 +76,12 @@ tmux a -t dftml
 python -m stats.single [name]
 ```
 
-## Run all models
+## Run multiple models
 
 ```bash
 # Replace [result_dir] with output directory relative to src
-python -m stats.all [result_dir]
+# It will run all models, add -e/--exclude [models] to skip them
+python -m stats.multiple [result_dir]
 ```
 
 ## Developer notes

@@ -16,7 +16,7 @@ y_test = np.array([])
 pipe_rf = Pipeline([
   ("scaler", StandardScaler()),
   ("", VotingRegressor([
-    ("svr", SVR(max_iter = 1000000)),
+    ("svr", SVR(max_iter = 100000)),
     ("rf", RandomForestRegressor())
   ]))
 ])

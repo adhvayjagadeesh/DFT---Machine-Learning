@@ -16,7 +16,7 @@ pipe = Pipeline([
   ("scaler", StandardScaler()),
   ("", VotingRegressor([
     ("xgb", RandomForestRegressor()),
-    ("svr", SVR(max_iter = 1000000))
+    ("svr", SVR(max_iter = 100000))
   ]))
 ])
 

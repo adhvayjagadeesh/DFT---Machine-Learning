@@ -12,7 +12,7 @@ y_test = np.array([])
 
 pipe = Pipeline([
   ("scaler", StandardScaler()),
-  ("svr", SVR(max_iter = 1000000)) # Some of the cv is taking too long
+  ("svr", SVR(max_iter = 100000)) # Some of the cv is taking too long
 ])
 
 hyperparams = make_hyperparam("svr")

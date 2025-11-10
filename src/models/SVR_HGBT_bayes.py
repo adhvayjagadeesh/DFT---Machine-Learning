@@ -16,7 +16,7 @@ pipe = Pipeline([
   ("scaler", StandardScaler()),
   ("", VotingRegressor([
     ("hgbt", HistGradientBoostingRegressor()),
-    ("svr", SVR(max_iter = 1000000))
+    ("svr", SVR(max_iter = 100000))
   ]))
 ])
 
@@ -25,7 +25,7 @@ hyperparams = make_hyperparams(("svr", "hgbt"))
 pipe = Pipeline([
   ("scaler", StandardScaler()),
   VotingRegressor([
-    ("svr", SVR(max_iter = 1000000)),
+    ("svr", SVR(max_iter = 100000)),
     ("hgbt", HistGradientBoostingRegressor())
   ])
 ])
