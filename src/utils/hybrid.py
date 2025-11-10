@@ -38,7 +38,7 @@ def derive_optimal_weights(weighted_regressor: WeightedRegressor, x_train_w, y_t
   )
   return res.x
 
-def make_hyperparam(model):
+def get_hyperparam(model):
   if model == "gbt":
     hyperparam = {
       "n_estimators": Integer(200, 800),
@@ -98,8 +98,8 @@ def make_hyperparam(model):
   prefix = f"{model}__"
   return {prefix + k: v for k, v in hyperparam.items()}
 
-def make_hyperparams(models):
+def get_hyperparams(models):
   hyperparams = {}
   for model in models:
-    hyperparams.update(make_hyperparam(model))
+    hyperparams.update(get_hyperparam(model))
   return {"__" + k: v for k, v in hyperparams.items()}

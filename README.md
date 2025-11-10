@@ -69,6 +69,31 @@ tmux a -t dftml
 # You can now turn of your local machine and disconnect
 ```
 
+## Get files from ASDRP
+
+Because ASDRP server setup is weird (stupid), where when user ssh to it:
+
+- They first get connected to user@[master ip]
+- Then a bash profile from user@master run `ssh user@[slave_ip]` to connect master to slave
+- Hence the double-password, and it makes a transitive ssh connection (local --> master --> slave)
+
+Let's define paths:
+
+- src = source file on slave
+- dst1 = destination on master
+- dst2 = destination on local
+
+```bash
+# First, if you're in slave, get out
+exit
+
+# To get files from slave to local, first rsync it to the master. From master:
+rsync -avP user@[slave ip]:[src] [dst1]
+
+# Then from local, run:
+rsync -avP user@[master ip]:[dst1] [dst2]
+```
+
 ## Run 1 model
 
 ```bash

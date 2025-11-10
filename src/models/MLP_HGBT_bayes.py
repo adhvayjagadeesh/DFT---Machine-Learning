@@ -1,11 +1,10 @@
 from sklearn.ensemble import HistGradientBoostingRegressor, VotingRegressor
 from skopt import BayesSearchCV
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from data.final import k_fold, k_
+from data.final import k_fold, k_, DefaultScaler
 import numpy as np
 from sklearn.neural_network import MLPRegressor
-from utils.hybrid import make_hyperparams
+from utils.hybrid import get_hyperparams
 
 # For combining predictions from all folds
 y_pred = np.array([])
@@ -13,14 +12,14 @@ y_test = np.array([])
 
 # GBT pipeline and hyperparams (exactly as in GBT_bayes.py)
 pipe = Pipeline([
-  ("scaler", StandardScaler()),
+  ("scaler", DefaultScaler()),
   ("", VotingRegressor([
     ("hgbt", HistGradientBoostingRegressor()),
     ("mlp", MLPRegressor())
   ]))
 ])
 
-hyperparams = make_hyperparams(("mlp", "hgbt"))
+hyperparams = get_hyperparams(("mlp", "hgbt"))
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
   bayes_hybrid = BayesSearchCV(

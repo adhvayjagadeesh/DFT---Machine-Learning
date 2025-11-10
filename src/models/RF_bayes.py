@@ -1,21 +1,20 @@
 from skopt import BayesSearchCV
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from data.final import k_fold, k_
+from data.final import k_fold, k_, DefaultScaler
 import numpy as np
-from utils.hybrid import make_hyperparam
+from utils.hybrid import get_hyperparam
 
 # For combining predictions from all folds
 y_pred = np.array([])
 y_test = np.array([])
 
 pipe = Pipeline([
-  ("scaler", StandardScaler()),
+  ("scaler", DefaultScaler()),
   ("rf", RandomForestRegressor())
 ])
 
-hyperparams = make_hyperparam("rf")
+hyperparams = get_hyperparam("rf")
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
   bayes_rf = BayesSearchCV(

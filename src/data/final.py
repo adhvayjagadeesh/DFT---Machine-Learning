@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split as tts, KFold
 from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import RobustScaler as DefaultScaler
 
 # Fixed random seed for reproducibility, in practice use None, NOT A HYPERPARAM
 rng_seed = 67 # SIX SEVEN
@@ -61,7 +61,7 @@ def k_fold(x = x_, y = y_, k = k_, scale = True):
     y_test = y.iloc[test_indices]
 
     if scale:
-      scaler = StandardScaler()
+      scaler = DefaultScaler()
       x_train = scaler.fit_transform(x_train)
       x_test = scaler.transform(x_test)
 

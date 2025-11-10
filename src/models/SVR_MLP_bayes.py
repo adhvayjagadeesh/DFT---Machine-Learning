@@ -2,25 +2,24 @@ from sklearn.ensemble import VotingRegressor
 from skopt import BayesSearchCV
 from sklearn.neural_network import MLPRegressor
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR
-from data.final import k_fold, k_
+from data.final import k_fold, k_, DefaultScaler
 import numpy as np
-from utils.hybrid import make_hyperparams
+from utils.hybrid import get_hyperparams
 
 # For combining predictions from all folds
 y_pred = np.array([])
 y_test = np.array([])
 
 pipe = Pipeline([
-  ("scaler", StandardScaler()),
+  ("scaler", DefaultScaler()),
   ("", VotingRegressor([
     ("mlp", MLPRegressor()),
     ("svr", SVR(max_iter = 100000))
   ]))
 ])
 
-hyperparams = make_hyperparams(("svr", "mlp"))
+hyperparams = get_hyperparams(("svr", "mlp"))
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
   bayes_hybrid = BayesSearchCV(

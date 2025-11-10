@@ -1,9 +1,8 @@
 from skopt import BayesSearchCV
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, VotingRegressor
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from data.final import k_fold, k_
-from utils.hybrid import make_hyperparams
+from data.final import k_fold, k_, DefaultScaler
+from utils.hybrid import get_hyperparams
 import numpy as np
 
 # For combining predictions from all folds
@@ -14,14 +13,14 @@ y_test = np.array([])
 weights = np.array([])
 
 pipe = Pipeline([
-  ("scaler", StandardScaler()),
+  ("scaler", DefaultScaler()),
   ("", VotingRegressor([
     ("rf", RandomForestRegressor()),
     ("gbt", GradientBoostingRegressor())
   ]))
 ])
 
-hyperparams = make_hyperparams(("rf", "gbt"))
+hyperparams = get_hyperparams(("rf", "gbt"))
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
   bayes_hybrid = BayesSearchCV(

@@ -1,9 +1,8 @@
 from sklearn.ensemble import HistGradientBoostingRegressor
 from skopt import BayesSearchCV
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from data.final import k_fold, k_
-from utils.hybrid import make_hyperparam
+from data.final import k_fold, k_, DefaultScaler
+from utils.hybrid import get_hyperparam
 import numpy as np
 
 # For combining predictions from all folds
@@ -11,11 +10,11 @@ y_pred = np.array([])
 y_test = np.array([])
 
 pipe = Pipeline([
-  ("scaler", StandardScaler()),
+  ("scaler", DefaultScaler()),
   ("hgbt", HistGradientBoostingRegressor())
 ])
 
-hyperparams = make_hyperparam("hgbt")
+hyperparams = get_hyperparam("hgbt")
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
   bayes_hgbt = BayesSearchCV(

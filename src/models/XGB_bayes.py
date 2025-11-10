@@ -1,22 +1,21 @@
 from skopt import BayesSearchCV
 from xgboost import XGBRegressor
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from data.final import k_fold, k_
+from data.final import k_fold, k_, DefaultScaler
 import numpy as np
-from utils.hybrid import make_hyperparam
+from utils.hybrid import get_hyperparam
 
 # For combining predictions from all folds
 y_pred = np.array([])
 y_test = np.array([])
 
 pipe = Pipeline([
-  ("scaler", StandardScaler()),
+  ("scaler", DefaultScaler()),
   ("xgb", XGBRegressor())
 ])
 
 
-hyperparams = make_hyperparam("xgb")
+hyperparams = get_hyperparam("xgb")
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):
   bayes_xgb = BayesSearchCV(
