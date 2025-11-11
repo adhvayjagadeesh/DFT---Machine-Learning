@@ -23,10 +23,10 @@ hyperparams = get_hyperparams(("svr", "hgbt"))
 
 pipe = Pipeline([
   ("scaler", DefaultScaler()),
-  VotingRegressor([
+  ("", VotingRegressor([
     ("svr", SVR(max_iter = 100000)),
     ("hgbt", HistGradientBoostingRegressor())
-  ])
+  ]))
 ])
 
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale = False):

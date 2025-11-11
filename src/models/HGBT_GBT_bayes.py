@@ -23,10 +23,9 @@ for x_train, y_train, x_test_f, y_test_f in k_fold(scale=False):
   bayes_hybrid = BayesSearchCV(
     pipe,
     hyperparams,
-    cv=k_,
-    n_iter=20,
-    n_jobs=1,
-    verbose=4
+    cv = k_,
+    n_iter = 20,
+    n_jobs = 1,
   )
   bayes_hybrid.fit(x_train, y_train)
 

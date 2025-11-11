@@ -34,30 +34,33 @@ def run_model(name, save_loc):
   )
 
   # Plotting
-  row = 2
-  col = 2
-  _, axes = plt.subplots(row, col, figsize=(row * 4, col * 4))
+  rows = 2
+  cols = 2
+  _, axes = plt.subplots(rows, cols, figsize=(rows * 4, cols * 4))
 
   # "Plot" 1: Performance summary
-  axes[0][0].axis('off')  # Hide the axes
-  axes[0][0].text(0.25, 0.5, perf_summary, fontsize=12, ha='left', va='center', family='monospace')
+  ax = axes[0][0]
+  ax.axis('off')  # Hide the axes
+  ax.text(0.25, 0.5, perf_summary, fontsize=12, ha='left', va='center', family='monospace')
 
   # Plot 2: Prediction vs Actual
-  axes[0][1].scatter(y_test, y_pred, color='purple', alpha=0.7, label="Prediction")
-  axes[0][1].plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--", label = "Ideal")
-  axes[0][1].set_xlabel("Actual Band Gap [eV]")
-  axes[0][1].set_ylabel("Predicted Band Gap [eV]")
-  axes[0][1].set_title("Predicted vs Actual Band Gap")
-  axes[0][1].legend()
-  axes[0][1].grid(True)
+  ax = axes[0][1]
+  ax.scatter(y_test, y_pred, color='purple', alpha=0.7, label="Prediction")
+  ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--", label = "Ideal")
+  ax.set_xlabel("Actual Band Gap [eV]")
+  ax.set_ylabel("Predicted Band Gap [eV]")
+  ax.set_title("Predicted vs Actual Band Gap")
+  ax.legend()
+  ax.grid(True)
 
   # Plot 3: Error Distribution
   errors = y_pred - y_test
-  axes[1][0].hist(errors, bins = 50, color = "teal", alpha = 0.7, edgecolor = "black")
-  axes[1][0].set_xlabel("Prediction Error (eV)")
-  axes[1][0].set_ylabel("Frequency")
-  axes[1][0].set_title("Prediction Error Distribution")
-  axes[1][0].grid(True)
+  ax = axes[1][0]
+  ax.hist(errors, bins = 50, color = "teal", alpha = 0.7, edgecolor = "black")
+  ax.set_xlabel("Prediction Error (eV)")
+  ax.set_ylabel("Frequency")
+  ax.set_title("Prediction Error Distribution")
+  ax.grid(True)
 
   # Plot 4: REC curve
   abs_errors = np.abs(errors)
@@ -65,13 +68,14 @@ def run_model(name, save_loc):
   accuracies = []
   for tolerance in tolerances:
     accuracies.append(np.mean(abs_errors <= tolerance * abs_errors.max()))
-  area_over = 1- auc(tolerances, accuracies)
-  axes[1][1].plot(tolerances, accuracies, label=f"AOC = {area_over: .4f}",)
-  axes[1][1].set_xlabel("Tolerance (eV)")
-  axes[1][1].set_ylabel("Accuracy (%)")
-  axes[1][1].set_title("Prediction tolerance vs Accuracy")
-  axes[1][1].legend(loc = 4)
-  axes[1][1].grid(True)
+  area_over = 1 - auc(tolerances, accuracies)
+  ax = axes[1][1]
+  ax.plot(tolerances, accuracies, label=f"AOC = {area_over: .4f}",)
+  ax.set_xlabel("Tolerance (eV)")
+  ax.set_ylabel("Accuracy (%)")
+  ax.set_title("Prediction tolerance vs Accuracy")
+  ax.legend(loc = 4)
+  ax.grid(True)
 
   plt.tight_layout()
   if save_loc:

@@ -1,4 +1,5 @@
-from sklearn.ensemble import RandomForestRegressor, VotingRegressor
+from sklearn.ensemble import VotingRegressor
+from xgboost import XGBRegressor
 from sklearn.svm import SVR
 from skopt import BayesSearchCV
 from sklearn.pipeline import Pipeline
@@ -14,7 +15,7 @@ y_test = np.array([])
 pipe = Pipeline([
   ("scaler", DefaultScaler()),
   ("", VotingRegressor([
-    ("xgb", RandomForestRegressor()),
+    ("xgb", XGBRegressor()),
     ("svr", SVR(max_iter = 100000))
   ]))
 ])

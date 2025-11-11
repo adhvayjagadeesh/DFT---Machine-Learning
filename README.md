@@ -118,7 +118,7 @@ python -m stats.multiple [result_dir]
 - Small compromise: To avoid the deadly triply-nested loop on hybrid models with weighting, we are going to use `split` to split 80% into hyperparam tuning or regular training, and 20% to weighting.
 - When using `VotingRegressor` or `WeightedRegressor`, make sure to set the pipeline name to `""`, and name the models like the table below
 - Four hybrid cases: K-fold (k_fold), weighting (w), bayesian (bayes), and both (both), although there's no both now
-- 2-model hybrid matrix (empty = unimplemented, :no_entry_sign: = NOPE, :white_check_mark: = implemented, filename = \[row]_\[col]):
+- 2-model hybrid matrix (empty = unimplemented, :no_entry_sign: = NOPE, :white_check_mark: = implemented, filename = \[rows]_\[col]):
 
 |      | RF                 | XGB                | GBT                | HGBT               | MLP                | SVR             |
 |------|--------------------|--------------------|--------------------|--------------------|--------------------|-----------------|

@@ -11,8 +11,8 @@ np.random.seed(rng_seed)
 # Load c2db
 df = pd.read_csv("data/Final_rect_materials_filled_in_correctly.csv")
 
-# Drop column
-df = df.drop(columns=[
+# Drop calculated band gap + DFT columns 
+df.drop(columns=[
   'Direct band gap (PBE) [eV]',
   'Direct band gap (PBE) [eV].1',
   'Band gap (PBE) [eV]',
@@ -22,11 +22,11 @@ df = df.drop(columns=[
   'Direct band gap (HSE06) [eV].1',
   'CBM wrt. vacuum (PBE) [eV]',
   'VBM wrt. vacuum (PBE) [eV]',
-])
+], inplace = True)
 
 # Drop columns with >90% missing data + identifiers
 drop_cols = df.columns[df.isnull().mean() > 0.9].tolist()
-df.drop(columns=drop_cols, inplace=True, errors='ignore')
+df.drop(columns = drop_cols, inplace = True, errors = 'ignore')
 
 # Fill missing numerical values with the mean
 df.fillna(df.mean(numeric_only = True), inplace = True)
@@ -43,26 +43,28 @@ for col in cat_cols:
 feat_cnt = df.shape[1]
 
 # Features and target
-x_ = df.drop(columns=["Band gap (HSE06) [eV]"])
-y_ = df["Band gap (HSE06) [eV]"]
+y = df["Band gap (HSE06) [eV]"]
+df.drop(columns = ["Band gap (HSE06) [eV]"], inplace = True)
+x = df
 
-def split(x = x_, y = y_, second_size = 0.15):
+# Split data
+def split(x = x, y = y, second_size = 0.15):
   x1, x2, y1, y2 = tts(x, y, test_size = second_size)
   return x1, y1, x2, y2
 
 # Default k for k-fold
 k_ = 4
-def k_fold(x = x_, y = y_, k = k_, scale = True):
+def k_fold(x = x, y = y, k = k_, scale = True):
   kf = KFold(n_splits = k, shuffle = True)
   for train_indices, test_indices in kf.split(x):
-    x_train = x.iloc[train_indices]
-    y_train = y.iloc[train_indices]
-    x_test = x.iloc[test_indices]
-    y_test = y.iloc[test_indices]
+    xtrain = x.iloc[train_indices]
+    ytrain = y.iloc[train_indices]
+    xtest = x.iloc[test_indices]
+    ytest = y.iloc[test_indices]
 
     if scale:
       scaler = DefaultScaler()
-      x_train = scaler.fit_transform(x_train)
-      x_test = scaler.transform(x_test)
+      xtrain = scaler.fit_transform(xtrain)
+      xtest = scaler.transform(xtest)
 
-    yield x_train, y_train, x_test, y_test
+    yield xtrain, ytrain, xtest, ytest
