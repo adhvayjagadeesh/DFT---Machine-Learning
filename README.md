@@ -1,6 +1,6 @@
 # DFT---Machine-Learning
 
-Benchmarking ML models for predicting band gap of 2D material without DFT
+Benchmarking ML models for predicting band gap of 2D material without CBM & VBM
 
 ## Local setup
 
