@@ -115,10 +115,12 @@ python -m stats.multiple [result_dir]
 - Define `y_pred` and `y_test` to support stats display.
 - We are only reporting performance of model types, not creating a super good model, so use k-fold for base performance
 - For XGB, using "dart" booster takes way too long, if u got time, try it
-- Most files looks the same, so to avoid repeating comments, only XGB_* files are fully commented
 - Small compromise: To avoid the deadly triply-nested loop on hybrid models with weighting, we are going to use `split` to split 80% into hyperparam tuning or regular training, and 20% to weighting
 - When using `VotingRegressor` or `WeightedRegressor`, make sure to set the pipeline name to `""`, and name the models like the table below
-- Four hybrid cases: K-fold (k_fold), weighting (w), bayesian (bayes), and both (both)
+- 6 model types:
+  - 2 Standalone: K-fold (k_fold) and bayesian-optimized (bayes)
+  - 4 Hybrid: K-fold, weighting (w), bayesian-optimized, and both (both)
+- To avoid repeating comments, only XGB_* files are fully commented (because it has exactly these 6 types)
 - 2-model hybrid matrix (empty = unimplemented, :no_entry_sign: = NOPE, :white_check_mark: = implemented, filename = \[rows]_\[col]):
 
 |      | RF                 | XGB                | GBT                | HGBT               | MLP                | SVR             |

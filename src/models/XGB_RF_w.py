@@ -9,10 +9,10 @@ from utils.hybrid import WeightedRegressor, derive_optimal_weights
 y_pred = np.array([])
 y_test = np.array([])
 
-# Initialize weighted hybrid
+# Initialize weighted hybrid with adjustable weights
 hybrid = WeightedRegressor([("rf", RandomForestRegressor()), ("xgb", XGBRegressor())])
 
-# Cross-validation loop
+# K-Fold loop
 for x_train, y_train, x_test_f, y_test_f in k_fold():
   # Resplit training data for regular training and weighting
   x_train_r, y_train_r, x_train_w, y_train_w = split(x_train, y_train)

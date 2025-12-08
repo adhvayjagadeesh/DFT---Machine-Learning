@@ -7,7 +7,7 @@ y_pred = np.array([])
 y_test = np.array([])
 
 for x_train, y_train, x_test_f, y_test_f in k_fold():
-    svr = SVR(max_iter=100000)
+  svr = SVR(max_iter=100000)
   svr.fit(x_train, y_train)
 
   y_test = np.concatenate([y_test, y_test_f])

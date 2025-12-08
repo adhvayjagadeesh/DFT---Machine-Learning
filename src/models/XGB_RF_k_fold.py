@@ -8,10 +8,10 @@ from data.final import k_fold
 y_pred = np.array([])
 y_test = np.array([])
 
-# Initialize weighted hybrid
+# Initialize fixed-weight hybrid
 hybrid = VotingRegressor([("rf", RandomForestRegressor()), ("xgb", XGBRegressor())])
 
-# Cross-validation loop
+# K-Fold loop, no scaling because there's a scaler in the pipeline
 for x_train, y_train, x_test_f, y_test_f in k_fold():
   hybrid.fit(x_train, y_train)
 
