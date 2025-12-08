@@ -1,32 +1,35 @@
-from os import listdir, getcwd, makedirs
-from os.path import join
-from shutil import rmtree
-from stats.single import run_model
 from argparse import ArgumentParser
 from csv import writer as csv_writer
+from os import getcwd, listdir, makedirs
+from os.path import join
+from re import compile
+from shutil import rmtree
 
-models = [file[:-3] for file in listdir(join(getcwd(), "models")) 
-  if file not in ("__pycache__", "__init__.py")]
-parser = ArgumentParser("Run all models", description = "CSV with metrics and visual for multiple models")
-parser.add_argument("res_dir", help = "Result directory")
+from stats.single import run_model
 
-# Model inclusion/exclusion group
-group = parser.add_mutually_exclusive_group()
-group.add_argument("-e", "--exclude", help = "Models to exclude", choices = models, nargs = "*")
-group.add_argument("-i", "--include", help = "Models to include", choices = models, nargs = "*")
+models = [
+  file[:-3]
+  for file in listdir(join(getcwd(), "models"))
+  if file not in ("__pycache__", "__init__.py")
+]
+parser = ArgumentParser(
+  "Run all models", description="CSV with metrics and visual for multiple models"
+)
+parser.add_argument("res_dir", help="Result directory")
+
+# Regex to include models to run
+parser.add_argument("-s", "--select", help="Model selection regex")
 args = parser.parse_args()
 
-if args.exclude:
-  for exclusion in args.exclude:
-    models.remove(exclusion)
-elif args.include:
-  models = args.include
+if args.select:
+  ptn = compile(args.select)
+  models = [i for i in models if ptn.fullmatch(i)]
 
 res_dir = args.res_dir
 rmtree(res_dir, True)
 makedirs(res_dir)
 model_cnt = len(models)
-with open(join(res_dir, "result.csv"), 'w', newline = '') as res_csv:
+with open(join(res_dir, "result.csv"), "w", newline="") as res_csv:
   writer = csv_writer(res_csv)
   writer.writerow(("Name", "R^2", "Adj R^2", "MAE (eV)", "RMSE (eV)", "Spearman"))
   for i, model in enumerate(models, 1):

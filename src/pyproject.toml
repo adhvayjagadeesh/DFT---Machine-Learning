@@ -1,0 +1,15 @@
+[project]
+name = "DFTML"
+version = "67"
+dependencies = [
+  "pandas",
+  "numpy",
+  "scikit-learn",
+  "scikit-optimize",
+  "matplotlib",
+  "xgboost",
+  "matminer",
+]
+
+[tool.ruff]
+indent-width = 2

@@ -105,19 +105,20 @@ python -m stats.single [name]
 
 ```bash
 # Replace [result_dir] with output directory relative to src
-# It will run all models, add -e/--exclude [models] to skip them
+# It will run all models, add -e/--exclude [models] to skip, or -i/--include to add
 python -m stats.multiple [result_dir]
 ```
 
 ## Developer notes
 
-- A Python venv requires Python version >3.5, but ASDRP only have <3.12, so all code must be written for 3.5 < Python version < 3.12
+- The Material Project require Python >3.9, but ASDRP only have <3.12, so all code must be written for 3.9 < Python version < 3.12
 - Define `y_pred` and `y_test` to support stats display.
 - We are only reporting performance of model types, not creating a super good model, so use k-fold for base performance
 - For XGB, using "dart" booster takes way too long, if u got time, try it
-- Small compromise: To avoid the deadly triply-nested loop on hybrid models with weighting, we are going to use `split` to split 80% into hyperparam tuning or regular training, and 20% to weighting.
+- Most files looks the same, so to avoid repeating comments, only XGB_* files are fully commented
+- Small compromise: To avoid the deadly triply-nested loop on hybrid models with weighting, we are going to use `split` to split 80% into hyperparam tuning or regular training, and 20% to weighting
 - When using `VotingRegressor` or `WeightedRegressor`, make sure to set the pipeline name to `""`, and name the models like the table below
-- Four hybrid cases: K-fold (k_fold), weighting (w), bayesian (bayes), and both (both), although there's no both now
+- Four hybrid cases: K-fold (k_fold), weighting (w), bayesian (bayes), and both (both)
 - 2-model hybrid matrix (empty = unimplemented, :no_entry_sign: = NOPE, :white_check_mark: = implemented, filename = \[rows]_\[col]):
 
 |      | RF                 | XGB                | GBT                | HGBT               | MLP                | SVR             |
