@@ -36,7 +36,7 @@ for x_train, y_train, x_test_f, y_test_f in k_fold(scale=False):
   bayes_hybrid.fit(x_train_t, y_train_t)
 
   # Derive optimal weight with 2nd training split
-  optimal_weights = derive_optimal_weights(bayes_hybrid, x_train_w, y_train_w)
+  # optimal_weights = derive_optimal_weights(bayes_hybrid, x_train_w, y_train_w)
 
   # Final prediction
   y_test = np.concatenate([y_test, y_test_f])

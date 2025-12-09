@@ -2,26 +2,44 @@ import numpy as np
 from scipy.optimize import minimize
 from sklearn import clone
 from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.metrics import mean_squared_error
+from sklearn.utils.estimator_checks import check_estimator
+from sklearn.utils.validation import check_is_fitted, validate_data
 from skopt.space import Categorical, Integer, Real
 
 
-class WeightedRegressor(BaseEstimator, RegressorMixin):
+class WeightedRegressor(RegressorMixin, BaseEstimator):
   def __init__(self, estimators):
     self.estimators = estimators
 
   def fit(self, x, y):
-    self.fitted_estimators = []
+    x, y = validate_data(self, x, y, accept_sparse=False)
+    self.is_fitted_ = True
+    self.fitted_estimators_ = []
     for name, model in self.estimators:
-      self.fitted_estimators.append((name, clone(model).fit(x, y)))
+      self.fitted_estimators_.append((name, clone(model).fit(x, y)))
+    return self
 
   def predict_stacked(self, x):
-    return np.column_stack([model.predict(x) for _, model in self.fitted_estimators])
+    check_is_fitted(self)
+    x = validate_data(self, x, reset=False)
+    return np.column_stack([model.predict(x) for _, model in self.fitted_estimators_])
 
   def predict(self, x, weights=None):
+    check_is_fitted(self)
     if weights is None:
       weights = [1 / len(self.estimators)] * len(self.estimators)
     return np.average(self.predict_stacked(x), 1, weights)
+
+
+# If this file is run directly, check the custom estimator
+if __name__ == "__main__":
+  check_estimator(
+    WeightedRegressor(
+      [("rf", RandomForestRegressor()), ("gbt", GradientBoostingRegressor())]
+    )
+  )
 
 
 def derive_optimal_weights(weighted_regressor: WeightedRegressor, x_train_w, y_train_w):

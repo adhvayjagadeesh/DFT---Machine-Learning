@@ -117,9 +117,10 @@ python -m stats.multiple [result_dir]
 - For XGB, using "dart" booster takes way too long, if u got time, try it
 - Small compromise: To avoid the deadly triply-nested loop on hybrid models with weighting, we are going to use `split` to split 80% into hyperparam tuning or regular training, and 20% to weighting
 - When using `VotingRegressor` or `WeightedRegressor`, make sure to set the pipeline name to `""`, and name the models like the table below
+- When modifying `WeightedRegressor`, make sure to run the file on its own with `python -m utils.hybrid` to check
 - 6 model types:
-  - 2 Standalone: K-fold (k_fold) and bayesian-optimized (bayes)
-  - 4 Hybrid: K-fold, weighting (w), bayesian-optimized, and both (both)
+  - 2 Standalone: K-fold (k) and bayesian-optimized (b)
+  - 4 Hybrid: K-fold, weighting (w), bayesian-optimized, and weighted + bayesian (wb)
 - To avoid repeating comments, only XGB_* files are fully commented (because it has exactly these 6 types)
 - 2-model hybrid matrix (empty = unimplemented, :no_entry_sign: = NOPE, :white_check_mark: = implemented, filename = \[rows]_\[col]):
 
