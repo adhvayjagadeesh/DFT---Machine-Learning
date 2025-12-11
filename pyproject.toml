@@ -1,5 +1,6 @@
 [project]
-name = "DFTML"
+name = "dftml"
+description = "Benchmarking ML models for predicting band gap of 2D material without CBM & VBM"
 version = "67"
 dependencies = [
   "pandas",
@@ -8,8 +9,9 @@ dependencies = [
   "scikit-optimize",
   "matplotlib",
   "xgboost",
-  "matminer",
 ]
+requires-python = ">=3.9"
+readme = "README.md"
 
 [tool.ruff]
 indent-width = 2

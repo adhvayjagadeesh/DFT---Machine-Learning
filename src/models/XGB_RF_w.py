@@ -3,14 +3,14 @@ from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 
 from data.final import k_fold, split
-from utils.hybrid import WeightedRegressor, derive_optimal_weights
+from utils.hybrid import VotingRegressor, derive_optimal_weights
 
 # Store final predictions
 y_pred = np.array([])
 y_test = np.array([])
 
-# Initialize weighted hybrid with adjustable weights
-hybrid = WeightedRegressor([("rf", RandomForestRegressor()), ("xgb", XGBRegressor())])
+# Initialize weighted hybrid
+hybrid = VotingRegressor([("rf", RandomForestRegressor()), ("xgb", XGBRegressor())])
 
 # K-Fold loop
 for x_train, y_train, x_test_f, y_test_f in k_fold():
@@ -23,9 +23,12 @@ for x_train, y_train, x_test_f, y_test_f in k_fold():
   # Derive optimal weight with 2nd training split
   optimal_weights = derive_optimal_weights(hybrid, x_train_w, y_train_w)
 
+  # Update weights to optimal
+  hybrid.set_params(weights=optimal_weights)
+
   # Refit on all training data
   hybrid.fit(x_train, y_train)
 
-  # Final prediction with derived weight
+  # Final prediction
   y_test = np.concatenate([y_test, y_test_f])
-  y_pred = np.concatenate([y_pred, hybrid.predict(x_test_f, optimal_weights)])
+  y_pred = np.concatenate([y_pred, hybrid.predict(x_test_f)])

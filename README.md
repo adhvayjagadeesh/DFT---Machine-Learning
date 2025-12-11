@@ -14,11 +14,8 @@ source .venv/bin/activate
 # Activate venv (Windows)
 .venv\Scripts\activate
 
-# Go to src directory
-cd src
-
 # Install dependencies (1st time only)
-pip install -r requirements.txt
+pip install -e .
 ```
 
 ## ASDRP remote setup
@@ -41,11 +38,8 @@ python -m venv .venv
 # Activate venv
 source .venv/bin/activate
 
-# Go to src directory
-cd src
-
 # Install dependencies (1st time only)
-python -m pip install -r requirements.txt
+pip install -e .
 ```
 
 Run code asynchronously
@@ -58,7 +52,7 @@ tmux new-session -t dftml
 source .venv/bin/activate
 
 # Install dependencies (1st time only)
-python -m pip install -r requirements.txt
+pip install -e .
 
 # Attach that session (to check logs)
 tmux a -t dftml
@@ -105,7 +99,7 @@ python -m stats.single [name]
 
 ```bash
 # Replace [result_dir] with output directory relative to src
-# It will run all models, add -e/--exclude [models] to skip, or -i/--include to add
+# It will run all models, use -s/--select to use regex to choose what to run
 python -m stats.multiple [result_dir]
 ```
 
@@ -116,8 +110,7 @@ python -m stats.multiple [result_dir]
 - We are only reporting performance of model types, not creating a super good model, so use k-fold for base performance
 - For XGB, using "dart" booster takes way too long, if u got time, try it
 - Small compromise: To avoid the deadly triply-nested loop on hybrid models with weighting, we are going to use `split` to split 80% into hyperparam tuning or regular training, and 20% to weighting
-- When using `VotingRegressor` or `WeightedRegressor`, make sure to set the pipeline name to `""`, and name the models like the table below
-- When modifying `WeightedRegressor`, make sure to run the file on its own with `python -m utils.hybrid` to check
+- When using `VotingRegressor` make sure to set the pipeline name to `""`, and name the models like the table below
 - 6 model types:
   - 2 Standalone: K-fold (k) and bayesian-optimized (b)
   - 4 Hybrid: K-fold, weighting (w), bayesian-optimized, and weighted + bayesian (wb)

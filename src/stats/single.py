@@ -4,10 +4,13 @@ from argparse import ArgumentParser
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import get_backend
 from scipy.stats import spearmanr
 from sklearn.metrics import auc, mean_absolute_error, mean_squared_error, r2_score
 
 from data.final import feat_cnt
+
+backend = get_backend()
 
 
 def run_model(name, save_loc):
@@ -91,8 +94,17 @@ def run_model(name, save_loc):
   plt.tight_layout()
   if save_loc:
     plt.savefig(f"{save_loc}/{name}.svg")
-  else:
+  elif backend != "agg":
     plt.show()
+  else:
+    # Failsafe for "UserWarning: FigureCanvasAgg is non-interactive, and thus cannot
+    # be shown" to prevent forgetting graphics backend and losing 67 hours of progress.
+    print(
+      "IMMEDIATELY install and set the Matplotlib interactive backend .\n",
+      "I hereby rescue you this time and this time only. INSTALL IT NOW.\n",
+      f"Figured saved as {name}.svg",
+    )
+    plt.savefig(f"./{name}.svg")
 
   return name, r2, adj_r2, mae, rmse, spearman
 

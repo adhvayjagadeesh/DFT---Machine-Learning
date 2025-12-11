@@ -1,6 +1,6 @@
 import numpy as np
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
+from sklearn.svm import SVR
 from skopt import BayesSearchCV
 from xgboost import XGBRegressor
 
@@ -14,11 +14,11 @@ y_test = np.array([])
 pipe = Pipeline(
   [
     ("scaler", DefaultScaler()),
-    ("", VotingRegressor([("rf", RandomForestRegressor()), ("xgb", XGBRegressor())])),
+    ("", VotingRegressor([("svr", SVR()), ("xgb", XGBRegressor())])),
   ]
 )
 
-hyperparams = get_hyperparams(("xgb", "rf"))
+hyperparams = get_hyperparams(("svr", "xgb"))
 
 # K-Fold loop, no scaling because there's a scaler in the pipeline
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale=False):

@@ -6,7 +6,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import RobustScaler as DefaultScaler
 
 # Fixed random seed for reproducibility, in practice use None, NOT A HYPERPARAM
-rng_seed = 67  # SIX SEVEN
+rng_seed = None  # SIX SEVEN
 np.random.seed(rng_seed)
 
 # Load c2db
@@ -53,7 +53,7 @@ x = df
 
 
 # Split data
-def split(x=x, y=y, second_size=0.2):
+def split(x=x, y=y, second_size=0.15):
   x1, x2, y1, y2 = tts(x, y, test_size=second_size)
   return x1, y1, x2, y2
 
