@@ -31,7 +31,9 @@ makedirs(res_dir)
 model_cnt = len(models)
 with open(join(res_dir, "result.csv"), "w", newline="") as res_csv:
   writer = csv_writer(res_csv)
-  writer.writerow(("Name", "R^2", "Adj R^2", "MAE (eV)", "RMSE (eV)", "Spearman"))
+  writer.writerow(
+    ("Name", "R²", "Adj R²", "MAE (eV)", "RMSE (eV)", "Spearman", "Run time")
+  )
   for i, model in enumerate(models, 1):
     print(f"Running {model} ({i}/{model_cnt})")
     try:

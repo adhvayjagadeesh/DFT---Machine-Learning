@@ -1,3 +1,5 @@
+from os import environ
+
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import KFold
@@ -5,9 +7,9 @@ from sklearn.model_selection import train_test_split as tts
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import RobustScaler as DefaultScaler
 
-# Fixed random seed for reproducibility, in practice use None, NOT A HYPERPARAM
-rng_seed = None  # SIX SEVEN
-np.random.seed(rng_seed)
+if "RANDOM" not in environ:
+  # Fixed random seed for reproducibility, NOT A HYPERPARAM
+  np.random.seed(67)  # SIX SEVEN
 
 # Load c2db
 df = pd.read_csv("data/Final_rect_materials_filled_in_correctly.csv")

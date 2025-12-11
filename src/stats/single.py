@@ -1,6 +1,8 @@
 import importlib
 import sys
 from argparse import ArgumentParser
+from datetime import timedelta
+from time import perf_counter_ns
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,7 +16,9 @@ backend = get_backend()
 
 
 def run_model(name, save_loc):
+  start_ns = perf_counter_ns()
   model = importlib.import_module(f"models.{name}")
+  end_ns = perf_counter_ns()
   for var in ["y_test", "y_pred"]:
     if not hasattr(model, var):
       print(f"Model '{name}' is missing required variable: {var}")
@@ -29,14 +33,18 @@ def run_model(name, save_loc):
   mae = mean_absolute_error(y_test, y_pred)
   rmse = np.sqrt(mean_squared_error(y_test, y_pred))
   spearman, _ = spearmanr(y_test, y_pred)
-
+  delta_s = (end_ns - start_ns) / 10**9
+  run_time = (
+    f"{int(delta_s // 3600):02}:{int(delta_s % 3600 // 60):02}:{int(delta_s % 60):02}"
+  )
   perf_summary = (
     f"{name} summary:\n\n"
     f"R²:          {r2:.4f}\n"
     f"Adjusted R²: {adj_r2:.4f}\n"
     f"MAE:         {mae:.4f} eV\n"
     f"RMSE:        {rmse:.4f} eV\n"
-    f"Spearman:    {spearman:.4f}"
+    f"Spearman:    {spearman:.4f}\n"
+    f"Run time:    {run_time}"
   )
 
   # Plotting
@@ -106,7 +114,7 @@ def run_model(name, save_loc):
     )
     plt.savefig(f"./{name}.svg")
 
-  return name, r2, adj_r2, mae, rmse, spearman
+  return name, r2, adj_r2, mae, rmse, spearman, run_time
 
 
 # If ran from the CLI (not by stats.multiple)
