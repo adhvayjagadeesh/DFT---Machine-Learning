@@ -17,13 +17,7 @@ hyperparams = get_hyperparam("xgb")
 # K-Fold loop, no scaling because there's a scaler in the pipeline
 for x_train, y_train, x_test_f, y_test_f in k_fold(scale=False):
   # Bayesian optimization
-  bayes_xgb = BayesSearchCV(
-    pipe,
-    hyperparams,
-    cv=k_,
-    n_iter=20,
-    n_jobs=1,
-  )
+  bayes_xgb = BayesSearchCV(pipe, hyperparams, cv=k_, n_iter=20, n_jobs=1)
   bayes_xgb.fit(x_train, y_train)
 
   # Final prediction
