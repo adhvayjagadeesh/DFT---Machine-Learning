@@ -1,7 +1,6 @@
 import importlib
 import sys
 from argparse import ArgumentParser
-from datetime import timedelta
 from time import perf_counter_ns
 
 import matplotlib.pyplot as plt
