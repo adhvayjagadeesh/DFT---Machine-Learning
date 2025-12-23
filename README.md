@@ -83,12 +83,16 @@ If you are working in master, then just do the last step
 
 ## Run 1 model
 
+Put `RANDOM=67` before running 1 or more models to run with `random_state = None`
+
 ```bash
 # Replace [name] with a filename in the models folder, without the .py
 python -m stats.single [name]
 ```
 
 ## Run multiple models
+
+Put `RANDOM=67` before running 1 or more models to run with `random_state = None`
 
 ```bash
 # Replace [result_dir] with output directory relative to src
@@ -98,22 +102,36 @@ python -m stats.multiple [result_dir]
 
 ## Developer notes
 
-- Define `y_pred` and `y_test` to support stats display.
+- `VotingRegressor`'s weights can be reset with `set_params` without refitting (see test.py)
 - We are only reporting performance of model types, not creating a super good model, so use k-fold for base performance
 - For XGB, using "dart" booster takes way too long, if u got time, try it
-- Small compromise: To avoid the deadly triply-nested loop on hybrid models with weighting, we are going to use `split` to split 80% into hyperparam tuning or regular training, and 20% to weighting
-- When using `VotingRegressor` make sure to set the pipeline name to `""`, and name the models like the table below
-- 6 model types:
-  - 2 Standalone: K-fold (k) and bayesian-optimized (b)
-  - 4 Hybrid: K-fold, weighting (w), bayesian-optimized, and weighted + bayesian (wb)
-- To avoid repeating comments, only XGB\_\* files are fully commented (because it has exactly these 6 types)
-- 2-model hybrid matrix (empty = unimplemented, :no*entry_sign: = NOPE, :white_check_mark: = implemented, filename = \[rows]*\[col]):
+- Our model are always assumed to be a `Pipeline` with a first step of `("scaler", RobustScaler())` and the second of a `("", VotingRegressor)`
+- 2 Standalone: K-fold and tuned (t)
+- 4 Hybrid: K-fold, weighting (w), tuned, and weight + tune (wt)
 
-|      | RF                 | XGB                | GBT                | HGBT               | MLP                | SVR             |
-| ---- | ------------------ | ------------------ | ------------------ | ------------------ | ------------------ | --------------- |
-| RF   | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign: |
-| XGB  | :white_check_mark: | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign: |
-| GBT  | :white_check_mark: | :white_check_mark: | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign: |
-| HGBT | :white_check_mark: | :white_check_mark: | :white_check_mark: | :no_entry_sign:    | :no_entry_sign:    | :no_entry_sign: |
-| MLP  | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :no_entry_sign:    | :no_entry_sign: |
-| SVR  | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :no_entry_sign: |
+## Explanations
+
+### Tuning
+
+Joint-tuning is when we:
+
+- Make an ensemble with all our models
+- Grab the hyperparameter search space for it
+- Tune the whole ensemble with those hyperparameters
+
+Individual-tuning is when we:
+
+- For each model, we:
+  - Grab the hyperparameter search space
+  - Tune the model with those hyperparameters
+- Put all the tuned models into an ensemble
+
+Theoretically, joint-tuning is better than inidividual-tuning because the "team chemistry" argument where one ensemble can cover the weakness of another. In this case, imagine one consistently underestimate, while another consistent overestimates such that an appropriate weight will cancel them out and give a good estimate. Individual-tuning is like creating an "all-star" team that can make the same mistake (on difficult/edge cases).
+
+Practically, joint-tuning fails because of dimensionality. If we have 4 models with 5 hyperparameters each, individual tuning requires solving four separate 5-dimensional optimization problems (manageable). Joint-tuning combines them into a single 20-dimensional problem. The probability of tuning and finding a decent dip in the loss function (input: n-dimension-hyperparameters, output: squared error) is very low, so very likely, we would land somewhere mediocre instead of that perfect cancellation dip.
+
+Individual-tuning, does not increase the dimensionality of the search space so tuning will be more likely to find a very good dip in loss function for each model (because of the reduced search space), which correlate to maybe a decent dip in the ensemble loss function when putting them toghether. Individual-tuning usually yields a better real-world ensemble.
+
+## Optimizing weights
+
+We optimize weights by having

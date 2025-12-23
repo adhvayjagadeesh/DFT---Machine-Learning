@@ -1,1 +1,1 @@
-from data.final import feat_cnt
+from data.final import n_feat

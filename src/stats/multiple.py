@@ -5,7 +5,7 @@ from os.path import join
 from re import compile
 from shutil import rmtree
 
-from stats.single import run_model
+from stats.single import run
 
 models = [
   file[:-3]
@@ -13,7 +13,8 @@ models = [
   if file not in ("__pycache__", "__init__.py")
 ]
 parser = ArgumentParser(
-  "Run all models", description="CSV with metrics and visual for multiple models"
+  "Run many models (defaults to all)",
+  description="CSV with metrics and visual for multiple models",
 )
 parser.add_argument("res_dir", help="Result directory")
 
@@ -37,7 +38,7 @@ with open(join(res_dir, "result.csv"), "w", newline="") as res_csv:
   for i, model in enumerate(models, 1):
     print(f"Running {model} ({i}/{model_cnt})")
     try:
-      writer.writerow(run_model(model, res_dir))
+      writer.writerow(run(model, res_dir))
       res_csv.flush()
     except Exception as e:
       print(e)

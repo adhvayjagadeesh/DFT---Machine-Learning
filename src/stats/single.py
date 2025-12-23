@@ -1,5 +1,3 @@
-import importlib
-import sys
 from argparse import ArgumentParser
 from time import perf_counter_ns
 
@@ -7,35 +5,36 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import get_backend
 from scipy.stats import spearmanr
-from sklearn.metrics import auc, mean_absolute_error, mean_squared_error, r2_score
+from sklearn.metrics import (
+  auc,
+  mean_absolute_error,
+  mean_squared_error,
+  r2_score,
+)
 
-from data.final import feat_cnt
+from data.final import x, y
+from model.create import Model
 
 backend = get_backend()
 
 
-def run_model(name, save_loc):
+def run(names, mode, save_loc):
+  name = f"{'+'.join(names)}_{mode}"
   start_ns = perf_counter_ns()
-  model = importlib.import_module(f"models.{name}")
+
   end_ns = perf_counter_ns()
-  for var in ["y_test", "y_pred"]:
-    if not hasattr(model, var):
-      print(f"Model '{name}' is missing required variable: {var}")
-      sys.exit(1)
-  y_test = model.y_test
   y_pred = model.y_pred
 
   # Metrics
-  n = len(y_test)
-  r2 = r2_score(y_test, y_pred)
-  adj_r2 = 1 - (1 - r2) * (n - 1) / (n - feat_cnt - 1)
-  mae = mean_absolute_error(y_test, y_pred)
-  rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-  spearman, _ = spearmanr(y_test, y_pred)
+  n = len(y)
+  n_feat = x.shape[1]
+  r2 = r2_score(y, y_pred)
+  adj_r2 = 1 - (1 - r2) * (n - 1) / (n - n_feat - 1)
+  mae = mean_absolute_error(y, y_pred)
+  rmse = np.sqrt(mean_squared_error(y, y_pred))
+  spearman, _ = spearmanr(y, y_pred)
   delta_s = (end_ns - start_ns) / 10**9
-  run_time = (
-    f"{int(delta_s // 3600):02}:{int(delta_s % 3600 // 60):02}:{int(delta_s % 60):02}"
-  )
+  run_time = f"{int(delta_s // 3600):02}:{int(delta_s % 3600 // 60):02}:{int(delta_s % 60):02}"
   perf_summary = (
     f"{name} summary:\n\n"
     f"R²:          {r2:.4f}\n"
@@ -55,14 +54,23 @@ def run_model(name, save_loc):
   ax = axes[0][0]
   ax.axis("off")  # Hide the axes
   ax.text(
-    0.25, 0.5, perf_summary, fontsize=12, ha="left", va="center", family="monospace"
+    0.25,
+    0.5,
+    perf_summary,
+    fontsize=12,
+    ha="left",
+    va="center",
+    family="monospace",
   )
 
   # Plot 2: Prediction vs Actual
   ax = axes[0][1]
-  ax.scatter(y_test, y_pred, color="purple", alpha=0.7, label="Prediction")
+  ax.scatter(y, y_pred, color="purple", alpha=0.7, label="Prediction")
   ax.plot(
-    [y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--", label="Ideal"
+    [y.min(), y.max()],
+    [y.min(), y.max()],
+    "r--",
+    label="Ideal",
   )
   ax.set_xlabel("Actual Band Gap [eV]")
   ax.set_ylabel("Predicted Band Gap [eV]")
@@ -71,7 +79,7 @@ def run_model(name, save_loc):
   ax.grid(True)
 
   # Plot 3: Error Distribution
-  errors = y_pred - y_test
+  errors = y_pred - y
   ax = axes[1][0]
   ax.hist(errors, bins=50, color="teal", alpha=0.7, edgecolor="black")
   ax.set_xlabel("Prediction Error (eV)")
@@ -121,7 +129,10 @@ if __name__ == "__main__":
   parser = ArgumentParser(
     "1-model stat", description="Prediction and error for 1 model"
   )
-  parser.add_argument("model")
-  parser.add_argument("-s", "--save", help="Save the figure instead of showing it")
+  parser.add_argument("names", choices=list(Model.__members__), nargs="+")
+  parser.add_argument("mode", choices=["k", "w", "t", "wt"])
+  parser.add_argument(
+    "-s", "--save", help="Save the figure instead of showing it"
+  )
   args = parser.parse_args()
-  run_model(args.model, args.save)
+  run(args.names, args.mode, args.save)

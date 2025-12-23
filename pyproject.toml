@@ -10,8 +10,9 @@ dependencies = [
   "matplotlib",
   "xgboost",
 ]
-requires-python = ">=3.8.10" # Because ASDRP server have 3.8.10
+requires-python = "<=3.8.10" # Because ASDRP server have 3.8.10
 readme = "README.md"
 
 [tool.ruff]
 indent-width = 2
+line-length = 80

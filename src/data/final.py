@@ -3,9 +3,7 @@ from os import environ
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import KFold
-from sklearn.model_selection import train_test_split as tts
 from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import RobustScaler as DefaultScaler
 
 if "RANDOM" not in environ:
   # Fixed random seed for reproducibility, NOT A HYPERPARAM
@@ -45,36 +43,20 @@ for col in cat_cols:
   df[col] = le.fit_transform(df[col].astype(str))
   label_encoders[col] = le
 
-# Feature count
-feat_cnt = df.shape[1]
-
 # Features and target
 y = df["Band gap (HSE06) [eV]"]
 df.drop(columns=["Band gap (HSE06) [eV]"], inplace=True)
 x = df
 
-
-# Split data
-def split(x=x, y=y, second_size=0.15):
-  x1, x2, y1, y2 = tts(x, y, test_size=second_size)
-  return x1, y1, x2, y2
+# Default k-fold object
+kf = KFold(n_splits=4, shuffle=True)
 
 
-# Default k for k-fold
-k_ = 4
-
-
-def k_fold(x=x, y=y, k=k_, scale=True):
-  kf = KFold(n_splits=k, shuffle=True)
+def k_fold(x=x, y=y):
   for train_indices, test_indices in kf.split(x):
-    xtrain = x.iloc[train_indices]
-    ytrain = y.iloc[train_indices]
-    xtest = x.iloc[test_indices]
-    ytest = y.iloc[test_indices]
+    x_train = x.iloc[train_indices]
+    y_train = y.iloc[train_indices]
+    x_test = x.iloc[test_indices]
 
-    if scale:
-      scaler = DefaultScaler()
-      xtrain = scaler.fit_transform(xtrain)
-      xtest = scaler.transform(xtest)
-
-    yield xtrain, ytrain, xtest, ytest
+    # Yield training data, testing input and the indices to put predictions
+    yield x_train, y_train, x_test, test_indices
