@@ -105,6 +105,7 @@ python -m stats.multiple [result_dir]
 - `VotingRegressor`'s weights can be reset with `set_params` without refitting (see test.py)
 - We are only reporting performance of model types, not creating a super good model, so use k-fold for base performance
 - For XGB, using "dart" booster takes way too long, if u got time, try it
+- XGB doesn't like that feature (column) names has `[`, `]` or `<` so I renamed the columns in the CSV file, square bracket to parenthesis
 - Our model are always assumed to be a `Pipeline` with a first step of `("scaler", RobustScaler())` and the second of a `("", VotingRegressor)`
 - 2 Standalone: K-fold and tuned (t)
 - 4 Hybrid: K-fold, weighting (w), tuned, and weight + tune (wt)
@@ -131,7 +132,3 @@ Theoretically, joint-tuning is better than inidividual-tuning because the "team 
 Practically, joint-tuning fails because of dimensionality. If we have 4 models with 5 hyperparameters each, individual tuning requires solving four separate 5-dimensional optimization problems (manageable). Joint-tuning combines them into a single 20-dimensional problem. The probability of tuning and finding a decent dip in the loss function (input: n-dimension-hyperparameters, output: squared error) is very low, so very likely, we would land somewhere mediocre instead of that perfect cancellation dip.
 
 Individual-tuning, does not increase the dimensionality of the search space so tuning will be more likely to find a very good dip in loss function for each model (because of the reduced search space), which correlate to maybe a decent dip in the ensemble loss function when putting them toghether. Individual-tuning usually yields a better real-world ensemble.
-
-## Optimizing weights
-
-We optimize weights by having

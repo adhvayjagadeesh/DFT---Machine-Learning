@@ -7,14 +7,17 @@ import matplotlib.pyplot as plt
 from data.final import x, y
 
 parser = ArgumentParser(
-  "Feature distribution histograms", description="Show how features are distributed"
+  "Feature distribution histograms",
+  description="Show how features are distributed",
 )
-parser.add_argument("-s", "--save", help="Save the figure(s) instead of showing it")
+parser.add_argument(
+  "-s", "--save", help="Save the figure(s) instead of showing it"
+)
 args = parser.parse_args()
 
-# All features + HSE06 band gap
+# All numerical features + HSE06 band gap
 data = itertools.chain(
-  x.drop(columns=["Formula", "Magnetic"]).items(), y.to_frame().items()
+  x.drop(columns=["Magnetic"]).items(), y.to_frame().items()
 )
 
 # Plotting
@@ -36,6 +39,7 @@ def save_or_show(page):
   fig, axes = plt.subplots(rows, cols, figsize=(cols * 5.5, rows * 4))
 
 
+i = 0
 for i, (name, vals) in enumerate(data):
   if i > 0 and i % n == 0:
     save_or_show(i // n)
@@ -45,7 +49,9 @@ for i, (name, vals) in enumerate(data):
   ax = axes[row][col]
 
   # Histogram
-  counts, _, _ = ax.hist(vals, bins=bins, alpha=0.7, color="teal", edgecolor="black")
+  counts, _, _ = ax.hist(
+    vals, bins=bins, alpha=0.7, color="teal", edgecolor="black"
+  )
 
   # Add vertical space above the highest bar
   ymax = max(counts)

@@ -13,28 +13,45 @@ from sklearn.metrics import (
 )
 
 from data.final import x, y
+from model import general_impl
 from model.create import Model
 
 backend = get_backend()
+possible_modes = ["k", "w", "t", "wt"]
+possible_names = list(Model.__members__)
 
 
-def run(names, mode, save_loc):
-  name = f"{'+'.join(names)}_{mode}"
+def _run(mode, names):
+  # Weighting is for ensemble
+  if len(names) < 2:
+    assert "w" not in mode
+
+  # Get correct function for mode
+  fn = getattr(general_impl, mode)
+
   start_ns = perf_counter_ns()
-
+  y_pred = fn(names)
   end_ns = perf_counter_ns()
-  y_pred = model.y_pred
+  delta_s = (end_ns - start_ns) / 10**9
+  return (
+    y_pred,
+    f"{int(delta_s // 3600):02}:{int(delta_s % 3600 // 60):02}:{int(delta_s % 60):02}",
+  )
 
-  # Metrics
+
+def run_visualize(mode, names, save_loc):
+  y_pred, run_time = _run(mode, names)
+
   n = len(y)
   n_feat = x.shape[1]
+  name = f"{'+'.join(names)}_{mode}"
+
+  # Metrics
   r2 = r2_score(y, y_pred)
   adj_r2 = 1 - (1 - r2) * (n - 1) / (n - n_feat - 1)
   mae = mean_absolute_error(y, y_pred)
   rmse = np.sqrt(mean_squared_error(y, y_pred))
   spearman, _ = spearmanr(y, y_pred)
-  delta_s = (end_ns - start_ns) / 10**9
-  run_time = f"{int(delta_s // 3600):02}:{int(delta_s % 3600 // 60):02}:{int(delta_s % 60):02}"
   perf_summary = (
     f"{name} summary:\n\n"
     f"R²:          {r2:.4f}\n"
@@ -89,16 +106,15 @@ def run(names, mode, save_loc):
 
   # Plot 4: REC curve
   abs_errors = np.abs(errors)
-  tolerances = np.linspace(0, 1, 100)
-  accuracies = []
-  for tolerance in tolerances:
-    accuracies.append(np.mean(abs_errors <= tolerance * abs_errors.max()))
-  area_over = 1 - auc(tolerances, accuracies)
+  n_steps = 100
+  # y-axis end at 2eV for now
+  tolerances = np.linspace(0, 2, n_steps)
+  accuracies = [np.mean(abs_errors <= i * abs_errors.max()) for i in tolerances]
   ax = axes[1][1]
   ax.plot(
     tolerances,
     accuracies,
-    label=f"AOC = {area_over: .4f}",
+    label=f"AUC = {auc(np.linspace(0, 1, n_steps), accuracies): .4f}",
   )
   ax.set_xlabel("Tolerance (eV)")
   ax.set_ylabel("Accuracy (%)")
@@ -127,12 +143,12 @@ def run(names, mode, save_loc):
 # If ran from the CLI (not by stats.multiple)
 if __name__ == "__main__":
   parser = ArgumentParser(
-    "1-model stat", description="Prediction and error for 1 model"
+    "1-model stat", description="Visualization and stats for a model"
   )
-  parser.add_argument("names", choices=list(Model.__members__), nargs="+")
-  parser.add_argument("mode", choices=["k", "w", "t", "wt"])
+  parser.add_argument("mode", choices=possible_modes)
+  parser.add_argument("names", choices=possible_names, nargs="+")
   parser.add_argument(
     "-s", "--save", help="Save the figure instead of showing it"
   )
   args = parser.parse_args()
-  run(args.names, args.mode, args.save)
+  run_visualize(args.mode, args.names, args.save)

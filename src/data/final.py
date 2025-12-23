@@ -12,18 +12,19 @@ if "RANDOM" not in environ:
 # Load c2db
 df = pd.read_csv("data/Final_rect_materials_filled_in_correctly.csv")
 
-# Drop calculated band gap + DFT columns
+# Drop calculated band gap, expensive DFT columns, and useless formula column
 df.drop(
   columns=[
-    "Direct band gap (PBE) [eV]",
-    "Direct band gap (PBE) [eV].1",
-    "Band gap (PBE) [eV]",
-    "Band gap (G₀W₀) [eV]",
-    "Direct band gap (G₀W₀) [eV]",
-    "Direct band gap (HSE06) [eV]",
-    "Direct band gap (HSE06) [eV].1",
-    "CBM wrt. vacuum (PBE) [eV]",
-    "VBM wrt. vacuum (PBE) [eV]",
+    "Formula",
+    "Direct band gap (PBE) (eV)",
+    "Direct band gap (PBE) (eV).1",
+    "Band gap (PBE) (eV)",
+    "Band gap (G₀W₀) (eV)",
+    "Direct band gap (G₀W₀) (eV)",
+    "Direct band gap (HSE06) (eV)",
+    "Direct band gap (HSE06) (eV).1",
+    "CBM wrt. vacuum (PBE) (eV)",
+    "VBM wrt. vacuum (PBE) (eV)",
   ],
   inplace=True,
 )
@@ -44,8 +45,8 @@ for col in cat_cols:
   label_encoders[col] = le
 
 # Features and target
-y = df["Band gap (HSE06) [eV]"]
-df.drop(columns=["Band gap (HSE06) [eV]"], inplace=True)
+y = df["Band gap (HSE06) (eV)"]
+df.drop(columns=["Band gap (HSE06) (eV)"], inplace=True)
 x = df
 
 # Default k-fold object
