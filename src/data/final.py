@@ -10,7 +10,7 @@ if "RANDOM" not in environ:
   np.random.seed(67)  # SIX SEVEN
 
 # Load c2db
-df = pd.read_csv("data/Final_rect_materials_filled_in_correctly.csv")
+df = pd.read_csv("data/c2db.csv")
 
 # Drop calculated band gap, expensive DFT columns, and useless formula column
 df.drop(
@@ -49,11 +49,12 @@ y = df["Band gap (HSE06) (eV)"]
 df.drop(columns=["Band gap (HSE06) (eV)"], inplace=True)
 x = df
 
-# Default k-fold object
-kf = KFold(n_splits=4, shuffle=True)
+# Default k-fold
+k = 4
+kf = KFold(n_splits=k)
 
 
-def k_fold(x=x, y=y):
+def k_fold(x, y):
   for train_indices, test_indices in kf.split(x):
     x_train = x.iloc[train_indices]
     y_train = y.iloc[train_indices]

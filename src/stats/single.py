@@ -1,5 +1,4 @@
 from argparse import ArgumentParser
-from time import perf_counter_ns
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,39 +7,21 @@ from scipy.stats import spearmanr
 from sklearn.metrics import (
   auc,
   mean_absolute_error,
-  mean_squared_error,
   r2_score,
+  root_mean_squared_error,
 )
 
 from data.final import x, y
-from model import general_impl
 from model.create import Model
+from model.impl import run_model
 
 backend = get_backend()
 possible_modes = ["k", "w", "t", "wt"]
 possible_names = list(Model.__members__)
 
 
-def _run(mode, names):
-  # Weighting is for ensemble
-  if len(names) < 2:
-    assert "w" not in mode
-
-  # Get correct function for mode
-  fn = getattr(general_impl, mode)
-
-  start_ns = perf_counter_ns()
-  y_pred = fn(names)
-  end_ns = perf_counter_ns()
-  delta_s = (end_ns - start_ns) / 10**9
-  return (
-    y_pred,
-    f"{int(delta_s // 3600):02}:{int(delta_s % 3600 // 60):02}:{int(delta_s % 60):02}",
-  )
-
-
 def run_visualize(mode, names, save_loc):
-  y_pred, run_time = _run(mode, names)
+  y_pred, fit_time, learning_curve = run_model(mode, names)
 
   n = len(y)
   n_feat = x.shape[1]
@@ -50,7 +31,7 @@ def run_visualize(mode, names, save_loc):
   r2 = r2_score(y, y_pred)
   adj_r2 = 1 - (1 - r2) * (n - 1) / (n - n_feat - 1)
   mae = mean_absolute_error(y, y_pred)
-  rmse = np.sqrt(mean_squared_error(y, y_pred))
+  rmse = root_mean_squared_error(y, y_pred)
   spearman, _ = spearmanr(y, y_pred)
   perf_summary = (
     f"{name} summary:\n\n"
@@ -59,13 +40,13 @@ def run_visualize(mode, names, save_loc):
     f"MAE:         {mae:.4f} eV\n"
     f"RMSE:        {rmse:.4f} eV\n"
     f"Spearman:    {spearman:.4f}\n"
-    f"Run time:    {run_time}"
+    f"Fit time:    {fit_time}"
   )
 
   # Plotting
   rows = 2
-  cols = 2
-  _, axes = plt.subplots(rows, cols, figsize=(rows * 4, cols * 4))
+  cols = 3
+  _, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 4))
 
   # "Plot" 1: Performance summary
   ax = axes[0][0]
@@ -89,15 +70,15 @@ def run_visualize(mode, names, save_loc):
     "r--",
     label="Ideal",
   )
-  ax.set_xlabel("Actual Band Gap [eV]")
-  ax.set_ylabel("Predicted Band Gap [eV]")
+  ax.set_xlabel("Actual Band Gap (eV)")
+  ax.set_ylabel("Predicted Band Gap (eV)")
   ax.set_title("Predicted vs Actual Band Gap")
   ax.legend()
   ax.grid(True)
 
   # Plot 3: Error Distribution
   errors = y_pred - y
-  ax = axes[1][0]
+  ax = axes[0][2]
   ax.hist(errors, bins=50, color="teal", alpha=0.7, edgecolor="black")
   ax.set_xlabel("Prediction Error (eV)")
   ax.set_ylabel("Frequency")
@@ -107,10 +88,11 @@ def run_visualize(mode, names, save_loc):
   # Plot 4: REC curve
   abs_errors = np.abs(errors)
   n_steps = 100
+
   # y-axis end at 2eV for now
   tolerances = np.linspace(0, 2, n_steps)
   accuracies = [np.mean(abs_errors <= i * abs_errors.max()) for i in tolerances]
-  ax = axes[1][1]
+  ax = axes[1][0]
   ax.plot(
     tolerances,
     accuracies,
@@ -118,10 +100,26 @@ def run_visualize(mode, names, save_loc):
   )
   ax.set_xlabel("Tolerance (eV)")
   ax.set_ylabel("Accuracy (%)")
-  ax.set_title("Prediction tolerance vs Accuracy")
-  ax.legend(loc=4)
+  ax.set_title("Prediction accuracy vs tolerance")
+  ax.legend(loc="best")
   ax.grid(True)
 
+  # Plot 5: Learning curve
+  ax = axes[1][1]
+  ax.plot(
+    learning_curve["sizes"],
+    learning_curve["train_scores"],
+    label="Train scores",
+  )
+  ax.plot(
+    learning_curve["sizes"], learning_curve["cv_scores"], label="CV scores"
+  )
+  ax.set_xlabel("Sample size")
+  ax.set_ylabel("RMSE (eV)")
+  ax.set_title("Learning curve")
+  ax.legend(loc="best")
+
+  # Plot 6: Feature importance
   plt.tight_layout()
   if save_loc:
     plt.savefig(f"{save_loc}/{name}.svg")
@@ -137,7 +135,7 @@ def run_visualize(mode, names, save_loc):
     )
     plt.savefig(f"./{name}.svg")
 
-  return name, r2, adj_r2, mae, rmse, spearman, run_time
+  return name, r2, adj_r2, mae, rmse, spearman, fit_time
 
 
 # If ran from the CLI (not by stats.multiple)

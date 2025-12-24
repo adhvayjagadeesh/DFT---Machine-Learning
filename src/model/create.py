@@ -9,7 +9,6 @@ from sklearn.ensemble import (
 from sklearn.neural_network import MLPRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import RobustScaler
-from sklearn.svm import SVR
 from xgboost import XGBRegressor
 
 
@@ -17,7 +16,6 @@ class Model(Enum):
   rf = RandomForestRegressor
   xgb = XGBRegressor
   mlp = MLPRegressor
-  svr = SVR
   gbt = GradientBoostingRegressor
   hgbt = HistGradientBoostingRegressor
 

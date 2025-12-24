@@ -25,7 +25,7 @@ rows = 2
 cols = 2
 bins = 32
 n = rows * cols
-fig, axes = plt.subplots(rows, cols, figsize=(cols * 5.5, rows * 4))
+fig, axes = plt.subplots(rows, cols, figsize=(cols * 5, rows * 4))
 box_height = 0.175
 
 
@@ -49,13 +49,12 @@ for i, (name, vals) in enumerate(data):
   ax = axes[row][col]
 
   # Histogram
-  counts, _, _ = ax.hist(
+  freq, _, _ = ax.hist(
     vals, bins=bins, alpha=0.7, color="teal", edgecolor="black"
   )
 
   # Add vertical space above the highest bar
-  ymax = max(counts)
-  ax.set_ylim(0, ymax * (1.05 + box_height))
+  ax.set_ylim(0, max(freq) * (1.05 + box_height))
 
   # Boxplot above histogram using inset axes
   ax_box = ax.inset_axes([0, 1 - box_height, 1, box_height])

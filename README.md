@@ -104,13 +104,19 @@ python -m stats.multiple [result_dir]
 
 - `VotingRegressor`'s weights can be reset with `set_params` without refitting (see test.py)
 - We are only reporting performance of model types, not creating a super good model, so use k-fold for base performance
-- For XGB, using "dart" booster takes way too long, if u got time, try it
+- Takes way too long (removed):
+  - XGB with `dart` booster
+  - SVR
 - XGB doesn't like that feature (column) names has `[`, `]` or `<` so I renamed the columns in the CSV file, square bracket to parenthesis
 - Our model are always assumed to be a `Pipeline` with a first step of `("scaler", RobustScaler())` and the second of a `("", VotingRegressor)`
 - 2 Standalone: K-fold and tuned (t)
 - 4 Hybrid: K-fold, weighting (w), tuned, and weight + tune (wt)
 
 ## Explanations
+
+## Shuffling
+
+See [this](https://stats.stackexchange.com/questions/629193/does-k-fold-cross-validation-strictly-require-shuffling-of-data-before-splitting). In summary, we must do `KFold(shuffle=True)`, but this makes it copy our data, so instead, we can shuffle the data file itself (with `shuf`).
 
 ### Tuning
 
@@ -132,3 +138,13 @@ Theoretically, joint-tuning is better than inidividual-tuning because the "team 
 Practically, joint-tuning fails because of dimensionality. If we have 4 models with 5 hyperparameters each, individual tuning requires solving four separate 5-dimensional optimization problems (manageable). Joint-tuning combines them into a single 20-dimensional problem. The probability of tuning and finding a decent dip in the loss function (input: n-dimension-hyperparameters, output: squared error) is very low, so very likely, we would land somewhere mediocre instead of that perfect cancellation dip.
 
 Individual-tuning, does not increase the dimensionality of the search space so tuning will be more likely to find a very good dip in loss function for each model (because of the reduced search space), which correlate to maybe a decent dip in the ensemble loss function when putting them toghether. Individual-tuning usually yields a better real-world ensemble.
+
+### Learning curve
+
+The learning curve is the model's training and testing performance as a function of amount of training sample. Training performance means that in the K-fold loop, after the model fits, we predict on the data used for `fit` itself to see how much the model actually learned (this should be quite high).
+
+In our case, the learning curve logic is baked into the K-fold loop. We wrap the K-fold loop with a learning curve loop that feeds the K-fold progressively bigger slice (20%, 40%...100%) of the whole dataset.
+
+### Feature importance
+
+TBD

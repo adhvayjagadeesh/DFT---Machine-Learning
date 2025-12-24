@@ -45,14 +45,6 @@ def _get_hyperparams(model: Model):
       "max_features": [1, "sqrt", "log2"],
       "bootstrap": Categorical([True, False]),
     }
-  elif model == Model.svr:
-    hyperparams = {
-      "C": Real(1e-3, 1e6, prior="log-uniform"),
-      "gamma": Real(1e-6, 1e1, prior="log-uniform"),
-      "degree": Integer(1, 9),
-      "epsilon": Real(1e-4, 1e-1, prior="log-uniform"),
-      "kernel": Categorical(["linear", "poly", "rbf"]),
-    }
   elif model == Model.xgb:
     hyperparams = {
       "max_depth": Integer(3, 10),

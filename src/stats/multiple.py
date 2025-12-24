@@ -15,14 +15,11 @@ def _all_possible_models() -> list[tuple[str, list[str]]]:
     for j in possible_names:
       models.append((i, [j]))
 
-  # Ensembles
-  for i in possible_modes:
-    pass
   return models
 
 
 parser = ArgumentParser(
-  "Run many models (defaults to all)",
+  "Run many models (defaults to all single)",
   description="CSV with metrics and visual for multiple models",
 )
 parser.add_argument("res_dir", help="Result directory")
@@ -34,7 +31,7 @@ makedirs(res_dir)
 with open(join(res_dir, "result.csv"), "w", newline="") as res_csv:
   writer = csv_writer(res_csv)
   writer.writerow(
-    ("Name", "R²", "Adj R²", "MAE (eV)", "RMSE (eV)", "Spearman", "Run time")
+    ("Name", "R²", "Adj R²", "MAE (eV)", "RMSE (eV)", "Spearman", "Fit time")
   )
   models = _all_possible_models()
   n_model = len(models)
