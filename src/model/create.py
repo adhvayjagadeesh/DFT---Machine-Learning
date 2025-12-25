@@ -1,4 +1,5 @@
 from enum import Enum
+from os import cpu_count
 
 from sklearn.ensemble import (
   GradientBoostingRegressor,
@@ -20,8 +21,11 @@ class Model(Enum):
   hgbt = HistGradientBoostingRegressor
 
 
+n_jobs = cpu_count()
+
+
 def create_model(names: tuple[str, ...]) -> Pipeline:
-  models = [(i, (Model[i].value)()) for i in names]
+  models = [(name, Model[name].value(n_jobs=n_jobs)) for name in names]
   return Pipeline(
     [
       ("scaler", RobustScaler()),

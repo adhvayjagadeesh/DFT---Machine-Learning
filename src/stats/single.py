@@ -11,7 +11,7 @@ from sklearn.metrics import (
   root_mean_squared_error,
 )
 
-from data.final import x, y
+from data.prepare import x, y
 from model.create import Model
 from model.impl import run_model
 
@@ -21,7 +21,7 @@ possible_names = list(Model.__members__)
 
 
 def run_visualize(mode, names, save_loc):
-  y_pred, fit_time, learning_curve = run_model(mode, names)
+  y_pred, fit_time, learning_curve, feat_importances = run_model(mode, names)
 
   n = len(y)
   n_feat = x.shape[1]
@@ -61,7 +61,7 @@ def run_visualize(mode, names, save_loc):
     family="monospace",
   )
 
-  # Plot 2: Prediction vs Actual
+  # Plot 2: Predicted vs Actual
   ax = axes[0][1]
   ax.scatter(y, y_pred, color="purple", alpha=0.7, label="Prediction")
   ax.plot(
@@ -91,7 +91,10 @@ def run_visualize(mode, names, save_loc):
 
   # y-axis end at 2eV for now
   tolerances = np.linspace(0, 2, n_steps)
-  accuracies = [np.mean(abs_errors <= i * abs_errors.max()) for i in tolerances]
+  accuracies = [
+    np.mean(abs_errors <= tolerance * abs_errors.max())
+    for tolerance in tolerances
+  ]
   ax = axes[1][0]
   ax.plot(
     tolerances,
@@ -120,6 +123,24 @@ def run_visualize(mode, names, save_loc):
   ax.legend(loc="best")
 
   # Plot 6: Feature importance
+  ax = axes[1][2]
+
+  # Column names are too long, we will number the features
+  feats = [str(i + 1) for i in range(n_feat)]
+  mean_importances = np.mean(feat_importances, 0)
+  abs_err_importances = np.abs(
+    np.stack(
+      [
+        mean_importances - np.min(feat_importances, 0),
+        mean_importances - np.max(feat_importances, 0),
+      ]
+    )
+  )
+  ax.bar(feats, mean_importances, yerr=abs_err_importances)
+  ax.set_xlabel("Feature #")
+  ax.set_ylabel("ΔRMSE (eV)")
+  ax.set_title("Permutation feature importance")
+
   plt.tight_layout()
   if save_loc:
     plt.savefig(f"{save_loc}/{name}.svg")
@@ -141,7 +162,7 @@ def run_visualize(mode, names, save_loc):
 # If ran from the CLI (not by stats.multiple)
 if __name__ == "__main__":
   parser = ArgumentParser(
-    "1-model stat", description="Visualization and stats for a model"
+    "python -m stats.single", description="Visualization and stats for a model"
   )
   parser.add_argument("mode", choices=possible_modes)
   parser.add_argument("names", choices=possible_names, nargs="+")

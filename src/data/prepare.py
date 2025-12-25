@@ -3,7 +3,6 @@ from os import environ
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import KFold
-from sklearn.preprocessing import LabelEncoder
 
 if "RANDOM" not in environ:
   # Fixed random seed for reproducibility, NOT A HYPERPARAM
@@ -36,17 +35,8 @@ df.drop(columns=drop_cols, inplace=True, errors="ignore")
 # Fill missing numerical values with the mean
 df.fillna(df.mean(numeric_only=True), inplace=True)
 
-# Encode categorical columns, should only be the formula column for now
-cat_cols = df.select_dtypes(include="object").columns
-label_encoders = {}
-for col in cat_cols:
-  le = LabelEncoder()
-  df[col] = le.fit_transform(df[col].astype(str))
-  label_encoders[col] = le
-
 # Features and target
-y = df["Band gap (HSE06) (eV)"]
-df.drop(columns=["Band gap (HSE06) (eV)"], inplace=True)
+y = df.pop("Band gap (HSE06) (eV)")
 x = df
 
 # Default k-fold

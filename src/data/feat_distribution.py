@@ -1,10 +1,9 @@
-# Make box plot + histogram for each
 import itertools
 from argparse import ArgumentParser
 
 import matplotlib.pyplot as plt
 
-from data.final import x, y
+from data.prepare import x, y
 
 parser = ArgumentParser(
   "Feature distribution histograms",
@@ -53,10 +52,10 @@ for i, (name, vals) in enumerate(data):
     vals, bins=bins, alpha=0.7, color="teal", edgecolor="black"
   )
 
-  # Add vertical space above the highest bar
+  # Add vertical space above the highest bar for boxplot
   ax.set_ylim(0, max(freq) * (1.05 + box_height))
 
-  # Boxplot above histogram using inset axes
+  # Boxplot using inset axes
   ax_box = ax.inset_axes([0, 1 - box_height, 1, box_height])
   ax_box.boxplot(
     vals,

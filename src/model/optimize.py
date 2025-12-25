@@ -4,7 +4,7 @@ from sklearn.metrics import mean_squared_error
 from skopt import BayesSearchCV
 from skopt.space import Categorical, Integer, Real
 
-from data.final import k_fold, kf
+from data.prepare import k_fold, kf
 from model.create import Model
 
 

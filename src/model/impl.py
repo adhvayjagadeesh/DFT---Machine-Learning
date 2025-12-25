@@ -1,10 +1,10 @@
 from time import perf_counter_ns
-from typing import Any
 
-from numpy import empty_like, linspace
+from numpy import empty, empty_like, linspace
+from sklearn.inspection import permutation_importance
 from sklearn.metrics import root_mean_squared_error
 
-from data.final import k, k_fold, x, y
+from data.prepare import k, k_fold, x, y
 from model.create import create_model
 from model.optimize import optmize_weights, tune
 
@@ -19,22 +19,28 @@ def run_model(mode, names):
   # Learning curve data
   learning_curve = {"sizes": [], "cv_scores": [], "train_scores": []}
 
+  # Feature importance data (delta RMSE)
+  feat_importances = empty((k, x.shape[1]))
+
   # Fractions of data to use for learning curve
   fracs = linspace(0.2, 1, 5)
   n_row_all = len(x)
   fit_time = 0
 
-  # Run the model on those data fractions
-  for i in fracs:
-    n_row = int(n_row_all * i)
+  # Learning curve loop
+  for frac in fracs:
+    n_row = int(n_row_all * frac)
     rmse_train = 0
     rmse_test = 0
 
-    # Slice to reuse and save memory
+    # Simple slicing to save memory (allowed because CSV is shuffled)
     x_slc = x[0:n_row]
-    y_slc: Any = y[0:n_row]  # Any type to quiet the linter
+    y_slc = y[0:n_row]
 
-    for x_train, y_train, x_test, indices in k_fold(x_slc, y_slc):
+    # Cross-validation loop
+    for i, (x_train, y_train, x_test, indices) in enumerate(
+      k_fold(x_slc, y_slc)
+    ):
       start_ns = perf_counter_ns()
       if "t" in mode:
         tune(model, x_train, y_train)
@@ -42,17 +48,21 @@ def run_model(mode, names):
         optmize_weights(model, x_train, y_train)
       model.fit(x_train, y_train)
 
-      # Time only for full-data run
-      if i == 1:
+      # Fit time only for 100%-data run
+      if frac == 1:
         fit_time += perf_counter_ns() - start_ns
 
-      # By _f I mean fold
+      # By _f (so that it doesn't conflict with the outer y_pred) I mean fold
       y_pred_f = model.predict(x_test)
+      y_test = y_slc.iloc[indices]
 
-      # Save y_pred only for full-data run
-      if i == 1:
+      # Save to y_pred and get feature importance only for 100%-data run
+      if frac == 1:
         y_pred[indices] = y_pred_f
-      rmse_test += root_mean_squared_error(y_slc.iloc[indices], y_pred_f)
+        feat_importances[i] = permutation_importance(
+          model, x_test, y_test, scoring="neg_root_mean_squared_error"
+        ).importances_mean
+      rmse_test += root_mean_squared_error(y_test, y_pred_f)
       rmse_train += root_mean_squared_error(y_train, model.predict(x_train))
 
     learning_curve["sizes"].append(n_row)
@@ -65,4 +75,5 @@ def run_model(mode, names):
     y_pred,
     f"{int(fit_time // 3600):02}:{int(fit_time % 3600 // 60):02}:{int(fit_time % 60):02}",
     learning_curve,
+    feat_importances,
   )

@@ -2,7 +2,9 @@
 
 Benchmarking ML models for predicting band gap of 2D material without CBM & VBM
 
-## Get the code
+## Setup
+
+### Get the code
 
 - Cloning with SSH is the easiest here. [Setup guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh).
 
@@ -20,7 +22,7 @@ cd dftml
 git pull
 ```
 
-## Prepare virtual environment
+### Prepare virtual environment
 
 ```bash
 # Make venv called ".venv" (with Python)
@@ -39,7 +41,7 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-## Run code asynchronously
+### Run code asynchronously
 
 ```bash
 # Create tmux session called "dftml" (1st time only)
@@ -54,7 +56,7 @@ tmux a -t dftml
 # You can now turn of your local machine and disconnect
 ```
 
-## Get files from ASDRP
+### Get files from ASDRP
 
 Because ASDRP server setup is weird (stupid), where when user ssh to it:
 
@@ -81,40 +83,120 @@ rsync -avP user@[master ip]:[dst1] [dst2]
 
 If you are working in master, then just do the last step
 
-## Run 1 model
+## Data exploration
 
-Put `RANDOM=67` before running 1 or more models to run with `random_state = None`
+### Feature correlation
 
-```bash
-# Replace [name] with a filename in the models folder, without the .py
-python -m stats.single [name]
-```
+## Running model
 
-## Run multiple models
-
-Put `RANDOM=67` before running 1 or more models to run with `random_state = None`
+<details>
+<summary>Random state is fixed to seed `67` for reproducibility, put `RANDOM=67` before run models to run with `random_state = None`</summary>
 
 ```bash
-# Replace [result_dir] with output directory relative to src
-# It will run all models, use -s/--select to use regex to choose what to run
-python -m stats.multiple [result_dir]
+
+                    ⢀⣀⡤⠤⠖⠒⠒⠒⠒⠦⠖⠒⠒⠒⠒⠦⠤⣄⡀
+                ⢀⣠⠴⠊⠉     ⣀           ⢈⠙⠦⣄
+              ⢀⡴⠋  ⢠⢀⡄  ⢠ ⣇ ⢦  ⠸⡄     ⠈⠲⠄⠈⠓⢄
+            ⢀⡜⠉⡀⢀⡴⣲⡏⣼⠁  ⡞ ⢹⡀⠘⣆  ⠹⡄       ⠙⢆⠈⠳⣄
+            ⣰⠋⢀⢞⣴⢋⡜⣝⣼⠃  ⡼⠁ ⢸⠳⣄⠈⢷⣄⡀⠙⢦⡀      ⠈⠳⡀⠈⢣⡀
+          ⡴⠃⢠⣾⣻⠗⣡⢾⡿⠁ ⢀⡼⠁ ⡰⠋ ⠈⠑⠦⢽⣻⣗⡦⢽⣦⣄⡀     ⠘⢦⡀⠹⡄
+          ⢠⠇ ⣼⠋⠉ ⣩⠜⠁ ⣠⠞⢁⣠⠔⠃     ⠈⠉⠛⠃⠈⠉⠙⠓⠦⢄⡀   ⠈⠣⣀⠱⡄
+        ⢀⡟ ⠐⠃⢀⡠⠞⠁⣀⡤⠞⠛⠋⠉        ⡀         ⠈⠓⢦   ⠈⠉⠹⣆⣆
+        ⣼⠁  ⠙⠛⠛⡿⠉⠁⡤⢒⣯⣭⣭⣓⢤⡀  ⡇  ⢳  ⢀⡴⣺⣭⣯⣅⡓⢢⡀⠈⢧     ⠈⢣⡀
+        ⡇     ⡼⠁ ⢞⢰⣿⣯⣿⣽⣿⠷⠃ ⢸⡁  ⢹⡀ ⠘⠿⣿⣏⣟⣺⣿⡆⢱ ⠈⢧     ⢀⣈⣓⡦⡄⡀
+        ⡇    ⢰⠃   ⢀⣉⣉⣉⡡⠔⠃ ⣠⠞⠒⠉⠙⠂⠳⣄ ⠙⠦⢍⣉⣉⣉⡀   ⠘⣇     ⠙⠛⠒⢒⡿
+  ⢠⡄    ⢰⠇   ⢀⡟         ⣠⡴⠋⢀⣬⣆ ⢰⣦⣀⡈⠱⡄⢄         ⢹⡄     ⢠⡶⠭⢾⠃⢀
+  ⠈⣟⠶⢤⣀⡤⠟    ⢸       ⢀⡴⠊ ⠙⠤⠟⠋⠁ ⠈⠉⠛⠤⠤⠃ ⠙⠦⡀      ⠈⡇       ⢀⡞⢀⣡
+⣴⡤⣈⣲⣤⡄      ⡏     ⢀⠔⠉                  ⠈⠲⡄     ⡇      ⢀⠞⠁    ⢳
+⣿⣙⢄⡀       ⠠⡇    ⡰⠋   ⣀⣠⣤⠤⢤⣶⣶⠶⣶⣶⡤⠤⣤⢤⣀⣀   ⠈⢆    ⡇    ⣠⠔⣋⣠⠄   ⢀⣾
+⠹⣌⠙⠛⠂      ⠨⡇   ⣸⠁ ⢠⣴⣿⠓⡞⠉⠱⠏  ⠿⠁ ⠈⠎⠉⢱⠚⢫⢽⡲⡀ ⠈⡆  ⢠⡇  ⣀⠈⢉⣩⠔⠋ ⢀⣰⣾⣿⣭
+  ⣜⣣⣄⡀       ⣇  ⢰⡇ ⢰⡟⡇⡸ ⡄     ⢤   ⡀ ⣀ ⠸ ⡷⣽⡆ ⢳  ⢸ ⢀⣤⣙⣻⠿ ⢀⣶⣾⣿⣿⣿⣿⣿
+  ⠈⠓⢯⣄⡀⡀     ⢹⡄  ⡇ ⣿⡹⡹⣜⣲⣿⣿⣿⣷⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⡭⠴⣠⢻⣷ ⢸⢀⡏⢀⡾⠉⠛⠲⣄⣾⣿⣿⣿⣿⠿⠟⠿⠿
+    ⠈⠿⣗⡃     ⠘⣇  ⡇ ⣿⣧⣵⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣶⣯⣾⣿   ⣸⢃⡼⠃   ⠙⢯⡉⠉⠋⠉
+      ⠈⠉⠛⠒⠒⠻⣦⡀⠹⡄ ⢳ ⣿⣿⣿⣿⣿⣿⣿  ⣿⣿⣿     ⣿⣿⣿⠐⠃⢀⡿⠋    ⢰⡀⠈⠻⢦⡁
+          ⣠⡟⢹⡍⠓⢷   ⢻⣿⣿⣿⣿⣿⣿ ⣿⣿⣿⣿⣿⣿⣿⣿ ⣿⣿⣿⣿⡇  ⢸⠁      ⡇   ⢻⡀
+        ⣠⠟⠁ ⠈⣇ ⢸⡄  ⢸⣿⣿⣿⣿⣿ ⣿⣿⣿⣿⣿⣿⣿⣿ ⣿⣿⣿⣿⣿⠇  ⡟      ⢰⠃   ⢸⣇
+      ⢀⣤⣏    ⠹⡆ ⣇   ⣿⣿⣿⣿⣿ ⣿   ⣿⣿⣿⣿ ⣿⣿⣿⣿⣿⣿  ⢠⠇     ⢠⠏   ⢀⡾⠈⠛⢆
+    ⢠⡶⠋⠁⠹⣆    ⠹⣄⢹   ⢻⣿⣿⣿⣿  ⣿⣿ ⣿⣿⣿ ⣿⣿⣿⣿⣿⣿⡟  ⣸    ⢀⡴⠋   ⣠⠟⠁  ⠈⢳⡀
+  ⣴⠋    ⠈⢷⣄    ⠘⡇  ⢸ ⣿⣿⣿⣿⣿    ⣿⣿⣿ ⣿⣿⣿⣿⣿⣿⡇   ⡏    ⠈   ⢀⡼⠋      ⢳
+  ⡼⠁       ⠙⢷⣄   ⢷  ⠘⡟⡛⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣋⣹  ⢰⠇      ⢀⡴⠋
+⣸⠁          ⠉⠳⣄⡀⢸⡀  ⣏⡀⢽⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿ ⣸   ⢸     ⢀⡴⠋⠁
+⢀⡇             ⠈⠉⠙⡇  ⢻⡀⠠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠤⣄⡇  ⡾   ⣠⠾⠋
+⢸⠁                ⢿  ⠸⣦⠔⠛⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣇⣀⢸⠇ ⢠⡇⣀⡴⠚⠁
+⣸     ⠹⣇          ⢸⡄  ⢻⣀⠐⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢄ ⡿  ⢰⠟⠁
+⣿      ⢿          ⠈⡇  ⠸⡏ ⡨⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡋⠘⣦⡇  ⣼
+⣏      ⠘⣇          ⢷   ⠹⡜ ⡼⢿⣿⣿⣿⣿⣿⣿⠿⡏⠘⣄⡞   ⡏
+⣧       ⢹⡄         ⢸⡀ ⠐⣄⠙⣶⡀⢸ ⢈⠉⡍ ⢡ ⣅⣠⠟⡀  ⢸⠇
+⣷        ⢻⡄         ⣇  ⠈⢦⡈⠙⠫⠷⣶⣤⣖⣤⡾⠶⠋⢁⡴⠃ ⠠⡿
+⢻         ⢻⡀        ⢹⡄   ⠈⠒⠤⣄⣀⣀⣀⣀⣀⡤⠔⠋   ⣸⠃
+⢸          ⢻⣆        ⢳⣀     ⢀    ⡀⡀   ⢀⣰⠃
 ```
 
-## Developer notes
+</details>
 
-- `VotingRegressor`'s weights can be reset with `set_params` without refitting (see test.py)
-- We are only reporting performance of model types, not creating a super good model, so use k-fold for base performance
-- Takes way too long (removed):
-  - XGB with `dart` booster
-  - SVR
-- XGB doesn't like that feature (column) names has `[`, `]` or `<` so I renamed the columns in the CSV file, square bracket to parenthesis
-- Our model are always assumed to be a `Pipeline` with a first step of `("scaler", RobustScaler())` and the second of a `("", VotingRegressor)`
-- 2 Standalone: K-fold and tuned (t)
-- 4 Hybrid: K-fold, weighting (w), tuned, and weight + tune (wt)
+| Mode    | k      | t    | w      | wt              |
+| ------- | ------ | ---- | ------ | --------------- |
+| Meaning | K-fold | Tune | Weight | Weight and tune |
+
+| Model   | rf            | xgb                       | mlp                    | gbt                   | hgbt                |
+| ------- | ------------- | ------------------------- | ---------------------- | --------------------- | ------------------- |
+| Meaning | Random forest | eXtreme Gradient Boosting | Multi-Layer perceptron | Gradient-boosted tree | Histogram-based GBT |
+
+### 1 model
+
+This will give you an SVG with:
+
+- Performace summary
+- Predicted vs actual band gap scatterplot
+- Error distribution histogram
+- REC curve with AUC
+- Learning curve
+- Permutation feature importance bar graph with error bars
+
+| Feature # | Name                                           |
+| --------- | ---------------------------------------------- |
+| 1         | Energy above hull (eV/atom)                    |
+| 2         | Heat of formation (eV/atom)                    |
+| 3         | Magnetic                                       |
+| 4         | Fermi level wrt. vacuum (PBE) (eV)             |
+| 5         | Energy (eV)                                    |
+| 6         | Magnetic anisotropy energy, xz (meV/unit cell) |
+| 7         | Magnetic anisotropy energy, yz (meV/unit cell) |
+| 8         | Vacuum level (eV)                              |
+
+```
+usage: python -m stats.single [-h] [-s SAVE]
+                              {k,w,t,wt}
+                              {rf,xgb,mlp,gbt,hgbt} [{rf,xgb,mlp,gbt,hgbt} ...]
+
+Visualization and stats for a model
+
+positional arguments:
+  {k,w,t,wt}
+  {rf,xgb,mlp,gbt,hgbt}
+
+options:
+  -h, --help            show this help message and exit
+  -s, --save SAVE       Save the figure instead of showing it
+```
+
+## Multiple models
+
+```
+usage: python -m stats.multiple [-h] res_dir
+
+CSV with metrics and visual for multiple models
+
+positional arguments:
+  res_dir     Result directory
+
+options:
+  -h, --help  show this help message and exit
+```
 
 ## Explanations
 
-## Shuffling
+### Shuffling
 
 See [this](https://stats.stackexchange.com/questions/629193/does-k-fold-cross-validation-strictly-require-shuffling-of-data-before-splitting). In summary, we must do `KFold(shuffle=True)`, but this makes it copy our data, so instead, we can shuffle the data file itself (with `shuf`).
 
@@ -141,10 +223,26 @@ Individual-tuning, does not increase the dimensionality of the search space so t
 
 ### Learning curve
 
-The learning curve is the model's training and testing performance as a function of amount of training sample. Training performance means that in the K-fold loop, after the model fits, we predict on the data used for `fit` itself to see how much the model actually learned (this should be quite high).
-
-In our case, the learning curve logic is baked into the K-fold loop. We wrap the K-fold loop with a learning curve loop that feeds the K-fold progressively bigger slice (20%, 40%...100%) of the whole dataset.
+The learning curve is the model's training and testing performance as a function of amount of training sample. Training performance means that in the K-fold loop, after the model fits, we predict on the data used for `fit` itself to see how much the model actually learned. Then we plot RMSE vs training and testing performance.
 
 ### Feature importance
 
-TBD
+There are two kinds of feature importance that we can use: impurity-based (MDI) and permutation. MDI importance calculates importance based on how much a feature reduces impurity (like Gini impurity or entropy) during tree building. Some problems with MDI include:
+
+- Only for tree-based models
+- Based on training-data because it was constructed during tree building
+- Biased (makes a feature more important than it actually is) towards high-cardinality (many unique values) feature because trees naturally split on more unique values to reduce impurity
+
+Permutation importance solves all of these problem by measuring the performance drop on the test set when one feature is shuffled (if it drops a lot, it's important)
+
+## Developer notes
+
+- To generate correct help messages, program names for Argparse should follow `python -m [module name]` such as `python -m data.feat_correlation`
+- `VotingRegressor`'s weights can be reset with `set_params` without refitting (see test.py)
+- We are only reporting performance of model types, not creating a super good model, so use k-fold for base performance
+- Takes way too long (removed):
+  - XGB with `dart` booster
+  - SVR
+- XGB doesn't like that feature (column) names has `[`, `]` or `<` so I renamed the columns in the CSV file, square bracket to parenthesis
+- Our model are always assumed to be a `Pipeline` with a first step of `("scaler", RobustScaler())` and the second of a `("", VotingRegressor)` whether it's an ensemble or not
+- We set `n_jobs = os.cpu_count()` by default in the module `model.create` and `n_jobs=1` (default in sklearn, don't worry) everywhere else so that models always run at max performance, and model runners always takes minimal performace

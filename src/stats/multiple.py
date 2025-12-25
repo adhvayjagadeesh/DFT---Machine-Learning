@@ -11,16 +11,16 @@ def _all_possible_models() -> list[tuple[str, list[str]]]:
   models = []
 
   # Single-model
-  for i in [i for i in possible_modes if "w" not in i]:
-    for j in possible_names:
-      models.append((i, [j]))
+  for mode in [mode for mode in possible_modes if "w" not in mode]:
+    for name in possible_names:
+      models.append((mode, [name]))
 
   return models
 
 
 parser = ArgumentParser(
-  "Run many models (defaults to all single)",
-  description="CSV with metrics and visual for multiple models",
+  "python -m stats.multiple",
+  description="CSV with metrics (in a CSV) and visual for multiple models",
 )
 parser.add_argument("res_dir", help="Result directory")
 args = parser.parse_args()
