@@ -61,7 +61,7 @@ def run_visualize(mode, names, save_loc):
     family="monospace",
   )
 
-  # Plot 2: Predicted vs Actual
+  # Plot 2: Predicted vs actual
   ax = axes[0][1]
   ax.scatter(y, y_pred, color="purple", alpha=0.7, label="Prediction")
   ax.plot(
@@ -76,7 +76,7 @@ def run_visualize(mode, names, save_loc):
   ax.legend()
   ax.grid(True)
 
-  # Plot 3: Error Distribution
+  # Plot 3: Error distribution
   errors = y_pred - y
   ax = axes[0][2]
   ax.hist(errors, bins=50, color="teal", alpha=0.7, edgecolor="black")
@@ -89,7 +89,7 @@ def run_visualize(mode, names, save_loc):
   abs_errors = np.abs(errors)
   n_steps = 100
 
-  # y-axis end at 2eV for now
+  # y-axis ends at 2eV for now
   tolerances = np.linspace(0, 2, n_steps)
   accuracies = [
     np.mean(abs_errors <= tolerance * abs_errors.max())
@@ -104,7 +104,7 @@ def run_visualize(mode, names, save_loc):
   ax.set_xlabel("Tolerance (eV)")
   ax.set_ylabel("Accuracy (%)")
   ax.set_title("Prediction accuracy vs tolerance")
-  ax.legend(loc="best")
+  ax.legend()
   ax.grid(True)
 
   # Plot 5: Learning curve
@@ -112,17 +112,18 @@ def run_visualize(mode, names, save_loc):
   ax.plot(
     learning_curve["sizes"],
     learning_curve["train_scores"],
-    label="Train scores",
-  )
-  ax.plot(
-    learning_curve["sizes"], learning_curve["cv_scores"], label="CV scores"
+    "o-",
+    learning_curve["sizes"],
+    learning_curve["cv_scores"],
+    "o-",
   )
   ax.set_xlabel("Sample size")
   ax.set_ylabel("RMSE (eV)")
   ax.set_title("Learning curve")
-  ax.legend(loc="best")
+  ax.legend(labels=["Train", "Test"])
+  ax.grid(True)
 
-  # Plot 6: Feature importance
+  # Plot 6: Permutation feature importance
   ax = axes[1][2]
 
   # Column names are too long, we will number the features
@@ -140,6 +141,7 @@ def run_visualize(mode, names, save_loc):
   ax.set_xlabel("Feature #")
   ax.set_ylabel("ΔRMSE (eV)")
   ax.set_title("Permutation feature importance")
+  ax.grid(axis="y")
 
   plt.tight_layout()
   if save_loc:
@@ -162,7 +164,7 @@ def run_visualize(mode, names, save_loc):
 # If ran from the CLI (not by stats.multiple)
 if __name__ == "__main__":
   parser = ArgumentParser(
-    "python -m stats.single", description="Visualization and stats for a model"
+    "python -m stats.one", description="Visualization and stats for a model"
   )
   parser.add_argument("mode", choices=possible_modes)
   parser.add_argument("names", choices=possible_names, nargs="+")

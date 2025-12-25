@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 from data.prepare import x, y
 
 parser = ArgumentParser(
-  "Feature distribution histograms",
-  description="Show how features are distributed",
+  "python -m data.feat_distribution",
+  description="Show how numerical features are distributed",
 )
 parser.add_argument(
   "-s", "--save", help="Save the figure(s) instead of showing it"

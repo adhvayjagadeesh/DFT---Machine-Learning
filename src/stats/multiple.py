@@ -4,7 +4,7 @@ from os import makedirs
 from os.path import join
 from shutil import rmtree
 
-from stats.single import possible_modes, possible_names, run_visualize
+from stats.one import possible_modes, possible_names, run_visualize
 
 
 def _all_possible_models() -> list[tuple[str, list[str]]]:

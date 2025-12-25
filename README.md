@@ -85,14 +85,40 @@ If you are working in master, then just do the last step
 
 ## Data exploration
 
-### Feature correlation
+### Feature distribution
+
+Histogram and box plot for all numerical features
+
+```
+usage: python -m data.feat_distribution [-h] [-s SAVE]
+
+Show how numerical features are distributed
+
+options:
+  -h, --help       show this help message and exit
+  -s, --save SAVE  Save the figure(s) instead of showing it
+```
+
+### Feature correlation (TBD)
+
+A heatmap of spearman correlation between numerical features
+
+```
+usage: python -m data.feat_correlation [-h] [-s SAVE]
+
+Show how numerical features are correlated
+
+options:
+  -h, --help       show this help message and exit
+  -s, --save SAVE  Save the figure(s) instead of showing it
+```
 
 ## Running model
 
 <details>
-<summary>Random state is fixed to seed `67` for reproducibility, put `RANDOM=67` before run models to run with `random_state = None`</summary>
+<summary>Random state is fixed to seed 67 for reproducibility, put RANDOM=67 before run models to run with random_state = None</summary>
 
-```bash
+```
 
                     ⢀⣀⡤⠤⠖⠒⠒⠒⠒⠦⠖⠒⠒⠒⠒⠦⠤⣄⡀
                 ⢀⣠⠴⠊⠉     ⣀           ⢈⠙⠦⣄
@@ -144,7 +170,7 @@ If you are working in master, then just do the last step
 
 ### 1 model
 
-This will give you an SVG with:
+An SVG with:
 
 - Performace summary
 - Predicted vs actual band gap scatterplot
@@ -165,7 +191,7 @@ This will give you an SVG with:
 | 8         | Vacuum level (eV)                              |
 
 ```
-usage: python -m stats.single [-h] [-s SAVE]
+usage: python -m stats.one [-h] [-s SAVE]
                               {k,w,t,wt}
                               {rf,xgb,mlp,gbt,hgbt} [{rf,xgb,mlp,gbt,hgbt} ...]
 
@@ -198,7 +224,7 @@ options:
 
 ### Shuffling
 
-See [this](https://stats.stackexchange.com/questions/629193/does-k-fold-cross-validation-strictly-require-shuffling-of-data-before-splitting). In summary, we must do `KFold(shuffle=True)`, but this makes it copy our data, so instead, we can shuffle the data file itself (with `shuf`).
+See [this](https://stats.stackexchange.com/questions/629193/does-k-fold-cross-validation-strictly-require-shuffling-of-data-before-splitting). In summary, we must do `KFold(shuffle=True)`, but this makes it copy our data, so instead, we can shuffle the data file itself (with `shuf`) and then do `KFold()`.
 
 ### Tuning
 
@@ -233,7 +259,7 @@ There are two kinds of feature importance that we can use: impurity-based (MDI) 
 - Based on training-data because it was constructed during tree building
 - Biased (makes a feature more important than it actually is) towards high-cardinality (many unique values) feature because trees naturally split on more unique values to reduce impurity
 
-Permutation importance solves all of these problem by measuring the performance drop on the test set when one feature is shuffled (if it drops a lot, it's important)
+Permutation importance solves all of these problem by measuring the performance drop (or error increase) on the test set when one feature (its rows in the dataset) is shuffled. If performance drops a lot (or error increase a lot), it's important.
 
 ## Developer notes
 
