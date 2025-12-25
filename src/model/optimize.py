@@ -92,7 +92,8 @@ def tune(model, x_train, y_train):
       _get_hyperparams(Model[name]),
       cv=kf,
       n_iter=25,
-      n_jobs=1,
+      n_jobs=-1,
+      pre_dispatch="1.5*n_jobs",
       refit=False,
     )
     bayes.fit(x_train, y_train)

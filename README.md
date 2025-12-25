@@ -271,4 +271,3 @@ Permutation importance solves all of these problem by measuring the performance 
   - SVR
 - XGB doesn't like that feature (column) names has `[`, `]` or `<` so I renamed the columns in the CSV file, square bracket to parenthesis
 - Our model are always assumed to be a `Pipeline` with a first step of `("scaler", RobustScaler())` and the second of a `("", VotingRegressor)` whether it's an ensemble or not
-- We set `n_jobs = os.cpu_count()` by default in the module `model.create` and `n_jobs=1` (default in sklearn, don't worry) everywhere else so that models always run at max performance, and model runners always takes minimal performace

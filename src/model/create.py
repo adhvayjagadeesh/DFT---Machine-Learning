@@ -25,7 +25,7 @@ n_jobs = cpu_count()
 
 
 def create_model(names: tuple[str, ...]) -> Pipeline:
-  models = [(name, Model[name].value(n_jobs=n_jobs)) for name in names]
+  models = [(name, Model[name].value()) for name in names]
   return Pipeline(
     [
       ("scaler", RobustScaler()),
