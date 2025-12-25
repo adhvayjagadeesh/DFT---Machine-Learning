@@ -9,10 +9,7 @@ from model.create import create_model
 from model.optimize import optmize_weights, tune
 
 
-def run_model(mode, names):
-  # Weighting is only for ensemble
-  if len(names) < 2:
-    assert "w" not in mode
+def run_model(names, mode):
   model = create_model(names)
   y_pred = empty_like(y)
 

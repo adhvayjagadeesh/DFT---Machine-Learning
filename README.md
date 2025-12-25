@@ -160,15 +160,33 @@ options:
 
 </details>
 
-| Mode    | k      | t    | w      | wt              |
-| ------- | ------ | ---- | ------ | --------------- |
-| Meaning | K-fold | Tune | Weight | Weight and tune |
+| Mode code | k      | t    | w      | wt              |
+| --------- | ------ | ---- | ------ | --------------- |
+| Meaning   | K-fold | Tune | Weight | Weight and tune |
 
-| Model   | rf            | xgb                       | mlp                    | gbt                   | hgbt                |
-| ------- | ------------- | ------------------------- | ---------------------- | --------------------- | ------------------- |
-| Meaning | Random forest | eXtreme Gradient Boosting | Multi-Layer perceptron | Gradient-boosted tree | Histogram-based GBT |
+| Model code | Meaning                                       |
+| ---------- | --------------------------------------------- |
+| rf         | Random forest                                 |
+| xgb        | eXtreme Gradient Boosting                     |
+| mlp        | Multi-Layer perceptron                        |
+| gbt        | Gradient-boosted tree                         |
+| hgbt       | Histogram-based GBT                           |
+| adbt       | AdaBoost-ed decision tree                     |
+| abet       | AdaBoost-ed extremely randomized (eXtRa) tree |
+| ets        | eXtRa trees                                   |
 
-### 1 model
+Model name examples:
+
+```bash
+# Random forest with k-fold
+rf_k
+
+# Random forest and multi-layer perceptron weighted
+rf+mlp_w
+mlp+rf_w
+```
+
+### One model
 
 An SVG with:
 
@@ -191,30 +209,28 @@ An SVG with:
 | 8         | Vacuum level (eV)                              |
 
 ```
-usage: python -m stats.one [-h] [-s SAVE]
-                              {k,w,t,wt}
-                              {rf,xgb,mlp,gbt,hgbt} [{rf,xgb,mlp,gbt,hgbt} ...]
+usage: python -m stats.one [-h] [-s SAVE] name
 
 Visualization and stats for a model
 
 positional arguments:
-  {k,w,t,wt}
-  {rf,xgb,mlp,gbt,hgbt}
+  name
 
 options:
-  -h, --help            show this help message and exit
-  -s, --save SAVE       Save the figure instead of showing it
+  -h, --help       show this help message and exit
+  -s, --save SAVE  Save the figure instead of showing it
 ```
 
-## Multiple models
+## Many models
 
 ```
-usage: python -m stats.multiple [-h] res_dir
+usage: python -m stats.many [-h] res_dir names [names ...]
 
-CSV with metrics and visual for multiple models
+CSV with metrics (in a CSV) and visual for many models
 
 positional arguments:
   res_dir     Result directory
+  names
 
 options:
   -h, --help  show this help message and exit

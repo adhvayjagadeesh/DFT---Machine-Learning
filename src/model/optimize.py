@@ -18,7 +18,7 @@ def _get_hyperparams(model: Model):
       "min_samples_split": Integer(2, 15),
       "min_samples_leaf": Integer(1, 10),
       "subsample": Real(0.7, 1),
-      "max_features": Categorical(["sqrt", 0.7, None]),
+      "max_features": Categorical([None, "sqrt", "log2"]),
     }
   elif model == Model.hgbt:
     hyperparams = {
@@ -42,7 +42,7 @@ def _get_hyperparams(model: Model):
       "max_depth": Categorical([None, 10, 25, 50, 75, 100]),
       "min_samples_split": Integer(2, 20),
       "min_samples_leaf": Integer(1, 10),
-      "max_features": [1, "sqrt", "log2"],
+      "max_features": Categorical([None, "sqrt", "log2"]),
       "bootstrap": Categorical([True, False]),
     }
   elif model == Model.xgb:
@@ -57,6 +57,40 @@ def _get_hyperparams(model: Model):
       "reg_lambda": Real(0.5, 2.0, prior="log-uniform"),
       "gamma": Real(0.0, 2.0),
       "tree_method": Categorical(["hist", "approx"]),
+    }
+  elif model == Model.abdt:
+    hyperparams = {
+      # AdaBoost
+      "n_estimators": Integer(50, 500),
+      "learning_rate": Real(1e-2, 1.0, prior="log-uniform"),
+      "loss": Categorical(["linear", "square", "exponential"]),
+      # DecisionTreeRegressor
+      "estimator__max_depth": Categorical([None, 10, 25, 50, 75, 100]),
+      "estimator__min_samples_split": Integer(2, 20),
+      "estimator__min_samples_leaf": Integer(1, 10),
+      "estimator__max_features": Categorical([None, "sqrt", "log2"]),
+    }
+  elif model == Model.abet:
+    hyperparams = {
+      # AdaBoost Parameters
+      "n_estimators": Integer(50, 500),
+      "learning_rate": Real(1e-2, 1.0, prior="log-uniform"),
+      "loss": Categorical(["linear", "square", "exponential"]),
+      # ExtraTreeRegressor (similar to Decision tree)
+      "estimator__splitter": Categorical(["random", "best"]),
+      "estimator__max_depth": Categorical([None, 10, 25, 50, 75, 100]),
+      "estimator__min_samples_split": Integer(2, 20),
+      "estimator__min_samples_leaf": Integer(1, 10),
+      "estimator__max_features": Categorical([None, "sqrt", "log2"]),
+    }
+  elif model == Model.ets:
+    hyperparams = {
+      "n_estimators": Integer(100, 1000),
+      "max_depth": Categorical([None, 10, 25, 50, 75, 100]),
+      "min_samples_split": Integer(2, 20),
+      "min_samples_leaf": Integer(1, 10),
+      "max_features": Categorical([None, "sqrt", "log2"]),
+      "bootstrap": Categorical([True, False]),
     }
   return hyperparams
 

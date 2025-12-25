@@ -12,20 +12,18 @@ from sklearn.metrics import (
 )
 
 from data.prepare import x, y
-from model.create import Model
+from model.create import Model, parse_name
 from model.impl import run_model
 
 backend = get_backend()
-possible_modes = ["k", "w", "t", "wt"]
-possible_names = list(Model.__members__)
 
 
-def run_visualize(mode, names, save_loc):
-  y_pred, fit_time, learning_curve, feat_importances = run_model(mode, names)
+def run_visualize(name, save_loc):
+  names, mode = parse_name(name)
+  y_pred, fit_time, learning_curve, feat_importances = run_model(names, mode)
 
   n = len(y)
   n_feat = x.shape[1]
-  name = f"{'+'.join(names)}_{mode}"
 
   # Metrics
   r2 = r2_score(y, y_pred)
@@ -166,10 +164,9 @@ if __name__ == "__main__":
   parser = ArgumentParser(
     "python -m stats.one", description="Visualization and stats for a model"
   )
-  parser.add_argument("mode", choices=possible_modes)
-  parser.add_argument("names", choices=possible_names, nargs="+")
+  parser.add_argument("name")
   parser.add_argument(
     "-s", "--save", help="Save the figure instead of showing it"
   )
   args = parser.parse_args()
-  run_visualize(args.mode, args.names, args.save)
+  run_visualize(args.name, args.save)
