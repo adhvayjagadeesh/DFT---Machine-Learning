@@ -16,7 +16,7 @@ def _get_hyperparams(model: Model):
       "learning_rate": Real(1e-3, 0.2, prior="log-uniform"),
       "max_depth": Integer(3, 10),
       "min_samples_split": Integer(2, 15),
-      "min_samples_leaf": Integer(1, 10),
+      "min_samples_leaf": Integer(3, 10),
       "subsample": Real(0.7, 1),
       "max_features": Categorical([None, "sqrt", "log2"]),
     }
@@ -39,23 +39,23 @@ def _get_hyperparams(model: Model):
   elif model == Model.rf:
     hyperparams = {
       "n_estimators": Integer(100, 1000),
-      "max_depth": Categorical([None, 10, 25, 50, 75, 100]),
+      "max_depth": Integer(1, 75),
       "min_samples_split": Integer(2, 20),
-      "min_samples_leaf": Integer(1, 10),
-      "max_features": Categorical([None, "sqrt", "log2"]),
+      "min_samples_leaf": Integer(3, 10),
+      "max_features": Categorical(["sqrt", "log2"]),
       "bootstrap": Categorical([True, False]),
     }
   elif model == Model.xgb:
     hyperparams = {
-      "max_depth": Integer(3, 10),
+      "max_depth": Integer(1, 75),
       "min_child_weight": Integer(1, 8),
-      "learning_rate": Real(1e-2, 0.2, prior="log-uniform"),
+      "eta": Real(1e-2, 0.2, prior="log-uniform"),
       "n_estimators": Integer(100, 800),
       "subsample": Real(0.7, 1.0),
       "colsample_bytree": Real(0.6, 1.0),
-      "reg_alpha": Real(1e-5, 0.5, prior="log-uniform"),
-      "reg_lambda": Real(0.5, 2.0, prior="log-uniform"),
-      "gamma": Real(0.0, 2.0),
+      "reg_alpha": Real(1e-3, 2.0, prior="log-uniform"),
+      "reg_lambda": Real(1e-3, 2.0, prior="log-uniform"),
+      "gamma": Real(1e-3, 2.0, prior="log-uniform"),
       "tree_method": Categorical(["hist", "approx"]),
     }
   elif model == Model.abdt:
@@ -65,10 +65,10 @@ def _get_hyperparams(model: Model):
       "learning_rate": Real(1e-2, 1.0, prior="log-uniform"),
       "loss": Categorical(["linear", "square", "exponential"]),
       # DecisionTreeRegressor
-      "estimator__max_depth": Categorical([None, 10, 25, 50, 75, 100]),
+      "estimator__max_depth": Integer(1, 75),
       "estimator__min_samples_split": Integer(2, 20),
-      "estimator__min_samples_leaf": Integer(1, 10),
-      "estimator__max_features": Categorical([None, "sqrt", "log2"]),
+      "estimator__min_samples_leaf": Integer(3, 10),
+      "estimator__max_features": Categorical(["sqrt", "log2"]),
     }
   elif model == Model.abet:
     hyperparams = {
@@ -78,18 +78,18 @@ def _get_hyperparams(model: Model):
       "loss": Categorical(["linear", "square", "exponential"]),
       # ExtraTreeRegressor (similar to Decision tree)
       "estimator__splitter": Categorical(["random", "best"]),
-      "estimator__max_depth": Categorical([None, 10, 25, 50, 75, 100]),
+      "estimator__max_depth": Integer(1, 75),
       "estimator__min_samples_split": Integer(2, 20),
-      "estimator__min_samples_leaf": Integer(1, 10),
-      "estimator__max_features": Categorical([None, "sqrt", "log2"]),
+      "estimator__min_samples_leaf": Integer(3, 10),
+      "estimator__max_features": Categorical(["sqrt", "log2"]),
     }
   elif model == Model.ets:
     hyperparams = {
       "n_estimators": Integer(100, 1000),
-      "max_depth": Categorical([None, 10, 25, 50, 75, 100]),
+      "max_depth": Integer(1, 75),
       "min_samples_split": Integer(2, 20),
-      "min_samples_leaf": Integer(1, 10),
-      "max_features": Categorical([None, "sqrt", "log2"]),
+      "min_samples_leaf": Integer(3, 10),
+      "max_features": Categorical(["sqrt", "log2"]),
       "bootstrap": Categorical([True, False]),
     }
   return hyperparams
