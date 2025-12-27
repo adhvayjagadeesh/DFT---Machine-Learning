@@ -1,5 +1,5 @@
-import itertools
 from argparse import ArgumentParser
+from itertools import chain
 
 import matplotlib.pyplot as plt
 
@@ -15,6 +15,4 @@ parser.add_argument(
 args = parser.parse_args()
 
 # All numerical features + HSE06 band gap
-data = itertools.chain(
-  x.drop(columns=["Magnetic"]).items(), y.to_frame().items()
-)
+data = chain(x.drop(columns=["Magnetic"]).items(), y.to_frame().items())

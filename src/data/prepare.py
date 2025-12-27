@@ -1,15 +1,15 @@
 from os import environ
 
-import numpy as np
-import pandas as pd
+from numpy.random import seed
+from pandas import read_csv
 from sklearn.model_selection import KFold
 
 if "RANDOM" not in environ:
   # Fixed random seed for reproducibility, NOT A HYPERPARAM
-  np.random.seed(67)  # SIX SEVEN
+  seed(67)  # SIX SEVEN
 
 # Load c2db
-df = pd.read_csv("data/c2db.csv")
+df = read_csv("data/c2db.csv")
 
 # Drop calculated band gap, expensive DFT columns, and useless formula column
 df.drop(

@@ -61,7 +61,7 @@ tmux a -t dftml
 Because ASDRP server setup is weird (stupid), where when user ssh to it:
 
 - They first get connected to user@[master ip]
-- Then a bash profile from user@master run `ssh user@[slave_ip]` to connect master to slave (on login)
+- Then a `.bash_profile` from `user@master` run `ssh user@[slave_ip]` to connect master to slave (on login)
 - Hence the double-password, and it makes a transitive ssh connection (local --> master --> slave)
 
 Let's define paths:
@@ -195,7 +195,7 @@ An SVG with:
 - Error distribution histogram
 - REC curve with AUC
 - Learning curve
-- Permutation feature importance bar graph with error bars
+- Permutation feature importance bar graph with error bars.
 
 | Feature # | Name                                           |
 | --------- | ---------------------------------------------- |
@@ -265,7 +265,13 @@ Individual-tuning, does not increase the dimensionality of the search space so t
 
 ### Learning curve
 
-The learning curve is the model's training and testing performance as a function of amount of training sample. Training performance means that in the K-fold loop, after the model fits, we predict on the data used for `fit` itself to see how much the model actually learned. Then we plot RMSE vs training and testing performance.
+A learning curve plots the model's error (or performance) vs the training set size. It answers the question: "Will adding more data improve the model?" We use error in our case, so lower is better as opposed to using performance where higher is better
+
+| Scenario | Training error (bias) | Testing error (variance) | Meaning: Model...                                                             |
+| -------- | --------------------- | ------------------------ | ----------------------------------------------------------------------------- |
+| Overfit  | Very Low              | High                     | Captured noise instead of physics (too complex).                              |
+| Underfit | High                  | High                     | Can't capture the underlying pattern (too simple)                             |
+| Good Fit | Low (acceptable)      | Low                      | Captured the underlying pattern while being robust to noise (good complexity) |
 
 ### Feature importance
 
@@ -275,7 +281,7 @@ There are two kinds of feature importance that we can use: impurity-based (MDI) 
 - Based on training-data because it was constructed during tree building
 - Biased (makes a feature more important than it actually is) towards high-cardinality (many unique values) feature because trees naturally split on more unique values to reduce impurity
 
-Permutation importance solves all of these problem by measuring the performance drop (or error increase) on the test set when one feature (its rows in the dataset) is shuffled. If performance drops a lot (or error increase a lot), it's important.
+Permutation importance solves all of these problem by measuring change in error on the test set when one feature (its rows in the dataset) is shuffled. How much error increase will tell how important that feature is. If error decrease, that feature should be eliminated.
 
 ## Developer notes
 

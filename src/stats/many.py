@@ -20,7 +20,15 @@ makedirs(res_dir)
 with open(join(res_dir, "result.csv"), "w", newline="") as res_csv:
   writer = csv_writer(res_csv)
   writer.writerow(
-    ("Name", "R²", "Adj R²", "MAE (eV)", "RMSE (eV)", "Spearman", "Fit time")
+    (
+      "Name",
+      "R²",
+      "Adjusted R²",
+      "MAE (eV)",
+      "RMSE (eV)",
+      "Spearman",
+      "Fit time",
+    )
   )
   n_to_run = len(args.names)
   for i, name in enumerate(args.names, 1):

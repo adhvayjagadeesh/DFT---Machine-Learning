@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import get_backend
+from matplotlib import get_backend, rcParams
 from scipy.stats import spearmanr
 from sklearn.metrics import (
   auc,
@@ -12,15 +12,17 @@ from sklearn.metrics import (
 )
 
 from data.prepare import x, y
-from model.create import Model, parse_name
+from model.create import parse_name
 from model.impl import run_model
 
 backend = get_backend()
+rcParams["font.size"] = 11
 
 
 def run_visualize(name, save_loc):
-  names, mode = parse_name(name)
-  y_pred, fit_time, learning_curve, feat_importances = run_model(names, mode)
+  y_pred, fit_time, learning_curve, feat_importances = run_model(
+    *parse_name(name)
+  )
 
   n = len(y)
   n_feat = x.shape[1]
@@ -30,34 +32,38 @@ def run_visualize(name, save_loc):
   adj_r2 = 1 - (1 - r2) * (n - 1) / (n - n_feat - 1)
   mae = mean_absolute_error(y, y_pred)
   rmse = root_mean_squared_error(y, y_pred)
-  spearman, _ = spearmanr(y, y_pred)
-  perf_summary = (
-    f"{name} summary:\n\n"
-    f"R²:          {r2:.4f}\n"
-    f"Adjusted R²: {adj_r2:.4f}\n"
-    f"MAE:         {mae:.4f} eV\n"
-    f"RMSE:        {rmse:.4f} eV\n"
-    f"Spearman:    {spearman:.4f}\n"
-    f"Fit time:    {fit_time}"
-  )
+  spearman = spearmanr(y, y_pred).statistic
 
-  # Plotting
+  # Setup plots
   rows = 2
   cols = 3
   _, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 4))
 
   # "Plot" 1: Performance summary
   ax = axes[0][0]
-  ax.axis("off")  # Hide the axes
-  ax.text(
-    0.25,
-    0.5,
-    perf_summary,
-    fontsize=12,
-    ha="left",
-    va="center",
-    family="monospace",
+  metric_names = (
+    "R²",
+    "Adjusted R²",
+    "MAE",
+    "RMSE",
+    "Spearman",
+    "Fit time",
   )
+  metrics = (
+    f"{r2:.4f}",
+    f"{adj_r2:.4f}",
+    f"{mae:.4f} eV",
+    f"{rmse:.4f} eV",
+    f"{spearman:.4f}",
+    fit_time,
+  )
+  tbl = ax.table([*zip(metric_names, metrics)], loc="center", cellLoc="left")
+  tbl.scale(1, 2)
+  for _, cell in tbl.get_celld().items():
+    cell.set_linewidth(0.4)
+  ax.axis("off")
+  ax.axis("tight")
+  ax.set_title(f"{name} summary")
 
   # Plot 2: Predicted vs actual
   ax = axes[0][1]
@@ -80,7 +86,7 @@ def run_visualize(name, save_loc):
   ax.hist(errors, bins=50, color="teal", alpha=0.7, edgecolor="black")
   ax.set_xlabel("Prediction Error (eV)")
   ax.set_ylabel("Frequency")
-  ax.set_title("Prediction Error Distribution")
+  ax.set_title("Prediction error distribution")
   ax.grid(True)
 
   # Plot 4: REC curve
@@ -97,10 +103,10 @@ def run_visualize(name, save_loc):
   ax.plot(
     tolerances,
     accuracies,
-    label=f"AUC = {auc(np.linspace(0, 1, n_steps), accuracies): .4f}",
+    label=f"AUC = {auc(np.linspace(0, 1, n_steps), accuracies):.4f}",
   )
   ax.set_xlabel("Tolerance (eV)")
-  ax.set_ylabel("Accuracy (%)")
+  ax.set_ylabel("Accuracy")
   ax.set_title("Prediction accuracy vs tolerance")
   ax.legend()
   ax.grid(True)
@@ -108,10 +114,10 @@ def run_visualize(name, save_loc):
   # Plot 5: Learning curve
   ax = axes[1][1]
   ax.plot(
-    learning_curve["sizes"],
+    learning_curve["train_sizes"],
     learning_curve["train_scores"],
     "o-",
-    learning_curve["sizes"],
+    learning_curve["train_sizes"],
     learning_curve["cv_scores"],
     "o-",
   )
@@ -123,9 +129,6 @@ def run_visualize(name, save_loc):
 
   # Plot 6: Permutation feature importance
   ax = axes[1][2]
-
-  # Column names are too long, we will number the features
-  feats = [str(i + 1) for i in range(n_feat)]
   mean_importances = np.mean(feat_importances, 0)
   abs_err_importances = np.abs(
     np.stack(
@@ -135,7 +138,11 @@ def run_visualize(name, save_loc):
       ]
     )
   )
-  ax.bar(feats, mean_importances, yerr=abs_err_importances)
+  ax.bar(
+    [str(i) for i in range(1, n_feat + 1)],
+    mean_importances,
+    yerr=abs_err_importances,
+  )
   ax.set_xlabel("Feature #")
   ax.set_ylabel("ΔRMSE (eV)")
   ax.set_title("Permutation feature importance")
@@ -156,7 +163,7 @@ def run_visualize(name, save_loc):
     )
     plt.savefig(f"./{name}.svg")
 
-  return name, r2, adj_r2, mae, rmse, spearman, fit_time
+  return name, *metrics
 
 
 # If ran from the CLI (not by stats.multiple)

@@ -14,7 +14,7 @@ def run_model(names, mode):
   y_pred = empty_like(y)
 
   # Learning curve data
-  learning_curve = {"sizes": [], "cv_scores": [], "train_scores": []}
+  learning_curve = {"train_sizes": [], "cv_scores": [], "train_scores": []}
 
   # Feature importance data (delta RMSE)
   feat_importances = empty((k, x.shape[1]))
@@ -30,13 +30,12 @@ def run_model(names, mode):
     rmse_train = 0
     rmse_test = 0
 
-    # Simple slicing to save memory (allowed because CSV is shuffled)
-    x_slc = x[0:n_row]
+    # Simple slicing to save memory, allowed because CSV is shuffled (x is sliced too in k_fold)
     y_slc = y[0:n_row]
 
-    # Cross-validation loop
+    # CV loop
     for i, (x_train, y_train, x_test, indices) in enumerate(
-      k_fold(x_slc, y_slc)
+      k_fold(x[0:n_row], y_slc)
     ):
       start_ns = perf_counter_ns()
       if "t" in mode:
@@ -62,7 +61,8 @@ def run_model(names, mode):
       rmse_test += root_mean_squared_error(y_test, y_pred_f)
       rmse_train += root_mean_squared_error(y_train, model.predict(x_train))
 
-    learning_curve["sizes"].append(n_row)
+    # Approximate training set size so we don't have to modify k_fold (KFold tries to balance folds as perfectly as possible already)
+    learning_curve["train_sizes"].append(n_row * (1 - 1 / k))
     learning_curve["train_scores"].append(rmse_train / k)
     learning_curve["cv_scores"].append(rmse_test / k)
 
@@ -70,7 +70,8 @@ def run_model(names, mode):
   fit_time /= 10**9 * k
   return (
     y_pred,
-    f"{int(fit_time // 3600):02}:{int(fit_time % 3600 // 60):02}:{int(fit_time % 60):02}",
+    # HH:MM:SS.SSS
+    f"{int(fit_time // 3600):02}:{int(fit_time % 3600 // 60):02}:{fit_time % 60:06.3f}",
     learning_curve,
     feat_importances,
   )
