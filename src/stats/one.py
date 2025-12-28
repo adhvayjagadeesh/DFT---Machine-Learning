@@ -139,7 +139,7 @@ def run_visualize(name, save_loc):
     )
   )
   ax.bar(
-    [str(i) for i in range(1, n_feat + 1)],
+    x.columns.get_level_values(1),
     mean_importances,
     yerr=abs_err_importances,
   )

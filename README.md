@@ -75,10 +75,10 @@ Let's define paths:
 exit
 
 # To get files from slave to local, first rsync it to the master. From master:
-rsync -avP user@[slave ip]:[src] [dst1]
+rsync -aP user@[slave ip]:[src] [dst1]
 
 # Then from local, run:
-rsync -avP user@[master ip]:[dst1] [dst2]
+rsync -aP user@[master ip]:[dst1] [dst2]
 ```
 
 If you are working in master, then just do the last step
@@ -281,7 +281,7 @@ There are two kinds of feature importance that we can use: impurity-based (MDI) 
 - Based on training-data because it was constructed during tree building
 - Biased (makes a feature more important than it actually is) towards high-cardinality (many unique values) feature because trees naturally split on more unique values to reduce impurity
 
-Permutation importance solves all of these problem by measuring change in error on the test set when one feature (its rows in the dataset) is shuffled. How much error increase will tell how important that feature is. If error decrease, that feature should be eliminated.
+Permutation importance solves all of these problem by measuring change in error on the test set when one feature (its rows in the dataset) is shuffled. How much error increase will tell how important that feature is. If error decreases or barely increases, that feature should be eliminated.
 
 ## Developer notes
 
