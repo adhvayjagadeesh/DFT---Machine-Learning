@@ -4,3 +4,4 @@
 **/.DS_Store
 results
 **/*.egg-info
+src/data/c2db

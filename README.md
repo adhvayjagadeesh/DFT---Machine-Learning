@@ -83,6 +83,8 @@ rsync -aP user@[master ip]:[dst1] [dst2]
 
 If you are working in master, then just do the last step
 
+## Data aggregation
+
 ## Data exploration
 
 ### Feature distribution

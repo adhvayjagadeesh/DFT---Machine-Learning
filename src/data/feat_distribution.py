@@ -3,7 +3,7 @@ from itertools import chain
 
 import matplotlib.pyplot as plt
 
-from data.prepare import x, y
+from data.load import x, y
 
 parser = ArgumentParser(
   "python -m data.feat_distribution",
@@ -14,8 +14,9 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-# All numerical features + HSE06 band gap
-data = chain(x.drop(columns=["Magnetic"]).items(), y.to_frame().items())
+# All numerical features + target
+x.drop(columns=["Magnetic"], inplace=True)
+data = chain(x.items(), y.to_frame().items())
 
 # Plotting
 rows = 2

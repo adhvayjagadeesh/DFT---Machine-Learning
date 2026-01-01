@@ -4,7 +4,7 @@ from numpy import empty, empty_like, linspace
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import root_mean_squared_error
 
-from data.prepare import k, k_fold, x, y
+from data.load import k, k_fold, x, y
 from model.create import create_model
 from model.optimize import optmize_weights, tune
 

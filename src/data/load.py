@@ -33,11 +33,11 @@ df = read_csv(
 # Fill missing numerical values with the mean
 df.fillna(df.mean(numeric_only=True), inplace=True)
 
-# Features and target
+# Target and features
 y = df.pop("Band gap (HSE06) (eV)")
 x = df
 
-# Add indexing for features as a level 2 column name
+# Temporary indexing for features as a level
 x.columns = MultiIndex.from_arrays(
   [x.columns, [str(i) for i in range(1, len(x.columns) + 1)]]
 )
@@ -51,6 +51,12 @@ x.drop(
   level=0,  # Drop by level 1 (name)
   inplace=True,
 )
+
+# Collect remaining feature indices
+feat_indices = x.columns.get_level_values(1)
+
+# Drop the indexing level
+x.columns = x.columns.droplevel(1)
 
 # Default k-fold
 k = 4

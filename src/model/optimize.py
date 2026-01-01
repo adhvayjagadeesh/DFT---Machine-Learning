@@ -4,7 +4,7 @@ from sklearn.metrics import mean_squared_error
 from skopt import BayesSearchCV
 from skopt.space import Categorical, Integer, Real
 
-from data.prepare import k_fold, kf
+from data.load import k_fold, kf
 from model.create import Model
 
 
@@ -12,13 +12,13 @@ from model.create import Model
 def _get_hyperparams(model: Model):
   if model == Model.gbt:
     hyperparams = {
-      "n_estimators": Integer(200, 800),
+      "n_estimators": Integer(100, 500),
       "learning_rate": Real(1e-3, 0.2, prior="log-uniform"),
-      "max_depth": Integer(3, 10),
+      "max_depth": Integer(2, 5),
       "min_samples_split": Integer(2, 15),
       "min_samples_leaf": Integer(3, 10),
-      "subsample": Real(0.7, 1),
-      "max_features": Categorical([None, "sqrt", "log2"]),
+      "subsample": Real(0.5, 0.8),
+      "max_features": Categorical(["sqrt", "log2"]),
     }
   elif model == Model.hgbt:
     hyperparams = {
@@ -28,6 +28,7 @@ def _get_hyperparams(model: Model):
       "min_samples_leaf": Integer(10, 40),
       "l2_regularization": Real(1e-6, 1.0, prior="log-uniform"),
       "max_bins": Integer(127, 255),
+      "max_features": Real(0.5, 0.8),
     }
   elif model == Model.mlp:
     hyperparams = {
@@ -39,7 +40,7 @@ def _get_hyperparams(model: Model):
   elif model == Model.rf:
     hyperparams = {
       "n_estimators": Integer(100, 1000),
-      "max_depth": Integer(1, 75),
+      "max_depth": Integer(3, 75),
       "min_samples_split": Integer(2, 20),
       "min_samples_leaf": Integer(3, 10),
       "max_features": Categorical(["sqrt", "log2"]),
@@ -47,16 +48,15 @@ def _get_hyperparams(model: Model):
     }
   elif model == Model.xgb:
     hyperparams = {
-      "max_depth": Integer(1, 75),
+      "max_depth": Integer(3, 12),
       "min_child_weight": Integer(1, 8),
       "eta": Real(1e-2, 0.2, prior="log-uniform"),
-      "n_estimators": Integer(100, 800),
-      "subsample": Real(0.7, 1.0),
+      "n_estimators": Integer(100, 1000),
+      "subsample": Real(0.5, 1.0),
       "colsample_bytree": Real(0.6, 1.0),
       "reg_alpha": Real(1e-3, 2.0, prior="log-uniform"),
       "reg_lambda": Real(1e-3, 2.0, prior="log-uniform"),
       "gamma": Real(1e-3, 2.0, prior="log-uniform"),
-      "tree_method": Categorical(["hist", "approx"]),
     }
   elif model == Model.abdt:
     hyperparams = {
@@ -86,7 +86,7 @@ def _get_hyperparams(model: Model):
   elif model == Model.ets:
     hyperparams = {
       "n_estimators": Integer(100, 1000),
-      "max_depth": Integer(1, 75),
+      "max_depth": Integer(3, 75),
       "min_samples_split": Integer(2, 20),
       "min_samples_leaf": Integer(3, 10),
       "max_features": Categorical(["sqrt", "log2"]),

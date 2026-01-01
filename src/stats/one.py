@@ -11,7 +11,7 @@ from sklearn.metrics import (
   root_mean_squared_error,
 )
 
-from data.prepare import x, y
+from data.load import feat_indices, x, y
 from model.create import parse_name
 from model.impl import run_model
 
@@ -139,7 +139,7 @@ def run_visualize(name, save_loc):
     )
   )
   ax.bar(
-    x.columns.get_level_values(1),
+    feat_indices,
     mean_importances,
     yerr=abs_err_importances,
   )
