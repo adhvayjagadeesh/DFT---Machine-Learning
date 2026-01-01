@@ -13,28 +13,33 @@ def run_model(names, mode):
   model = create_model(names)
   y_pred = empty_like(y)
 
-  # Learning curve data
-  learning_curve = {"train_sizes": [], "cv_scores": [], "train_scores": []}
-
-  # Feature importance data (delta RMSE)
+  # Feature importance data (ΔRMSE)
   feat_importances = empty((k, x.shape[1]))
 
+  # Number of points on learning curve
+  n_points = 5
+
   # Fractions of data to use for learning curve
-  fracs = linspace(0.2, 1, 5)
+  fracs = linspace(0.2, 1, n_points)
   n_row_all = len(x)
   fit_time = 0
 
+  # Learning curve data
+  learning_curve = {
+    "train_sizes": empty(n_points),
+    "test_scores": empty((n_points, k)),
+    "train_scores": empty((n_points, k)),
+  }
+
   # Learning curve loop
-  for frac in fracs:
+  for i, frac in enumerate(fracs):
     n_row = int(n_row_all * frac)
-    rmse_train = 0
-    rmse_test = 0
 
     # Simple slicing to save memory, allowed because CSV is shuffled (x is sliced too in k_fold)
     y_slc = y[0:n_row]
 
     # CV loop
-    for i, (x_train, y_train, x_test, indices) in enumerate(
+    for j, (x_train, y_train, x_test, indices) in enumerate(
       k_fold(x[0:n_row], y_slc)
     ):
       start_ns = perf_counter_ns()
@@ -52,19 +57,23 @@ def run_model(names, mode):
       y_pred_f = model.predict(x_test)
       y_test = y_slc.iloc[indices]
 
+      # Add learning curve data
+      learning_curve["test_scores"][i][j] = root_mean_squared_error(
+        y_test, y_pred_f
+      )
+      learning_curve["train_scores"][i][j] = root_mean_squared_error(
+        y_train, model.predict(x_train)
+      )
+
       # Save to y_pred and get feature importance only for 100%-data run
       if frac == 1:
         y_pred[indices] = y_pred_f
-        feat_importances[i] = permutation_importance(
+        feat_importances[j] = permutation_importance(
           model, x_test, y_test, scoring="neg_root_mean_squared_error"
         ).importances_mean
-      rmse_test += root_mean_squared_error(y_test, y_pred_f)
-      rmse_train += root_mean_squared_error(y_train, model.predict(x_train))
 
-    # Approximate training set size so we don't have to modify k_fold (KFold tries to balance folds as perfectly as possible already)
-    learning_curve["train_sizes"].append(n_row * (1 - 1 / k))
-    learning_curve["train_scores"].append(rmse_train / k)
-    learning_curve["cv_scores"].append(rmse_test / k)
+    # Approximate training set size so we don't touch k_fold (KFold tries to balance folds as perfectly as possible already)
+    learning_curve["train_sizes"][i] = n_row * (1 - 1 / k)
 
   # Convert fit time to seconds and average it across folds
   fit_time /= 10**9 * k

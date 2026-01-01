@@ -9,6 +9,7 @@ dependencies = [
   "scikit-optimize",
   "matplotlib",
   "xgboost",
+  "pyarrow"
 ]
 requires-python = ">=3.8.10" # Because ASDRP server have 3.8.10
 readme = "README.md"

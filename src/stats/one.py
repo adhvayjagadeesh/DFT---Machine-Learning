@@ -10,6 +10,7 @@ from sklearn.metrics import (
   r2_score,
   root_mean_squared_error,
 )
+from sklearn.model_selection import LearningCurveDisplay
 
 from data.load import feat_indices, x, y
 from model.create import parse_name
@@ -67,7 +68,7 @@ def run_visualize(name, save_loc):
 
   # Plot 2: Predicted vs actual
   ax = axes[0][1]
-  ax.scatter(y, y_pred, color="purple", alpha=0.7, label="Prediction")
+  ax.scatter(y, y_pred, label="Prediction", alpha=0.5, color="purple")
   ax.plot(
     [y.min(), y.max()],
     [y.min(), y.max()],
@@ -83,7 +84,7 @@ def run_visualize(name, save_loc):
   # Plot 3: Error distribution
   errors = y_pred - y
   ax = axes[0][2]
-  ax.hist(errors, bins=50, color="teal", alpha=0.7, edgecolor="black")
+  ax.hist(errors, bins=40, color="turquoise", edgecolor="black")
   ax.set_xlabel("Prediction Error (eV)")
   ax.set_ylabel("Frequency")
   ax.set_title("Prediction error distribution")
@@ -113,18 +114,11 @@ def run_visualize(name, save_loc):
 
   # Plot 5: Learning curve
   ax = axes[1][1]
-  ax.plot(
-    learning_curve["train_sizes"],
-    learning_curve["train_scores"],
-    "o-",
-    learning_curve["train_sizes"],
-    learning_curve["cv_scores"],
-    "o-",
+  LearningCurveDisplay(**learning_curve, score_name="RMSE (eV)").plot(
+    ax, line_kw={"marker": "o"}
   )
-  ax.set_xlabel("Sample size")
-  ax.set_ylabel("RMSE (eV)")
   ax.set_title("Learning curve")
-  ax.legend(labels=["Train", "Test"])
+  ax.set_xlabel("Training set size")
   ax.grid(True)
 
   # Plot 6: Permutation feature importance

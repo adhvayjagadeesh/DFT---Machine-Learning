@@ -37,8 +37,8 @@ source .venv/bin/activate
 # Activate venv (Windows)
 .venv\Scripts\activate
 
-# Install dependencies
-pip install -e .
+# Install or update dependencies
+pip install -Ue .
 ```
 
 ### Run code asynchronously
