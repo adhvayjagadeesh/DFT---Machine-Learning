@@ -24,7 +24,7 @@ def run_model(names, mode):
   n_row_all = len(x)
   fit_time = 0
 
-  # Learning curve data
+  # Learning curve args for LearningCurveDisplay
   learning_curve = {
     "train_sizes": empty(n_points),
     "test_scores": empty((n_points, k)),

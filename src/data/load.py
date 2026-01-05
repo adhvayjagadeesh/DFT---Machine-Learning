@@ -30,9 +30,6 @@ df = read_csv(
   engine="c",
 )
 
-# Fill missing numerical values with the mean
-df.fillna(df.mean(numeric_only=True), inplace=True)
-
 # Target and features
 y = df.pop("Band gap (HSE06) (eV)")
 x = df

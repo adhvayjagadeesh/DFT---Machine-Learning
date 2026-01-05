@@ -17,9 +17,21 @@ from model.create import parse_name
 from model.impl import run_model
 
 backend = get_backend()
+
+# Increase default font size by a bit
 rcParams["font.size"] = 11
 
+metric_names = (
+  "R²",
+  "Adjusted R²",
+  "MAE",
+  "RMSE",
+  "Spearman",
+  "Fit time",
+)
 
+
+# We want this file to run as a program on its own AND be runnable by stats.many also
 def run_visualize(name, save_loc):
   y_pred, fit_time, learning_curve, feat_importances = run_model(
     *parse_name(name)
@@ -42,14 +54,6 @@ def run_visualize(name, save_loc):
 
   # "Plot" 1: Performance summary
   ax = axes[0][0]
-  metric_names = (
-    "R²",
-    "Adjusted R²",
-    "MAE",
-    "RMSE",
-    "Spearman",
-    "Fit time",
-  )
   metrics = (
     f"{r2:.4f}",
     f"{adj_r2:.4f}",
