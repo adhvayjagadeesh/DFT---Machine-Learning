@@ -12,7 +12,7 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import LearningCurveDisplay
 
-from data.load import feat_indices, x, y
+from data.load import x, y
 from model.create import parse_name
 from model.impl import run_model
 
@@ -137,7 +137,7 @@ def run_visualize(name, save_loc):
     )
   )
   ax.bar(
-    feat_indices,
+    range(1, n_feat),
     mean_importances,
     yerr=abs_err_importances,
   )

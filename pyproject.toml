@@ -1,6 +1,6 @@
 [project]
 name = "dftml"
-description = "Benchmarking ML models for predicting band gap of 2D material without CBM & VBM"
+description = "Benchmarking ML models for predicting band gap of 2D material from formula only"
 version = "67"
 dependencies = [
   "pandas",
@@ -9,7 +9,8 @@ dependencies = [
   "scikit-optimize",
   "matplotlib",
   "xgboost",
-  "pyarrow"
+  "pyarrow",
+  "ase"
 ]
 requires-python = ">=3.8.10" # Because ASDRP server have 3.8.10
 readme = "README.md"

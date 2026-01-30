@@ -14,8 +14,7 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-# All numerical features + target
-x.drop(columns=["Magnetic"], inplace=True)
+# All features and target
 data = chain(x.items(), y.to_frame().items())
 
 # Plotting

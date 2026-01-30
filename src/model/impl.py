@@ -8,21 +8,19 @@ from data.load import k, k_fold, x, y
 from model.create import create_model
 from model.optimize import optmize_weights, tune
 
+n_row_all = len(x)
+
 
 def run_model(names, mode):
   model = create_model(names)
   y_pred = empty_like(y)
+  fit_time = 0
 
   # Feature importance data (ΔRMSE)
   feat_importances = empty((k, x.shape[1]))
 
   # Number of points on learning curve
   n_points = 5
-
-  # Fractions of data to use for learning curve
-  fracs = linspace(0.2, 1, n_points)
-  n_row_all = len(x)
-  fit_time = 0
 
   # Learning curve args for LearningCurveDisplay
   learning_curve = {
@@ -32,7 +30,7 @@ def run_model(names, mode):
   }
 
   # Learning curve loop
-  for i, frac in enumerate(fracs):
+  for i, frac in enumerate(linspace(0.2, 1, n_points)):
     n_row = int(n_row_all * frac)
 
     # Simple slicing to save memory, allowed because CSV is shuffled (x is sliced too in k_fold)

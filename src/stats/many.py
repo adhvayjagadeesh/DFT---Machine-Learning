@@ -8,23 +8,22 @@ from stats.one import metric_names, run_visualize
 
 parser = ArgumentParser(
   "python -m stats.many",
-  description="CSV with metrics (in a CSV) and visual for many models",
+  description="CSV with metrics and visual for many models",
 )
-parser.add_argument("res_dir", help="Result directory")
-parser.add_argument("names", nargs="+")
+parser.add_argument("output", help="Output directory")
+parser.add_argument("names", nargs="+", help="Model names to run")
 args = parser.parse_args()
-
-res_dir = args.res_dir
-rmtree(res_dir, True)
-makedirs(res_dir)
-with open(join(res_dir, "result.csv"), "w", newline="") as res_csv:
+output = args.output
+rmtree(output, True)
+makedirs(output)
+with open(join(output, "result.csv"), "w", newline="") as res_csv:
   writer = csv_writer(res_csv)
   writer.writerow(metric_names)
   n_to_run = len(args.names)
   for i, name in enumerate(args.names, 1):
     print(f"Running {name} ({i}/{n_to_run})")
     try:
-      writer.writerow(run_visualize(name, res_dir))
+      writer.writerow(run_visualize(name, output))
       res_csv.flush()
     except Exception as e:
       print(e)

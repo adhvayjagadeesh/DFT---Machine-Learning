@@ -1,6 +1,6 @@
 # DFT---Machine-Learning
 
-Benchmarking ML models for predicting band gap of 2D material without CBM & VBM
+ML models for predicting band gap of 2D material from elemental properties
 
 ## Setup
 
@@ -118,7 +118,7 @@ options:
 ## Running model
 
 <details>
-<summary>Random state is fixed to seed 67 for reproducibility, put RANDOM=67 before run models to run with random_state = None</summary>
+<summary>Random state is fixed to seed 67 for reproducibility, put RANDOM=1 before run models to run with random_state = None</summary>
 
 ```
 
