@@ -1,22 +1,14 @@
-from os import environ
-
-from numpy.random import seed
 from pandas import read_parquet
 from sklearn.model_selection import KFold
 
-if "RANDOM" not in environ:
-  # Fixed random seed for reproducibility, NOT A HYPERPARAM
-  seed(67)  # SIX SEVEN
+import seeder
 
 # Read C2DB
-df = read_parquet(
-  "data/c2db.parquet",
-  engine="pyarrow",
-)
+df = read_parquet("data/c2db.parquet")
 
-# Target and features
-y = df.pop("HSE06 band gap (eV)")
-x = df
+# Features and target views
+x = df.iloc[:, 1:]
+y = df.iloc[:, 0]
 
 # Default k-fold
 k = 4

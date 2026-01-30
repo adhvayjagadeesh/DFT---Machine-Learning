@@ -85,6 +85,22 @@ If you are working in master, then just do the last step
 
 ## Data aggregation
 
+Aggregate a database into a parquet, and store them in `data`. The first column is the target variable and the rest are features
+
+### C2DB
+
+```
+usage: python -m data.aggregate_c2db [-h] db
+
+Aggregate and preprocess raw C2DB data
+
+positional arguments:
+  db          C2DB ASE database file
+
+options:
+  -h, --help  show this help message and exit
+```
+
 ## Data exploration
 
 ### Feature distribution
@@ -101,7 +117,7 @@ options:
   -s, --save SAVE  Save the figure(s) instead of showing it
 ```
 
-### Feature correlation (TBD)
+### Feature correlation
 
 A heatmap of spearman correlation between numerical features
 
@@ -121,7 +137,6 @@ options:
 <summary>Random state is fixed to seed 67 for reproducibility, put RANDOM=1 before run models to run with random_state = None</summary>
 
 ```
-
                     ⢀⣀⡤⠤⠖⠒⠒⠒⠒⠦⠖⠒⠒⠒⠒⠦⠤⣄⡀
                 ⢀⣠⠴⠊⠉     ⣀           ⢈⠙⠦⣄
               ⢀⡴⠋  ⢠⢀⡄  ⢠ ⣇ ⢦  ⠸⡄     ⠈⠲⠄⠈⠓⢄
@@ -223,7 +238,7 @@ options:
   -s, --save SAVE  Save the figure instead of showing it
 ```
 
-## Many models
+### Many models
 
 ```
 usage: python -m stats.many [-h] res_dir names [names ...]
@@ -287,6 +302,7 @@ Permutation importance solves all of these problem by measuring change in error 
 
 ## Developer notes
 
+- Any file that depends on a random process must import `seeder` to ensure reproducibility.
 - To generate correct help messages, program names for Argparse should follow `python -m [module name]` such as `python -m data.feat_correlation`
 - `VotingRegressor`'s weights can be reset with `set_params` without refitting (see test.py)
 - We are only reporting performance of model types, not creating a super good model, so use k-fold for base performance

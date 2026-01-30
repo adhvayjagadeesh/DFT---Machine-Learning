@@ -1,9 +1,11 @@
 from argparse import ArgumentParser
 
-import pandas as pd
 from ase.db import connect
 from numpy import empty
+from pandas import DataFrame
 from pymatgen.core import Composition
+
+import seeder
 
 parser = ArgumentParser(
   "python -m data.aggregate_c2db",
@@ -27,8 +29,6 @@ for i, row in enumerate(
   comp = Composition(row.formula)
   arr[i] = (row.gap_hse, comp.average_electroneg)
 
-df = pd.DataFrame(
-  arr, columns=("HSE06 band gap (eV)", "Average electronegativity")
-)
-
-df.to_parquet("data/c2db.parquet")
+df = DataFrame(arr, columns=("HSE06 Band gap (eV)", "Mean electronegativity"))
+df = df.sample(frac=1).reset_index(drop=True)
+df.to_parquet("data/c2db.parquet", compression="zstd")

@@ -1,9 +1,8 @@
 from argparse import ArgumentParser
-from itertools import chain
 
 import matplotlib.pyplot as plt
 
-from data.load import x, y
+from data.load import df
 
 parser = ArgumentParser(
   "python -m data.feat_distribution",
@@ -13,9 +12,6 @@ parser.add_argument(
   "-s", "--save", help="Save the figure(s) instead of showing it"
 )
 args = parser.parse_args()
-
-# All features and target
-data = chain(x.items(), y.to_frame().items())
 
 # Plotting
 rows = 2
@@ -37,7 +33,7 @@ def save_or_show(page):
 
 
 i = 0
-for i, (name, vals) in enumerate(data):
+for i, (name, vals) in enumerate(df.items()):
   if i > 0 and i % n == 0:
     save_or_show(i // n)
 
