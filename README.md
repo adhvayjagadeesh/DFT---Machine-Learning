@@ -37,13 +37,17 @@ source .venv/bin/activate
 # Activate venv (Windows)
 .venv\Scripts\activate
 
-# Install dependencies and project in editable mode
-pip install -Ue .
+# Install core packages and project in editable mode
+pip install -e .
 ```
 
 ### Upgrade packages
 
-```
+```bash
+# Install dev packages (1st time only)
+pip install -e .[dev]
+
+# Auto upgrade packages
 pip-review --auto
 ```
 
@@ -91,14 +95,14 @@ If you are working in master, then just do the last step
 
 ## Data aggregation
 
-Aggregate a database into a parquet, and store them in `data`. The first column is the target variable and the rest are features
+Aggregate a database into a parquet, and store them in the data folder. The first column is the target variable and the rest are features
 
 ### C2DB
 
 ```
 usage: python -m data.aggregate_c2db [-h] db
 
-Aggregate and preprocess raw C2DB data
+Aggregate raw C2DB data
 
 positional arguments:
   db          C2DB ASE database file
@@ -114,7 +118,7 @@ options:
 Histogram and box plot for all numerical features
 
 ```
-usage: python -m data.feat_distribution [-h] [-s SAVE]
+usage: python -m data.feat_dist [-h] [-s SAVE]
 
 Show how numerical features are distributed
 
@@ -128,7 +132,7 @@ options:
 A heatmap of spearman correlation between numerical features
 
 ```
-usage: python -m data.feat_correlation [-h] [-s SAVE]
+usage: python -m data.feat_correl [-h] [-s SAVE]
 
 Show how numerical features are correlated
 

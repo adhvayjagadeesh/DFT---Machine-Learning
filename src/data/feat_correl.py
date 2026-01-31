@@ -6,7 +6,7 @@ from numpy import tril
 from data.load import df
 
 parser = ArgumentParser(
-  "python -m data.feat_correlation",
+  "python -m data.feat_correl",
   description="Show how numerical features are correlated",
 )
 parser.add_argument(

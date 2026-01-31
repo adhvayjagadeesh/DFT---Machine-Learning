@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from data.load import df
 
 parser = ArgumentParser(
-  "python -m data.feat_distribution",
+  "python -m data.feat_dist",
   description="Show how numerical features are distributed",
 )
 parser.add_argument(

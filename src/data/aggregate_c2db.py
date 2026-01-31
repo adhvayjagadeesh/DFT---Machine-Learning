@@ -9,7 +9,7 @@ import seeder
 
 parser = ArgumentParser(
   "python -m data.aggregate_c2db",
-  description="Aggregate and preprocess raw C2DB data",
+  description="Aggregate raw C2DB data",
 )
 
 parser.add_argument("db", help="C2DB ASE database file")

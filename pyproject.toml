@@ -2,6 +2,9 @@
 name = "dftml"
 description = "Benchmarking ML models for predicting band gap of 2D material from formula only"
 version = "67"
+requires-python = ">=3.8.10" # Because ASDRP server have 3.8.10
+readme = "README.md"
+
 dependencies = [
   "pandas",
   "numpy",
@@ -12,12 +15,11 @@ dependencies = [
   "pyarrow",
   "ase"
 ]
+
 [project.optional-dependencies]
 dev = [
   "pip-review"
 ]
-requires-python = ">=3.8.10" # Because ASDRP server have 3.8.10
-readme = "README.md"
 
 [tool.ruff]
 indent-width = 2
