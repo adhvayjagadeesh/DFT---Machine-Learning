@@ -18,7 +18,14 @@ args = parser.parse_args()
 con = connect(args.db)
 
 n = con.count("gap_hse,bravais_search!=Hexagonal,bravais_search!=Oblique")
-arr = empty((n, 3))
+cols = (
+  "HSE06 Band gap (eV)",
+  "Mean electronegativity",
+  "Atomic mass (amu)",
+  "Atom count",
+  "Electron count",
+)
+arr = empty((n, len(cols)))
 
 for i, row in enumerate(
   con.select(
@@ -27,15 +34,17 @@ for i, row in enumerate(
   )
 ):
   comp = Composition(row.formula)
-  arr[i] = (row.gap_hse, comp.average_electroneg, comp.weight)
+  arr[i] = (
+    row.gap_hse,
+    comp.average_electroneg,
+    comp.weight,
+    comp.num_atoms,
+    comp.total_electrons,
+  )
 
 df = DataFrame(
   arr,
-  columns=(
-    "HSE06 Band gap (eV)",
-    "Mean electronegativity",
-    "Atomic mass (amu)",
-  ),
+  columns=cols,
 ).sample(frac=1)
 df.reset_index(drop=True, inplace=True)
 df.to_parquet("data/c2db.parquet", compression="zstd")

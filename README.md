@@ -224,16 +224,12 @@ An SVG with:
 - Learning curve
 - Permutation feature importance bar graph with error bars.
 
-| Feature # | Name                                           |
-| --------- | ---------------------------------------------- |
-| 1         | Energy above hull (eV/atom)                    |
-| 2         | Heat of formation (eV/atom)                    |
-| 3         | Magnetic                                       |
-| 4         | Fermi level wrt. vacuum (PBE) (eV)             |
-| 5         | Energy (eV)                                    |
-| 6         | Magnetic anisotropy energy, xz (meV/unit cell) |
-| 7         | Magnetic anisotropy energy, yz (meV/unit cell) |
-| 8         | Vacuum level (eV)                              |
+| Feature # | Name                   |
+| --------- | ---------------------- |
+| 1         | Mean electronegativity |
+| 2         | Atomic mass (amu)      |
+| 3         | Atom count             |
+| 4         | Electron count         |
 
 ```
 usage: python -m stats.one [-h] [-s SAVE] name

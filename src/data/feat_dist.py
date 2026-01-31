@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 
 from data.load import df
+from stats.save_fig import save_fig
 
 parser = ArgumentParser(
   "python -m data.feat_dist",
@@ -24,10 +25,7 @@ box_height = 0.175
 
 def save_or_show(page):
   plt.tight_layout()
-  if args.save:
-    plt.savefig(f"{args.save}/{page}.svg")
-  else:
-    plt.show()
+  save_fig(args.save, f"feat_correl_{page}", plt)
   global fig, axes
   fig, axes = plt.subplots(rows, cols, figsize=(cols * 5.5, rows * 4))
 

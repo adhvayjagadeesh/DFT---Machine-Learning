@@ -2,7 +2,6 @@ from argparse import ArgumentParser
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import get_backend, rcParams
 from scipy.stats import spearmanr
 from sklearn.metrics import (
   auc,
@@ -15,11 +14,7 @@ from sklearn.model_selection import LearningCurveDisplay
 from data.load import x, y
 from model.create import parse_name
 from model.impl import run_model
-
-backend = get_backend()
-
-# Increase default font size by a bit
-rcParams["font.size"] = 11
+from stats.save_fig import save_fig
 
 metric_names = (
   "R²",
@@ -49,29 +44,11 @@ def run_visualize(name, save_loc):
 
   # Setup plots
   rows = 2
-  cols = 3
+  cols = 2
   _, axes = plt.subplots(rows, cols, figsize=(cols * 4, rows * 4))
 
-  # "Plot" 1: Performance summary
+  # Plot 1: Predicted vs actual
   ax = axes[0][0]
-  metrics = (
-    f"{r2:.4f}",
-    f"{adj_r2:.4f}",
-    f"{mae:.4f} eV",
-    f"{rmse:.4f} eV",
-    f"{spearman:.4f}",
-    fit_time,
-  )
-  tbl = ax.table([*zip(metric_names, metrics)], loc="center", cellLoc="left")
-  tbl.scale(1, 2)
-  for _, cell in tbl.get_celld().items():
-    cell.set_linewidth(0.4)
-  ax.axis("off")
-  ax.axis("tight")
-  ax.set_title(f"{name} summary")
-
-  # Plot 2: Predicted vs actual
-  ax = axes[0][1]
   ax.scatter(y, y_pred, label="Prediction", alpha=0.5, color="purple")
   ax.plot(
     [y.min(), y.max()],
@@ -85,17 +62,8 @@ def run_visualize(name, save_loc):
   ax.legend()
   ax.grid(True)
 
-  # Plot 3: Error distribution
-  errors = y_pred - y
-  ax = axes[0][2]
-  ax.hist(errors, bins=40, color="turquoise", edgecolor="black")
-  ax.set_xlabel("Prediction Error (eV)")
-  ax.set_ylabel("Frequency")
-  ax.set_title("Prediction error distribution")
-  ax.grid(True)
-
-  # Plot 4: REC curve
-  abs_errors = np.abs(errors)
+  # Plot 2: REC curve
+  abs_errors = np.abs(y_pred - y)
   n_steps = 100
 
   # y-axis ends at 2eV for now
@@ -104,7 +72,7 @@ def run_visualize(name, save_loc):
     np.mean(abs_errors <= tolerance * abs_errors.max())
     for tolerance in tolerances
   ]
-  ax = axes[1][0]
+  ax = axes[0][1]
   ax.plot(
     tolerances,
     accuracies,
@@ -116,8 +84,8 @@ def run_visualize(name, save_loc):
   ax.legend()
   ax.grid(True)
 
-  # Plot 5: Learning curve
-  ax = axes[1][1]
+  # Plot 3: Learning curve
+  ax = axes[1][0]
   LearningCurveDisplay(**learning_curve, score_name="RMSE (eV)").plot(
     ax, line_kw={"marker": "o"}
   )
@@ -125,8 +93,8 @@ def run_visualize(name, save_loc):
   ax.set_xlabel("Training set size")
   ax.grid(True)
 
-  # Plot 6: Permutation feature importance
-  ax = axes[1][2]
+  # Plot 4: Permutation feature importance
+  ax = axes[1][1]
   mean_importances = np.mean(feat_importances, 0)
   abs_err_importances = np.abs(
     np.stack(
@@ -137,7 +105,7 @@ def run_visualize(name, save_loc):
     )
   )
   ax.bar(
-    range(1, n_feat),
+    [str(i) for i in range(1, n_feat + 1)],
     mean_importances,
     yerr=abs_err_importances,
   )
@@ -147,21 +115,16 @@ def run_visualize(name, save_loc):
   ax.grid(axis="y")
 
   plt.tight_layout()
-  if save_loc:
-    plt.savefig(f"{save_loc}/{name}.svg")
-  elif backend != "agg":
-    plt.show()
-  else:
-    # Failsafe for "UserWarning: FigureCanvasAgg is non-interactive, and thus cannot
-    # be shown" to prevent forgetting graphics backend and losing 67 hours of progress.
-    print(
-      "IMMEDIATELY install and set the Matplotlib interactive backend .\n",
-      "I hereby rescue you this time and this time only. INSTALL IT NOW.\n",
-      f"Figured saved as {name}.svg",
-    )
-    plt.savefig(f"./{name}.svg")
-
-  return name, *metrics
+  save_fig(save_loc, name, plt)
+  return (
+    name,
+    f"{r2:.4f}",
+    f"{adj_r2:.4f}",
+    f"{mae:.4f} eV",
+    f"{rmse:.4f} eV",
+    f"{spearman:.4f}",
+    fit_time,
+  )
 
 
 # If ran from the CLI (not by stats.multiple)

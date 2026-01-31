@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from numpy import tril
 
 from data.load import df
+from stats.save_fig import save_fig
 
 parser = ArgumentParser(
   "python -m data.feat_correl",
@@ -46,4 +47,4 @@ ax.set_yticks(var_range, var_names)
 ax.spines[:].set_visible(False)
 
 plt.tight_layout()
-plt.show()
+save_fig(args.save, "feat_correl", plt)
