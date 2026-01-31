@@ -12,6 +12,10 @@ dependencies = [
   "pyarrow",
   "ase"
 ]
+[project.optional-dependencies]
+dev = [
+  "pip-review"
+]
 requires-python = ">=3.8.10" # Because ASDRP server have 3.8.10
 readme = "README.md"
 

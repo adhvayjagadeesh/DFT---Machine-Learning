@@ -1,11 +1,9 @@
 from argparse import ArgumentParser
-from itertools import chain
 
 import matplotlib.pyplot as plt
-import numpy as np
-from scipy.stats import spearmanr
+from numpy import tril
 
-from data.load import x, y
+from data.load import df
 
 parser = ArgumentParser(
   "python -m data.feat_correlation",
@@ -15,22 +13,37 @@ parser.add_argument(
   "-s", "--save", help="Save the figure(s) instead of showing it"
 )
 args = parser.parse_args()
+correls = df.corr("spearman")
+var_names = list(correls.columns)
+correls = tril(correls.values, k=-1)
+var_range = range(len(correls))
 
-# All numerical features + target
-x.drop(columns=["Magnetic"], inplace=True)
-data = chain(x.items(), y.to_frame().items())
 
+fig, ax = plt.subplots()
 
-# 2. Create a mask for the upper triangle
-# np.triu generates a matrix with ones in the upper triangle and zeros elsewhere
-mask = np.triu(np.ones_like(data, dtype=bool))
+# Add correlation strength for nonzero correlations
+for i in var_range:
+  for j in var_range:
+    correl = correls[i][j]
+    if not correl == 0:
+      ax.text(j, i, f"{correl:.4f}", ha="center", va="center")
 
-# 3. Apply the mask to the data (set masked values to NaN or some other indicator)
-# Matplotlib's imshow handles masked arrays by leaving masked areas white/transparent
-masked_data = np.ma.masked_where(mask, data)
+# Choose a colormap that's white for 0
+im = ax.imshow(correls, cmap="bwr", vmin=-1, vmax=1)
 
-# 4. Plot using imshow
-plt.imshow(masked_data, cmap="viridis", interpolation="nearest")
-plt.colorbar(label="Value")
-plt.title("Half Heatmap with Matplotlib imshow")
+# Color bar to indicate correlation strength
+cbar = ax.figure.colorbar(im, ax=ax)
+cbar.ax.set_ylabel("Spearman correlation", rotation=-90, va="bottom")
+
+ax.set_title("Feature correlation heatmap")
+
+# Rotate to save vertical space and make reading easier
+ax.set_xticks(
+  var_range, var_names, rotation=45, rotation_mode="anchor", ha="right"
+)
+
+ax.set_yticks(var_range, var_names)
+ax.spines[:].set_visible(False)
+
+plt.tight_layout()
 plt.show()

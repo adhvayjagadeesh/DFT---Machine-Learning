@@ -37,8 +37,14 @@ source .venv/bin/activate
 # Activate venv (Windows)
 .venv\Scripts\activate
 
-# Install or update dependencies
+# Install dependencies and project in editable mode
 pip install -Ue .
+```
+
+### Upgrade packages
+
+```
+pip-review --auto
 ```
 
 ### Run code asynchronously

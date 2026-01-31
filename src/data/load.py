@@ -3,7 +3,6 @@ from sklearn.model_selection import KFold
 
 import seeder
 
-# Read C2DB
 df = read_parquet("data/c2db.parquet")
 
 # Features and target views
@@ -11,7 +10,7 @@ x = df.iloc[:, 1:]
 y = df.iloc[:, 0]
 
 # Default k-fold
-k = 4
+k = 5
 kf = KFold(n_splits=k)
 
 
