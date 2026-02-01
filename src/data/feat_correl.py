@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 
 import matplotlib.pyplot as plt
-from numpy import tril
+from numpy import array, tril
 
 from data.load import df
 from stats.save_fig import save_fig
@@ -15,8 +15,8 @@ parser.add_argument(
 )
 args = parser.parse_args()
 correls = df.corr("spearman")
-var_names = list(correls.columns)
-correls = tril(correls.values, k=-1)
+vars = array(correls.columns)
+correls = tril(correls.values[1:, :-1])
 var_range = range(len(correls))
 
 
@@ -40,10 +40,10 @@ ax.set_title("Feature correlation heatmap")
 
 # Rotate to save vertical space and make reading easier
 ax.set_xticks(
-  var_range, var_names, rotation=45, rotation_mode="anchor", ha="right"
+  var_range, vars[:-1], rotation=45, rotation_mode="anchor", ha="right"
 )
 
-ax.set_yticks(var_range, var_names)
+ax.set_yticks(var_range, vars[1:])
 ax.spines[:].set_visible(False)
 
 plt.tight_layout()

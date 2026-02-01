@@ -25,7 +25,7 @@ box_height = 0.175
 
 def save_or_show(page):
   plt.tight_layout()
-  save_fig(args.save, f"feat_correl_{page}", plt)
+  save_fig(args.save, f"feat_dist_{page}", plt)
   global fig, axes
   fig, axes = plt.subplots(rows, cols, figsize=(cols * 5.5, rows * 4))
 

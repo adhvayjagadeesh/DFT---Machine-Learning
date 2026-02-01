@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 
 from ase.db import connect
 from numpy import empty
+from numpy.random import shuffle
 from pandas import DataFrame
 from pymatgen.core import Composition
 
@@ -23,7 +24,6 @@ cols = (
   "Mean electronegativity",
   "Atomic mass (amu)",
   "Atom count",
-  "Electron count",
 )
 arr = empty((n, len(cols)))
 
@@ -39,12 +39,9 @@ for i, row in enumerate(
     comp.average_electroneg,
     comp.weight,
     comp.num_atoms,
-    comp.total_electrons,
   )
-
-df = DataFrame(
+shuffle(arr)
+DataFrame(
   arr,
   columns=cols,
-).sample(frac=1)
-df.reset_index(drop=True, inplace=True)
-df.to_parquet("data/c2db.parquet", compression="zstd")
+).to_parquet("data/c2db.parquet", compression="zstd")

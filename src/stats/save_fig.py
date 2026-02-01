@@ -5,7 +5,7 @@ backend = get_backend()
 
 def save_fig(save_loc, name, fig):
   if save_loc:
-    fig.savefig(f"{save_loc}/{name}.pgf")
+    fig.savefig(f"{save_loc}/{name}.pgf", bbox_inches="tight")
   elif backend != "agg":
     fig.show()
   else:
@@ -16,4 +16,4 @@ def save_fig(save_loc, name, fig):
       "I hereby rescue you this time and this time only. INSTALL IT NOW.\n",
       f"Figured saved as {name}.pgf",
     )
-    fig.savefig(f"./{name}.pgf")
+    fig.savefig(f"./{name}.pgf", bbox_inches="tight")
