@@ -10,7 +10,7 @@ parser = ArgumentParser(
   description="Show how numerical features are distributed",
 )
 parser.add_argument(
-  "-s", "--save", help="Save the figure(s) instead of showing it"
+  "-o", "--output", help="Folder to save output instead of showing it"
 )
 args = parser.parse_args()
 
@@ -25,7 +25,7 @@ box_height = 0.175
 
 def save_or_show(page):
   plt.tight_layout()
-  save_fig(args.save, f"feat_dist_{page}", plt)
+  save_fig(args.output, f"feat_dist_{page}", plt)
   global fig, axes
   fig, axes = plt.subplots(rows, cols, figsize=(cols * 5.5, rows * 4))
 

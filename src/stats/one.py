@@ -28,13 +28,14 @@ metric_names = (
 
 
 # We want this file to run as a program on its own AND be runnable by stats.many also
-def run_visualize(name, save_loc):
+def run_visualize(name, output):
   y_pred, fit_time, learning_curve, feat_importances = run_model(
     *parse_name(name)
   )
 
   n = len(y)
-  n_feat = x.shape[1]
+  feats = list(x.columns)
+  n_feat = len(feats)
 
   # Metrics
   r2 = r2_score(y, y_pred)
@@ -95,6 +96,8 @@ def run_visualize(name, save_loc):
   ax.grid(True)
 
   # Plot 4: Permutation feature importance
+  feat_range = range(n_feat)
+
   ax = axes[1][1]
   mean_importances = np.mean(feat_importances, 0)
   abs_err_importances = np.abs(
@@ -106,17 +109,19 @@ def run_visualize(name, save_loc):
     )
   )
   ax.bar(
-    [str(i) for i in range(1, n_feat + 1)],
+    feat_range,
     mean_importances,
     yerr=abs_err_importances,
   )
-  ax.set_xlabel("Feature #")
+  ax.set_xticks(
+    feat_range, feats, rotation=30, rotation_mode="anchor", ha="right"
+  )
   ax.set_ylabel("ΔRMSE (eV)")
   ax.set_title("Permutation feature importance")
   ax.grid(axis="y")
 
   plt.tight_layout()
-  save_fig(save_loc, name, plt)
+  save_fig(output, name, plt)
   return (
     name,
     f"{r2:.4f}",
@@ -131,13 +136,13 @@ def run_visualize(name, save_loc):
 # If ran from the CLI (not by stats.multiple)
 if __name__ == "__main__":
   parser = ArgumentParser(
-    "python -m stats.one", description="Visualization and stats for a model"
+    "python -m stats.one", description="Visual () and metric for 1 model"
   )
   parser.add_argument("name")
   parser.add_argument(
-    "-s", "--save", help="Save the figure instead of showing it"
+    "-o", "--output", help="Folder to save output instead of showing it"
   )
   args = parser.parse_args()
-  save_loc = args.save
+  output = args.output
   name = args.name
-  save_tbl(save_loc, name, [run_visualize(name, save_loc)], metric_names)
+  save_tbl(output, name, [run_visualize(name, output)], metric_names)

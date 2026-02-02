@@ -38,7 +38,9 @@ for i, row in enumerate(con.select(query, include_data=False)):
     comp.num_atoms,
   )
 
+# Remove any ordering C2DB might have
 shuffle(arr)
+
 DataFrame(
   arr,
   columns=cols,

@@ -5,9 +5,9 @@ backend = get_backend()
 
 
 # Save or show figure
-def save_fig(save_loc, name, fig):
-  if save_loc:
-    fig.savefig(f"{save_loc}/{name}.pgf", bbox_inches="tight")
+def save_fig(output, name, fig):
+  if output:
+    fig.savefig(f"{output}/{name}.pgf", bbox_inches="tight")
   elif backend != "agg":
     fig.show()
   else:
@@ -22,12 +22,12 @@ def save_fig(save_loc, name, fig):
 
 
 # Save or print table
-def save_tbl(save_loc, name, data, headers):
+def save_tbl(output, name, data, headers):
   tbl = tabulate(
-    data, headers=headers, tablefmt="latex" if save_loc else "simple"
+    data, headers=headers, tablefmt="latex" if output else "simple"
   )
-  if save_loc:
-    with open(f"{save_loc}/{name}.tex", "w") as f:
+  if output:
+    with open(f"{output}/{name}.tex", "w") as f:
       f.write(tbl)
   else:
     print(tbl)
