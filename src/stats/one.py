@@ -14,13 +14,14 @@ from sklearn.model_selection import LearningCurveDisplay
 from data.load import x, y
 from model.create import parse_name
 from model.impl import run_model
-from stats.save_fig import save_fig
+from stats.save import save_fig, save_tbl
 
 metric_names = (
+  "Name",
   "R²",
   "Adjusted R²",
-  "MAE",
-  "RMSE",
+  "MAE (eV)",
+  "RMSE (eV)",
   "Spearman",
   "Fit time",
 )
@@ -120,8 +121,8 @@ def run_visualize(name, save_loc):
     name,
     f"{r2:.4f}",
     f"{adj_r2:.4f}",
-    f"{mae:.4f} eV",
-    f"{rmse:.4f} eV",
+    f"{mae:.4f}",
+    f"{rmse:.4f}",
     f"{spearman:.4f}",
     fit_time,
   )
@@ -137,4 +138,6 @@ if __name__ == "__main__":
     "-s", "--save", help="Save the figure instead of showing it"
   )
   args = parser.parse_args()
-  run_visualize(args.name, args.save)
+  save_loc = args.save
+  name = args.name
+  save_tbl(save_loc, name, [run_visualize(name, save_loc)], metric_names)

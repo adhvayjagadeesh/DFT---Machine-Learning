@@ -1,8 +1,10 @@
 from matplotlib import get_backend
+from tabulate import tabulate
 
 backend = get_backend()
 
 
+# Save or show figure
 def save_fig(save_loc, name, fig):
   if save_loc:
     fig.savefig(f"{save_loc}/{name}.pgf", bbox_inches="tight")
@@ -17,3 +19,15 @@ def save_fig(save_loc, name, fig):
       f"Figured saved as {name}.pgf",
     )
     fig.savefig(f"./{name}.pgf", bbox_inches="tight")
+
+
+# Save or print table
+def save_tbl(save_loc, name, data, headers):
+  tbl = tabulate(
+    data, headers=headers, tablefmt="latex" if save_loc else "simple"
+  )
+  if save_loc:
+    with open(f"{save_loc}/{name}.tex", "w") as f:
+      f.write(tbl)
+  else:
+    print(tbl)

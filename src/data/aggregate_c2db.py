@@ -18,7 +18,9 @@ args = parser.parse_args()
 
 con = connect(args.db)
 
-n = con.count("gap_hse,bravais_search!=Hexagonal,bravais_search!=Oblique")
+query = "gap_hse,bravais_search!=Hexagonal,bravais_search!=Oblique,bravais_search!=Square"
+n = con.count(query)
+
 cols = (
   "HSE06 Band gap (eV)",
   "Mean electronegativity",
@@ -27,12 +29,7 @@ cols = (
 )
 arr = empty((n, len(cols)))
 
-for i, row in enumerate(
-  con.select(
-    "gap_hse,bravais_search!=Hexagonal,bravais_search!=Oblique",
-    include_data=False,
-  )
-):
+for i, row in enumerate(con.select(query, include_data=False)):
   comp = Composition(row.formula)
   arr[i] = (
     row.gap_hse,
@@ -40,6 +37,7 @@ for i, row in enumerate(
     comp.weight,
     comp.num_atoms,
   )
+
 shuffle(arr)
 DataFrame(
   arr,

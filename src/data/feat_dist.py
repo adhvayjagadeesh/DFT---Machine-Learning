@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 
 from data.load import df
-from stats.save_fig import save_fig
+from stats.save import save_fig
 
 parser = ArgumentParser(
   "python -m data.feat_dist",

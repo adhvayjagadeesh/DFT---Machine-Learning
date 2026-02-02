@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from numpy import array, tril
 
 from data.load import df
-from stats.save_fig import save_fig
+from stats.save import save_fig
 
 parser = ArgumentParser(
   "python -m data.feat_correl",

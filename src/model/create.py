@@ -18,7 +18,7 @@ from xgboost import XGBRegressor
 
 class Model(Enum):
   rf = RandomForestRegressor()
-  xgb = XGBRegressor(tree_method="hist", verbosity=3)
+  xgb = XGBRegressor(tree_method="hist")
   mlp = MLPRegressor()
   gbt = GradientBoostingRegressor()
   hgbt = HistGradientBoostingRegressor()

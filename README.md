@@ -4,24 +4,6 @@ ML models for predicting band gap of 2D material from elemental properties
 
 ## Setup
 
-### Get the code
-
-- Cloning with SSH is the easiest here. [Setup guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh).
-
-```bash
-git clone git@github.com:ASDRP-DFT-Machine-Learning/DFT---Machine-Learning.git dftml
-```
-
-- After cloning or if you already have the repo
-
-```bash
-# Go to the repo
-cd dftml
-
-# Update (if you didn't just clone)
-git pull
-```
-
 ### Prepare virtual environment
 
 ```bash
@@ -44,6 +26,8 @@ pip install -e .
 ### Upgrade packages
 
 ```bash
+git pull
+
 # Install dev packages (1st time only)
 pip install -e .[dev]
 
