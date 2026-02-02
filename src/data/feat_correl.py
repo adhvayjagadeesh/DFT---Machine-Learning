@@ -10,9 +10,7 @@ parser = ArgumentParser(
   "python -m data.feat_correl",
   description="Show how numerical features are correlated",
 )
-parser.add_argument(
-  "-o", "--output", help="Folder to save output instead of showing it"
-)
+parser.add_argument("-o", "--output", help="Folder to save output instead of showing it")
 args = parser.parse_args()
 correls = df.corr("spearman")
 vars = array(correls.columns)
@@ -39,9 +37,7 @@ cbar.ax.set_ylabel("Spearman correlation", rotation=-90, va="bottom")
 ax.set_title("Feature correlation heatmap")
 
 # Rotate to save vertical space and make reading easier
-ax.set_xticks(
-  var_range, vars[:-1], rotation=30, rotation_mode="anchor", ha="right"
-)
+ax.set_xticks(var_range, vars[:-1], rotation=30, rotation_mode="anchor", ha="right")
 
 ax.set_yticks(var_range, vars[1:])
 ax.spines[:].set_visible(False)

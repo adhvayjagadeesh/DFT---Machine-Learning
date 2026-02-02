@@ -37,9 +37,7 @@ def run_model(names, mode):
     y_slc = y[0:n_row]
 
     # CV loop
-    for j, (x_train, y_train, x_test, indices) in enumerate(
-      k_fold(x[0:n_row], y_slc)
-    ):
+    for j, (x_train, y_train, x_test, indices) in enumerate(k_fold(x[0:n_row], y_slc)):
       start_ns = perf_counter_ns()
       if "t" in mode:
         tune(model, x_train, y_train)
@@ -56,9 +54,7 @@ def run_model(names, mode):
       y_test = y_slc.iloc[indices]
 
       # Add learning curve data
-      learning_curve["test_scores"][i][j] = root_mean_squared_error(
-        y_test, y_pred_f
-      )
+      learning_curve["test_scores"][i][j] = root_mean_squared_error(y_test, y_pred_f)
       learning_curve["train_scores"][i][j] = root_mean_squared_error(
         y_train, model.predict(x_train)
       )

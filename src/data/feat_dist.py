@@ -9,9 +9,7 @@ parser = ArgumentParser(
   "python -m data.feat_dist",
   description="Show how numerical features are distributed",
 )
-parser.add_argument(
-  "-o", "--output", help="Folder to save output instead of showing it"
-)
+parser.add_argument("-o", "--output", help="Folder to save output instead of showing it")
 args = parser.parse_args()
 
 # Plotting
@@ -40,9 +38,7 @@ for i, (name, vals) in enumerate(df.items()):
   ax = axes[row][col]
 
   # Histogram
-  freq, _, _ = ax.hist(
-    vals, bins=bins, alpha=0.7, color="teal", edgecolor="black"
-  )
+  freq, _, _ = ax.hist(vals, bins=bins, alpha=0.7, color="teal", edgecolor="black")
 
   # Add vertical space above the highest bar for boxplot
   ax.set_ylim(0, max(freq) * (1.05 + box_height))

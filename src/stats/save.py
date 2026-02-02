@@ -23,9 +23,7 @@ def save_fig(output, name, fig):
 
 # Save or print table
 def save_tbl(output, name, data, headers):
-  tbl = tabulate(
-    data, headers=headers, tablefmt="latex" if output else "simple"
-  )
+  tbl = tabulate(data, headers=headers, tablefmt="latex" if output else "simple")
   if output:
     with open(f"{output}/{name}.tex", "w") as f:
       f.write(tbl)

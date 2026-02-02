@@ -29,9 +29,7 @@ metric_names = (
 
 # We want this file to run as a program on its own AND be runnable by stats.many also
 def run_visualize(name, output):
-  y_pred, fit_time, learning_curve, feat_importances = run_model(
-    *parse_name(name)
-  )
+  y_pred, fit_time, learning_curve, feat_importances = run_model(*parse_name(name))
 
   n = len(y)
   feats = list(x.columns)
@@ -71,8 +69,7 @@ def run_visualize(name, output):
   # y-axis ends at 2eV for now
   tolerances = np.linspace(0, 2, n_steps)
   accuracies = [
-    np.mean(abs_errors <= tolerance * abs_errors.max())
-    for tolerance in tolerances
+    np.mean(abs_errors <= tolerance * abs_errors.max()) for tolerance in tolerances
   ]
   ax = axes[0][1]
   ax.plot(
@@ -113,9 +110,7 @@ def run_visualize(name, output):
     mean_importances,
     yerr=abs_err_importances,
   )
-  ax.set_xticks(
-    feat_range, feats, rotation=30, rotation_mode="anchor", ha="right"
-  )
+  ax.set_xticks(feat_range, feats, rotation=30, rotation_mode="anchor", ha="right")
   ax.set_ylabel("ΔRMSE (eV)")
   ax.set_title("Permutation feature importance")
   ax.grid(axis="y")
