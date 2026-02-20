@@ -25,10 +25,18 @@ for i in var_range:
   for j in var_range:
     correl = correls[i][j]
     if not correl == 0:
-      ax.text(j, i, f"{correl:.4f}", ha="center", va="center")
+      ax.text(
+        j,
+        i,
+        f"{correl:.4f}",
+        ha="center",
+        va="center",
+        # Contrast
+        c="#000000" if abs(correl) < 0.25 else "#ffffff",
+      )
 
 # Choose a colormap that's white for 0
-im = ax.imshow(correls, cmap="bwr", vmin=-1, vmax=1)
+im = ax.imshow(correls, cmap="seismic", vmin=-1, vmax=1)
 
 # Color bar to indicate correlation strength
 cbar = ax.figure.colorbar(im, ax=ax)

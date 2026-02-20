@@ -26,7 +26,7 @@ cols = (
   "Mean electronegativity",
   "Atomic mass (amu)",
   "Atom count",
-  "Mean ionization energy (kJ/mol)",
+  "Mean 1st ionization energy (kJ/mol)",
   "Mean atomic radius (Å)",
   "Mean electron affinity (eV)",
 )
