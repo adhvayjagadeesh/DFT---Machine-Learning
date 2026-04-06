@@ -65,6 +65,7 @@ for i, row in enumerate(con.select(query, include_data=False)):
 # Remove any ordering C2DB might have
 shuffle(arr)
 
+# Don't debate me but zstd is the best compression algorithm itw rn
 DataFrame(
   arr,
   columns=cols,

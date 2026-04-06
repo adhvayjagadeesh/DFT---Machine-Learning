@@ -33,7 +33,7 @@ def run_model(names, mode):
   for i, frac in enumerate(linspace(0.2, 1, n_points)):
     n_row = int(n_row_all * frac)
 
-    # Simple slicing to save memory, allowed because CSV is shuffled (x is sliced too in k_fold)
+    # Simple slicing to save memory, allowed because dataset is shuffled (x is sliced too in k_fold)
     y_slc = y[0:n_row]
 
     # CV loop
